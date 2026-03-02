@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item key="hasShownOverlayPopupBefore" value="true"/>
+	<item key="replaceBarOpen" value="false"/>
+	<list key="searchhistory">
+		<item value="configUSE"/>
+		<item value="configUSE_STATS_FORMATTING_FUNCTION"/>
+		<item value="xSwitchRequired"/>
+		<item value="_write"/>
+		<item value="SEGGER"/>
+		<item value="eventCLEAR_EVENTS_ON_EXIT_BIT"/>
+		<item value="xIdleTaskHandle"/>
+		<item value="xIdleTaskHandles"/>
+		<item value="RTT_BUFFER_SIZE"/>
+	</list>
+</section>

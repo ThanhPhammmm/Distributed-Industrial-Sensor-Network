@@ -1,0 +1,7 @@
+../Core/Inc/ProtocolDefinition.h:105:24:CRC16_Calc	4
+../Core/Inc/ProtocolDefinition.h:157:20:Frame_ValidCRC	2
+../Core/Src/rs485_driver.c:13:13:_RxStartPrefix	1
+../Core/Src/rs485_driver.c:18:13:_RxStartRest	1
+../Core/Src/rs485_driver.c:23:6:RS485_Driver_Init	3
+../Core/Src/rs485_driver.c:37:6:RS485_OnRxDmaComplete	9
+../Core/Src/rs485_driver.c:93:6:HAL_UART_RxCpltCallback	2

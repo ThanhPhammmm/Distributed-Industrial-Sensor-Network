@@ -1,0 +1,18 @@
+/*
+ * ProtocolTask.h
+ *
+ *  Created on: Mar 3, 2026
+ *      Author: ThanhPham25
+ */
+
+#ifndef INC_PROTOCOLTASK_H_
+#define INC_PROTOCOLTASK_H_
+
+#include <stdint.h>
+#include <stdbool.h>
+#include "FreeRTOS.h"
+#include "queue.h"
+#include "ProtocolDefinition.h"
+#include "Configuration.h"
+
+#endif /* INC_PROTOCOLTASK_H_ */

@@ -1,0 +1,2 @@
+../Core/Src/ProtocolTask.c:6:6:Protocol_Init	16	static,ignoring_inline_asm
+../Core/Src/ProtocolTask.c:13:6:Protocol_Task	16	static

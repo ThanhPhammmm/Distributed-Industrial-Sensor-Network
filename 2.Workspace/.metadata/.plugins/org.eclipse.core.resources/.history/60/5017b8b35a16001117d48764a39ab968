@@ -1,0 +1,12 @@
+#include "ProtocolTask.h"
+#include "rs485_driver.h"
+#include "stm32f4xx_hal.h"
+
+QueueHandle_t xQueue_ValidFrame = NULL;
+
+void Protocol_Init(void)
+{
+    xQueue_ValidFrame = xQueueCreate(PROTOCOL_VALID_FRAME_QUEUE_SIZE, sizeof(Frame_t));
+    configASSERT(xQueue_ValidFrame);
+    memset(g_state, 0, sizeof(g_state));
+}

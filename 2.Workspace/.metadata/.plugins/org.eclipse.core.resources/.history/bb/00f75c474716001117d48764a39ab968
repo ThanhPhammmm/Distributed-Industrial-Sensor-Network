@@ -1,0 +1,29 @@
+#include "rs485_driver.h"
+#include "main.h"
+#include <string.h>
+
+QueueHandle_t xQueue_RS485_RxFrame = NULL;
+QueueHandle_t xQueue_RS485_TxFrame = NULL;
+TaskHandle_t  g_protocolTaskHandle = NULL;
+
+static void _RxStartPrefix(void)
+{
+    g_rxStage = RX_STAGE_PREFIX;
+    HAL_UART_Receive_DMA(&huart2, g_prefixBuf, PROTOCOL_PREFIX_SIZE);
+}
+
+void RS485_Driver_Init(void)
+{
+    xQueue_RS485_RxFrame = xQueueCreate(RS485_RX_FRAME_QUEUE_SIZE, sizeof(Frame_t));
+    xQueue_RS485_TxFrame = xQueueCreate(RS485_TX_QUEUE_SIZE,       sizeof(RS485TxReq_t));
+    configASSERT(xQueue_RS485_RxFrame);
+    configASSERT(xQueue_RS485_TxFrame);
+
+    /* DE low = receive mode */
+    HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
+
+    /* Start waiting for first frame prefix */
+    _RxStartPrefix();
+
+    LOG_I(TAG, "Driver init OK (SOF=0xAA55, no-data=10B, with-data=14B)");
+}
