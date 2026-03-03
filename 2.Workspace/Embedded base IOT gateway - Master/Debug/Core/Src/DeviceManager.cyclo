@@ -1,2 +1,4 @@
-../Core/Src/DeviceManager.c:7:6:DeviceManager_Init	2
-../Core/Src/DeviceManager.c:12:6:DeviceManager_Task	2
+../Core/Src/DeviceManager.c:23:13:_handleResponse	7
+../Core/Src/DeviceManager.c:40:13:_Advance	4
+../Core/Src/DeviceManager.c:53:6:DeviceManager_Init	2
+../Core/Src/DeviceManager.c:60:6:DeviceManager_Task	3

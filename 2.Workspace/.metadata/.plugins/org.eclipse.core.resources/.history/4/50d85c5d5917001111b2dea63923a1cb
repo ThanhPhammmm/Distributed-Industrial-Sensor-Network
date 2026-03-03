@@ -24,15 +24,9 @@ static bool _handleResponse(const Frame_t *f){
     if (g_pending.op == OP_NONE || f->addr != g_pending.addr) return false;
 
     switch (g_pending.op) {
-    	case OP_NONE:
-
 	    case OP_SCAN_PING:
 			g_scanAddr++;
 			break;
-	    case OP_SCAN_GET_TABLE:
-	    	break;
-	    case OP_POLL_GET_DATA:
-	    	break;
     }
 	return 0;
 }

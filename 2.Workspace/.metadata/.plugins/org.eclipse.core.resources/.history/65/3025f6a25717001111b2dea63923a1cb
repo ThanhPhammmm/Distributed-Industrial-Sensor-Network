@@ -1,8 +1,7 @@
 #include "DeviceManager.h"
 
-static SlaveEntry_t      g_slaveTable[MAX_SLAVES];
-static uint8_t           g_slaveCount = 0U;
 static SemaphoreHandle_t g_mutex;
+static eDevMgrState g_state = DEVMGR_STATE_IDLE;
 
 typedef enum{
     OP_NONE             = 0,
@@ -16,43 +15,21 @@ typedef struct{
     uint8_t    addr;
 }PendingOp_t;
 
-static eDevMgrState g_state = DEVMGR_STATE_IDLE;
 static PendingOp_t g_pending = { .op = OP_NONE };
-static uint8_t  g_scanAddr         = SLAVE_ADDR_MIN;
 
 static bool _handleResponse(const Frame_t *f){
-    if (g_pending.op == OP_NONE || f->addr != g_pending.addr) return false;
 
-    switch (g_pending.op) {
-    	case OP_NONE:
-
-	    case OP_SCAN_PING:
-			g_scanAddr++;
-			break;
-	    case OP_SCAN_GET_TABLE:
-	    	break;
-	    case OP_POLL_GET_DATA:
-	    	break;
-    }
 	return 0;
 }
 
 static void _Advance(void){
 	switch(g_state){
-		case DEVMGR_STATE_IDLE:
-			break;
-
-		case DEVMGR_STATE_SCANNING:
-			break;
-
-		case DEVMGR_STATE_RUNNING:
-			break;
+    case DEVMGR_STATE_IDLE:
+        break;
 	}
 }
 
 void DeviceManager_Init(void){
-    memset(g_slaveTable, 0, sizeof(g_slaveTable));
-    g_slaveCount = 0U;
     g_mutex      = xSemaphoreCreateMutex();
     configASSERT(g_mutex);
 }
