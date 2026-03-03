@@ -40,6 +40,5 @@ void Protocol_Task(void *pvParams){
 		}
 
         xQueueSend(xQueue_ValidFrame, &frame, 0);
-        xTaskNotifyGive(g_deviceManagerTaskHandle);
 	}
 }

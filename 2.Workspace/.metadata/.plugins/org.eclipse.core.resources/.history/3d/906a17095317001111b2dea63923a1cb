@@ -23,6 +23,7 @@ static SlaveProtoState_t *_findSlaveByName(uint8_t addr){
 void Protocol_Task(void *pvParams){
 	(void)pvParams;
     Frame_t frame;
+    BaseType_t xHigherPrioWoken = pdFALSE;
 
 	while(1){
 		//ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(PROTOCOL_TIMEOUT_MS));
@@ -40,6 +41,6 @@ void Protocol_Task(void *pvParams){
 		}
 
         xQueueSend(xQueue_ValidFrame, &frame, 0);
-        xTaskNotifyGive(g_deviceManagerTaskHandle);
+        vTaskNotify(g_deviceManagerTaskHandle, &xHigherPrioWoken);
 	}
 }

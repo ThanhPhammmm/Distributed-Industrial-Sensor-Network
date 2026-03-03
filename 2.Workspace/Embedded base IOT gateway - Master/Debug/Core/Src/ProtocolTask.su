@@ -1,3 +1,3 @@
 ../Core/Src/ProtocolTask.c:12:6:Protocol_Init	16	static,ignoring_inline_asm
 ../Core/Src/ProtocolTask.c:18:27:_findSlaveByName	16	static
-../Core/Src/ProtocolTask.c:23:6:Protocol_Task	32	static
+../Core/Src/ProtocolTask.c:23:6:Protocol_Task	40	static

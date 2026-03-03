@@ -47,7 +47,11 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/queue.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h \
  ../Core/Inc/ProtocolDefinition.h ../Core/Inc/main.h \
- ../Core/Inc/Configuration.h ../Core/Inc/ProtocolTask.h
+ ../Core/Inc/Configuration.h ../Core/Inc/ProtocolTask.h \
+ ../Core/Inc/DeviceManager.h ../Core/Inc/ProtocolTask.h \
+ ../Core/Inc/rs485_driver.h \
+ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/semphr.h \
+ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/queue.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -100,3 +104,8 @@ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT
 ../Core/Inc/main.h:
 ../Core/Inc/Configuration.h:
 ../Core/Inc/ProtocolTask.h:
+../Core/Inc/DeviceManager.h:
+../Core/Inc/ProtocolTask.h:
+../Core/Inc/rs485_driver.h:
+C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/semphr.h:
+C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/queue.h:

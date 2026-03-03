@@ -1,9 +1,5 @@
 #include "DeviceManager.h"
 
-static SemaphoreHandle_t g_mutex;
-TaskHandle_t  g_deviceManagerTaskHandle = NULL;
-
-
 void DeviceManager_Init(void){
     g_mutex      = xSemaphoreCreateMutex();
     configASSERT(g_mutex);

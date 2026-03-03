@@ -114,8 +114,7 @@ int main(void)
   DeviceManager_Init();
 
   xTaskCreate(Protocol_Task, "Protocol", STACK_PROTOCOL, NULL, PRIO_PROTOCOL, &g_protocolTaskHandle);
-  xTaskCreate(DeviceManager_Task, "DevMgr",   STACK_DEVMGR, NULL, PRIO_DEVMGR, &g_deviceManagerTaskHandle);
-
+  xTaskCreate(DeviceManager_Task, "DevMgr",   STACK_DEVMGR, NULL, PRIO_DEVMGR,   NULL);
   //start the freeRTOS scheduler
   vTaskStartScheduler();
 

@@ -5,9 +5,5 @@
 #include "ProtocolTask.h"
 #include "rs485_driver.h"
 #include "Configuration.h"
-#include "semphr.h"
-
-void DeviceManager_Init(void);
-void DeviceManager_Task(void *pvParams);
 
 #endif /* INC_DEVICEMANAGER_H_ */
