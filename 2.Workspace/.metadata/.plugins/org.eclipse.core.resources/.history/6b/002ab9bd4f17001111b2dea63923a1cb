@@ -1,0 +1,42 @@
+#include "ProtocolTask.h"
+#include "rs485_driver.h"
+
+QueueHandle_t xQueue_ValidFrame = NULL;
+
+typedef struct{
+    uint8_t     txSeq;
+}SlaveProtoState_t;
+
+static SlaveProtoState_t g_state[MAX_SLAVES];
+
+void Protocol_Init(void){
+    xQueue_ValidFrame = xQueueCreate(PROTOCOL_VALID_FRAME_QUEUE_SIZE, sizeof(Frame_t));
+    configASSERT(xQueue_ValidFrame);
+    memset(g_state, 0, sizeof(g_state));
+}
+
+static SlaveProtoState_t *_findSlaveByName(uint8_t addr){
+    if(addr < SLAVE_ADDR_MIN || addr > SLAVE_ADDR_MAX) return NULL;
+    return &g_state[addr - 1U];
+}
+
+void Protocol_Task(void *pvParams){
+	(void)pvParams;
+    Frame_t frame;
+
+	while(1){
+		//ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(PROTOCOL_TIMEOUT_MS));
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+		while(xQueueReceive(xQueue_RS485_RxFrame, &frame, 0) == pdTRUE){
+            SlaveProtoState_t *s = _findSlaveByName(frame.addr);
+            if (s == NULL){
+                continue;
+            }
+
+            if(frame.seq != s->txSeq){
+                continue;
+            }
+		}
+	}
+}

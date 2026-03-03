@@ -1,0 +1,162 @@
+/*
+ * ProtocolDefinition.h
+ *
+ *  Created on: Mar 2, 2026
+ *      Author: ThanhPham25
+ */
+
+#ifndef INC_PROTOCOLDEFINITION_H_
+#define INC_PROTOCOLDEFINITION_H_
+
+/* =========================================================
+ * FILE: common/protocol_def.h
+ *
+ * Frame format:
+ * | SOF(2) | LEN(1) | ADDR(1) | SEQ(1) | CMD(1) | STATUS(1) | VER(1) | DATA(0/4) | CRC(2) |
+ *
+ * SOF  = 0xAA 0x55 (2 bytes)
+ * LEN  = number of bytes from ADDR to end of DATA, NOT including CRC
+ *          no data  → LEN = 5  (ADDR+SEQ+CMD+STATUS+VER)
+ *          with data→ LEN = 9  (ADDR+SEQ+CMD+STATUS+VER+DATA)
+ * DATA = 4 bytes fixed (union float/int32)
+ *          only present in slave→master sensor data responses
+ * CRC  = CRC16-CCITT over SOF+LEN+ADDR..DATA (everything except CRC itself)
+ *
+ * Total frame size:
+ *   no data  : 2+1+5+2 = 10 bytes
+ *   with data: 2+1+9+2 = 14 bytes
+ * ========================================================= */
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+
+#define PROTOCOL_SOF_0             0xAA
+#define PROTOCOL_SOF_1             0x55
+#define PROTOCOL_SOF_SIZE          2
+
+#define PROTOCOL_LEN_NO_DATA       5    /* ADDR+SEQ+CMD+STATUS+VER           */
+#define PROTOCOL_LEN_WITH_DATA     9    /* ADDR+SEQ+CMD+STATUS+VER+DATA(4)   */
+
+#define PROTOCOL_DATA_SIZE         4    /* fixed 4 bytes when present        */
+#define PROTOCOL_CRC_SIZE          2
+#define PROTOCOL_PREFIX_SIZE       3    /* SOF(2) + LEN(1)  */
+
+#define PROTOCOL_FRAME_NO_DATA     (PROTOCOL_PREFIX_SIZE + PROTOCOL_LEN_NO_DATA   + PROTOCOL_CRC_SIZE)  /* 10 */
+#define PROTOCOL_FRAME_WITH_DATA   (PROTOCOL_PREFIX_SIZE + PROTOCOL_LEN_WITH_DATA + PROTOCOL_CRC_SIZE)  /* 14 */
+#define PROTOCOL_FRAME_MAX         PROTOCOL_FRAME_WITH_DATA
+
+#define PROTOCOL_ADDR_BROADCAST    0xFF
+
+typedef enum{
+    CMD_PING             = 0x01,  /* master→slave: are you alive?          */
+    CMD_REGISTER         = 0x02,  /* slave→master: I just booted           */
+    CMD_GET_SENSOR_TABLE = 0x03,  /* master→slave: describe your sensors   */
+    CMD_SENSOR_TABLE     = 0x04,  /* slave→master: here is my sensor table */
+    CMD_GET_SENSOR_DATA  = 0x05,  /* master→slave: give me one reading     */
+    CMD_SENSOR_DATA      = 0x06,  /* slave→master: here is the reading     */
+    CMD_ACK              = 0x07,  /* any direction: acknowledged            */
+    CMD_NACK             = 0x08,  /* any direction: refused / error         */
+    CMD_SET_CONFIG       = 0x09,  /* master→slave: update slave config      */
+    CMD_RESET            = 0x0A,  /* master→slave: reboot yourself          */
+}eCommand;
+
+typedef enum{
+    STATUS_OK            = 0x00,
+    STATUS_ERROR         = 0x01,
+    STATUS_INVALID_CMD   = 0x02,
+    STATUS_CRC_ERROR     = 0x03,
+    STATUS_BUSY          = 0x04,
+}eStatus;
+
+typedef struct{
+    uint8_t len;
+    uint8_t bytes[PROTOCOL_MAX_DATA_LEN];
+}FrameData_t;
+
+typedef struct{
+    uint8_t     addr;
+    uint8_t     seq;
+    uint8_t     cmd;
+    uint8_t     status;
+    uint8_t     version;
+    FrameData_t data;       /* valid only when hasData == true */
+}Frame_t;
+
+typedef enum{
+    SENSOR_TEMPERATURE  = 0x01,
+    SENSOR_HUMIDITY     = 0x02,
+    SENSOR_PRESSURE     = 0x03,
+    SENSOR_ADC_RAW      = 0x04,
+    SENSOR_DIGITAL_IN   = 0x05,
+}eSensorType;
+
+typedef struct __attribute__((packed)) {
+    uint8_t  sensorId;
+    uint8_t  sensorType;
+    char     unit[6];
+    float    minVal;
+    float    maxVal;
+}SensorDesc_t;
+
+static inline uint16_t CRC16_Calc(const uint8_t *buf, uint16_t len){
+    uint16_t crc = 0xFFFF;
+    for (uint16_t i = 0; i < len; i++) {
+        crc ^= (uint16_t)buf[i] << 8;
+        for (uint8_t j = 0; j < 8; j++)
+            crc = (crc & 0x8000)
+                ? (uint16_t)((crc << 1) ^ 0x1021)
+                : (uint16_t)(crc << 1);
+    }
+    return crc;
+}
+
+static inline uint8_t Frame_Build(uint8_t       *outBuf,
+                                   uint8_t        addr,
+                                   uint8_t        seq,
+                                   uint8_t        cmd,
+                                   uint8_t        status,
+                                   uint8_t        version,
+                                   const FrameData_t *data)   /* NULL = no data */
+{
+    bool    hasData = (data != NULL);
+    uint8_t lenField = hasData ? PROTOCOL_LEN_WITH_DATA : PROTOCOL_LEN_NO_DATA;
+
+    /* SOF */
+    outBuf[0] = PROTOCOL_SOF_0;
+    outBuf[1] = PROTOCOL_SOF_1;
+
+    /* LEN */
+    outBuf[2] = lenField;
+
+    /* ADDR .. VER */
+    outBuf[3] = addr;
+    outBuf[4] = seq;
+    outBuf[5] = cmd;
+    outBuf[6] = status;
+    outBuf[7] = version;
+
+    uint8_t crcUpTo = 8;    /* index of first CRC byte when no data */
+
+    if (hasData) {
+        memcpy(&outBuf[8], data->bytes, PROTOCOL_DATA_SIZE);
+        crcUpTo = 12;
+    }
+
+    /* CRC covers outBuf[0..crcUpTo-1] */
+    uint16_t crc       = CRC16_Calc(&outBuf[2], crcUpTo - 2);
+    outBuf[crcUpTo]     = (uint8_t)(crc >> 8);
+    outBuf[crcUpTo + 1] = (uint8_t)(crc & 0xFF);
+
+    return (uint8_t)(crcUpTo + PROTOCOL_CRC_SIZE);
+}
+
+static inline bool Frame_ValidCRC(const uint8_t *raw, uint8_t totalLen)
+{
+    if (totalLen < PROTOCOL_FRAME_NO_DATA) return false;
+    uint16_t calc = CRC16_Calc(&raw[2], totalLen - PROTOCOL_CRC_SIZE - PROTOCOL_SOF_SIZE);
+    uint16_t recv = (uint16_t)((raw[totalLen - 2] << 8) | raw[totalLen - 1]);
+    return (calc == recv);
+}
+
+#endif /* INC_PROTOCOLDEFINITION_H_ */

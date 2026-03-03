@@ -3,6 +3,7 @@
 	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<item key="replaceBarOpen" value="false"/>
 	<list key="searchhistory">
+		<item value="UART"/>
 		<item value="configUSE"/>
 		<item value="configUSE_STATS_FORMATTING_FUNCTION"/>
 		<item value="xSwitchRequired"/>

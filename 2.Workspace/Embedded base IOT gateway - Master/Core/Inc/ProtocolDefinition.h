@@ -31,22 +31,23 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define PROTOCOL_SOF_0             0xAA
-#define PROTOCOL_SOF_1             0x55
-#define PROTOCOL_SOF_SIZE          2
+#define PROTOCOL_SOF_0				0xAA
+#define PROTOCOL_SOF_1				0x55
+#define PROTOCOL_SOF_SIZE			2
 
-#define PROTOCOL_LEN_NO_DATA       5    /* ADDR+SEQ+CMD+STATUS+VER           */
-#define PROTOCOL_LEN_WITH_DATA     9    /* ADDR+SEQ+CMD+STATUS+VER+DATA(4)   */
+#define PROTOCOL_LEN_NO_DATA		5    /* ADDR+SEQ+CMD+STATUS+VER           */
+#define PROTOCOL_LEN_WITH_DATA		9    /* ADDR+SEQ+CMD+STATUS+VER+DATA(4)   */
 
-#define PROTOCOL_DATA_SIZE         4    /* fixed 4 bytes when present        */
-#define PROTOCOL_CRC_SIZE          2
-#define PROTOCOL_PREFIX_SIZE       3    /* SOF(2) + LEN(1)  */
+#define PROTOCOL_DATA_SIZE			4    /* fixed 4 bytes when present        */
+#define PROTOCOL_CRC_SIZE			2
+#define PROTOCOL_PREFIX_SIZE		3    /* SOF(2) + LEN(1)  */
+#define PROTOCOL_MAX_DATA_LEN		PROTOCOL_LEN_WITH_DATA - PROTOCOL_LEN_NO_DATA
 
-#define PROTOCOL_FRAME_NO_DATA     (PROTOCOL_PREFIX_SIZE + PROTOCOL_LEN_NO_DATA   + PROTOCOL_CRC_SIZE)  /* 10 */
-#define PROTOCOL_FRAME_WITH_DATA   (PROTOCOL_PREFIX_SIZE + PROTOCOL_LEN_WITH_DATA + PROTOCOL_CRC_SIZE)  /* 14 */
-#define PROTOCOL_FRAME_MAX         PROTOCOL_FRAME_WITH_DATA
+#define PROTOCOL_FRAME_NO_DATA		(PROTOCOL_PREFIX_SIZE + PROTOCOL_LEN_NO_DATA   + PROTOCOL_CRC_SIZE)  /* 10 */
+#define PROTOCOL_FRAME_WITH_DATA	(PROTOCOL_PREFIX_SIZE + PROTOCOL_LEN_WITH_DATA + PROTOCOL_CRC_SIZE)  /* 14 */
+#define PROTOCOL_FRAME_MAX			PROTOCOL_FRAME_WITH_DATA
 
-#define PROTOCOL_ADDR_BROADCAST    0xFF
+#define PROTOCOL_ADDR_BROADCAST		0xFF
 
 typedef enum{
     CMD_PING             = 0x01,  /* master→slave: are you alive?          */
@@ -69,11 +70,9 @@ typedef enum{
     STATUS_BUSY          = 0x04,
 }eStatus;
 
-typedef union{
-    float    fdata;       /* temperature, humidity, etc. */
-    int32_t  idata;       /* signed integer readings     */
-    uint32_t udata;       /* unsigned / raw ADC          */
-    uint8_t  bytes[PROTOCOL_DATA_SIZE];
+typedef struct{
+    uint8_t len;
+    uint8_t bytes[PROTOCOL_MAX_DATA_LEN]; // Data of many sensors
 }FrameData_t;
 
 typedef struct{
@@ -82,8 +81,7 @@ typedef struct{
     uint8_t     cmd;
     uint8_t     status;
     uint8_t     version;
-    bool        hasData;
-    FrameData_t data;       /* valid only when hasData == true */
+    FrameData_t data;
 }Frame_t;
 
 typedef enum{

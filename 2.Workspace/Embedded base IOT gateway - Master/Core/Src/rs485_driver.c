@@ -58,8 +58,13 @@ void RS485_OnRxDmaComplete(void){
     uint8_t len      = g_prefixBuf[2];
     uint8_t totalLen = PROTOCOL_PREFIX_SIZE + len + PROTOCOL_CRC_SIZE;
 
+    if (totalLen > PROTOCOL_FRAME_MAX) {
+        _RxStartPrefix();
+        return;
+    }
+
     uint8_t raw[PROTOCOL_FRAME_MAX];
-    memcpy(raw,                    g_prefixBuf, PROTOCOL_PREFIX_SIZE);
+    memcpy(raw, g_prefixBuf, PROTOCOL_PREFIX_SIZE);
     memcpy(raw + PROTOCOL_PREFIX_SIZE, g_restBuf,  len + PROTOCOL_CRC_SIZE);
 
     if(!Frame_ValidCRC(raw, totalLen)){
@@ -73,10 +78,22 @@ void RS485_OnRxDmaComplete(void){
     f.cmd     = raw[5];
     f.status  = raw[6];
     f.version = raw[7];
-    f.hasData = (len == PROTOCOL_LEN_WITH_DATA);
 
-    if (f.hasData)
-        memcpy(f.data.bytes, &raw[8], PROTOCOL_DATA_SIZE);
+    uint8_t headerSizeAfterLenField = PROTOCOL_LEN_NO_DATA;
+    uint8_t dataLen = 0;
+
+    if(len > headerSizeAfterLenField){
+        dataLen = len - headerSizeAfterLenField;
+
+        if(dataLen > PROTOCOL_MAX_DATA_LEN){
+            _RxStartPrefix();
+            return;
+        }
+
+        memcpy(f.data.bytes, &raw[8], dataLen);
+    }
+
+    f.data.len = dataLen;
 
     /* Push to Protocol_Task queue */
     /* Note: Priority of this ISR >= configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY */
@@ -90,8 +107,7 @@ void RS485_OnRxDmaComplete(void){
     portYIELD_FROM_ISR(xHigherPrioWoken);
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     if (huart->Instance != USART2) return;
     RS485_OnRxDmaComplete();
 }

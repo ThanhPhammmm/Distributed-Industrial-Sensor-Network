@@ -24,8 +24,7 @@ typedef enum{
 }eRxStage;
 
 extern TaskHandle_t   g_protocolTaskHandle;
-
-
+extern QueueHandle_t xQueue_RS485_RxFrame;
 
 typedef struct{
     uint8_t buf[PROTOCOL_FRAME_MAX];
@@ -39,6 +38,7 @@ bool RS485_Send(uint8_t        addr,
                 uint8_t        status,
                 uint8_t        version,
                 const FrameData_t *data);   /* NULL = no DATA field */
+
 void RS485_OnRxDmaComplete(void);   /* DMA1_Stream5 */
 void RS485_OnTxDmaComplete(void);   /* DMA1_Stream6 */
 void RS485_Timer_IRQHandler(void);        /* TIM6         */
