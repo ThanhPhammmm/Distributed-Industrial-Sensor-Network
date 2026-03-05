@@ -9,7 +9,7 @@ typedef enum {
 
 typedef struct {
     ePendingOp op;
-    uint8_t    slotIdx;
+    uint8_t    addr;
     uint32_t   sentAtMs;
 } Pending_t;
 
