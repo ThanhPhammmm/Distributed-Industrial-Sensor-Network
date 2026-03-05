@@ -30,6 +30,7 @@
 
 #define DEVMGR_POLL_INTERVAL_MS		500
 #define DEVMGR_OFFLINE_THRESHOLD	5    /* missed polls before offline */
+#define DEVMGR_TASK_LOOP_MS         5U     /* max queue-receive timeout in task */
 
 #define PRIO_PROTOCOL				6
 #define PRIO_DEVMGR					5

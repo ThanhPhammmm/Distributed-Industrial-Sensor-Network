@@ -26,6 +26,7 @@
 #include "task.h"
 #include "rs485_driver.h"
 #include "ProtocolTask.h"
+#include "DeviceManager.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -110,8 +111,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
   RS485_Driver_Init();
   Protocol_Init();
+  DeviceManager_Init();
 
   xTaskCreate(Protocol_Task, "Protocol", STACK_PROTOCOL, NULL, PRIO_PROTOCOL, &g_protocolTaskHandle);
+  xTaskCreate(DeviceManager_Task, "DevMgr",   STACK_DEVMGR, NULL, PRIO_DEVMGR, NULL);
+
   //start the freeRTOS scheduler
   vTaskStartScheduler();
 

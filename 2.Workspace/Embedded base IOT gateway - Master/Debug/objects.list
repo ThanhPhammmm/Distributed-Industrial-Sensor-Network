@@ -1,3 +1,4 @@
+"./Core/Src/DeviceManager.o"
 "./Core/Src/ProtocolTask.o"
 "./Core/Src/main.o"
 "./Core/Src/rs485_driver.o"

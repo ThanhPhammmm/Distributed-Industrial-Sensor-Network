@@ -1,0 +1,10 @@
+#ifndef INC_DEVICEMANAGER_H_
+#define INC_DEVICEMANAGER_H_
+
+#include "ProtocolDefinition.h"
+#include "ProtocolTask.h"
+#include "rs485_driver.h"
+#include "Configuration.h"
+#include "semphr.h"
+
+#endif /* INC_DEVICEMANAGER_H_ */

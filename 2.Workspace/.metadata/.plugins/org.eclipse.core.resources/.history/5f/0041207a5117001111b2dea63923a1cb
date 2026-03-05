@@ -1,0 +1,23 @@
+#include "DeviceManager.h"
+
+void DeviceManager_Init(void){
+    g_mutex      = xSemaphoreCreateMutex();
+    configASSERT(g_mutex);
+}
+
+void DeviceManager_Task(void *pvParams){
+    (void)pvParams;
+    Frame_t frame;
+
+    while(1){
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        while(xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_TASK_LOOP_MS)) == pdTRUE){
+
+			xSemaphoreTake(g_mutex, portMAX_DELAY);
+
+	        xSemaphoreGive(g_mutex);
+        }
+
+    }
+}
