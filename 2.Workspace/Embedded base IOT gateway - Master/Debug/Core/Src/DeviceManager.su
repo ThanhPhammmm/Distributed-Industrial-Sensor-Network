@@ -1,4 +1,3 @@
-../Core/Src/DeviceManager.c:23:13:_handleResponse	16	static
-../Core/Src/DeviceManager.c:40:13:_Advance	4	static
-../Core/Src/DeviceManager.c:53:6:DeviceManager_Init	16	static,ignoring_inline_asm
-../Core/Src/DeviceManager.c:60:6:DeviceManager_Task	32	static
+../Core/Src/DeviceManager.c:19:13:_handleResponse	16	static
+../Core/Src/DeviceManager.c:35:6:DeviceManager_Init	4	static
+../Core/Src/DeviceManager.c:41:6:DeviceManager_Task	120	static

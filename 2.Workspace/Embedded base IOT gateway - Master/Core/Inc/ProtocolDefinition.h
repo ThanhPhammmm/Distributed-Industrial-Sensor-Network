@@ -1,104 +1,96 @@
-/*
- * ProtocolDefinition.h
- *
- *  Created on: Mar 2, 2026
- *      Author: ThanhPham25
- */
-
 #ifndef INC_PROTOCOLDEFINITION_H_
 #define INC_PROTOCOLDEFINITION_H_
 
-/* =========================================================
- * FILE: common/protocol_def.h
+/*
+ * ════════════════════════════════════════════════════════════════════
+ *  FRAME FORMAT
+ * ════════════════════════════════════════════════════════════════════
  *
- * Frame format:
- * | SOF(2) | LEN(1) | ADDR(1) | SEQ(1) | CMD(1) | STATUS(1) | VER(1) | DATA(0/4) | CRC(2) |
+ *  ┌──────────┬─────┬──────┬─────┬─────┬────────┬─────┬──────────┬──────┐
+ *  │ SOF (2)  │ LEN │ ADDR │ SEQ │ CMD │ STATUS │ VER │ PAYLOAD  │ CRC  │
+ *  │ 0xAA 55  │ (1) │ (1)  │ (1) │ (1) │  (1)   │ (1) │ 0..96 B  │ (2)  │
+ *  └──────────┴─────┴──────┴─────┴─────┴────────┴─────┴──────────┴──────┘
  *
- * SOF  = 0xAA 0x55 (2 bytes)
- * LEN  = number of bytes from ADDR to end of DATA, NOT including CRC
- *          no data  → LEN = 5  (ADDR+SEQ+CMD+STATUS+VER)
- *          with data→ LEN = 9  (ADDR+SEQ+CMD+STATUS+VER+DATA)
- * DATA = 4 bytes fixed (union float/int32)
- *          only present in slave→master sensor data responses
- * CRC  = CRC16-CCITT over SOF+LEN+ADDR..DATA (everything except CRC itself)
- *
- * Total frame size:
- *   no data  : 2+1+5+2 = 10 bytes
- *   with data: 2+1+9+2 = 14 bytes
- * ========================================================= */
+ *    LEN  = 5 + payloadLen   (covers ADDR..end-of-PAYLOAD; CRC excluded)
+ *    CRC  = CRC16-CCITT over raw[0 .. total−3]
+
+*/
 
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
 
-#define PROTOCOL_SOF_0				0xAA
-#define PROTOCOL_SOF_1				0x55
-#define PROTOCOL_SOF_SIZE			2
+#define PROTO_SOF_0           0xAAU
+#define PROTO_SOF_1           0x55U
+#define PROTO_PREFIX_SIZE     3U     /* SOF(2) + LEN(1)             */
+#define PROTO_HEADER_SIZE     5U     /* ADDR SEQ CMD STATUS VER     */
+#define PROTO_CRC_SIZE        2U
+#define PROTO_LEN_MIN         5U     /* minimum LEN (no payload)    */
+#define PROTO_MAX_PAYLOAD     96U    /* 8 × (1+1+8) = 80, rounded   */
+#define PROTO_LEN_MAX         (PROTO_LEN_MIN + PROTO_MAX_PAYLOAD)
+#define PROTO_FRAME_MIN       (PROTO_PREFIX_SIZE + PROTO_LEN_MIN + PROTO_CRC_SIZE)
+#define PROTO_FRAME_MAX       (PROTO_PREFIX_SIZE + PROTO_LEN_MAX + PROTO_CRC_SIZE)
+#define PROTO_ADDR_MIN        1U
+#define PROTO_ADDR_MAX        254U
+#define PROTO_ADDR_BROADCAST  0xFFU
 
-#define PROTOCOL_LEN_NO_DATA		5    /* ADDR+SEQ+CMD+STATUS+VER           */
-#define PROTOCOL_LEN_WITH_DATA		9    /* ADDR+SEQ+CMD+STATUS+VER+DATA(4)   */
+typedef enum {
+    CMD_PING             = 0x01,
+    CMD_GET_SENSOR_TABLE = 0x02,
+    CMD_SENSOR_TABLE     = 0x03,
+    CMD_GET_ALL_DATA     = 0x04,
+    CMD_ALL_DATA         = 0x05,
+    CMD_ACK              = 0x06,
+    CMD_NACK             = 0x07,
+    CMD_RESET            = 0x08,
+} eCmd;
 
-#define PROTOCOL_DATA_SIZE			4    /* fixed 4 bytes when present        */
-#define PROTOCOL_CRC_SIZE			2
-#define PROTOCOL_PREFIX_SIZE		3    /* SOF(2) + LEN(1)  */
-#define PROTOCOL_MAX_DATA_LEN		PROTOCOL_LEN_WITH_DATA - PROTOCOL_LEN_NO_DATA
+typedef enum {
+    STATUS_OK          = 0x00,
+    STATUS_ERROR       = 0x01,
+    STATUS_INVALID_CMD = 0x02,
+} eStatus;
 
-#define PROTOCOL_FRAME_NO_DATA		(PROTOCOL_PREFIX_SIZE + PROTOCOL_LEN_NO_DATA   + PROTOCOL_CRC_SIZE)  /* 10 */
-#define PROTOCOL_FRAME_WITH_DATA	(PROTOCOL_PREFIX_SIZE + PROTOCOL_LEN_WITH_DATA + PROTOCOL_CRC_SIZE)  /* 14 */
-#define PROTOCOL_FRAME_MAX			PROTOCOL_FRAME_WITH_DATA
+typedef enum {
+    SENSOR_TEMPERATURE = 0x01,
+    SENSOR_HUMIDITY    = 0x02,
+    SENSOR_PRESSURE    = 0x03,
+    SENSOR_ADC_RAW     = 0x04,
+    SENSOR_DIGITAL_IN  = 0x05,
+} eSensorType;
 
-#define PROTOCOL_ADDR_BROADCAST		0xFF
+typedef enum {
+    DTYPE_FLOAT  = 0x01,
+    DTYPE_INT32  = 0x02,
+    DTYPE_DOUBLE = 0x03,
+} eDataType;
 
-typedef enum{
-    CMD_PING             = 0x01,  /* master→slave: are you alive?          */
-    CMD_REGISTER         = 0x02,  /* slave→master: I just booted           */
-    CMD_GET_SENSOR_TABLE = 0x03,  /* master→slave: describe your sensors   */
-    CMD_SENSOR_TABLE     = 0x04,  /* slave→master: here is my sensor table */
-    CMD_GET_SENSOR_DATA  = 0x05,  /* master→slave: give me one reading     */
-    CMD_SENSOR_DATA      = 0x06,  /* slave→master: here is the reading     */
-    CMD_ACK              = 0x07,  /* any direction: acknowledged            */
-    CMD_NACK             = 0x08,  /* any direction: refused / error         */
-    CMD_SET_CONFIG       = 0x09,  /* master→slave: update slave config      */
-    CMD_RESET            = 0x0A,  /* master→slave: reboot yourself          */
-}eCommand;
+typedef struct {
+    uint8_t sensorId;
+    uint8_t sensorType;
+    uint8_t dataType;
+} SensorDesc_t;
 
-typedef enum{
-    STATUS_OK            = 0x00,
-    STATUS_ERROR         = 0x01,
-    STATUS_INVALID_CMD   = 0x02,
-    STATUS_CRC_ERROR     = 0x03,
-    STATUS_BUSY          = 0x04,
-}eStatus;
+typedef union {
+    float    f;
+    int32_t  i;
+    double   d;
+    uint8_t  bytes[8];
+} SensorReading_t;
 
-typedef struct{
-    uint8_t len;
-    uint8_t bytes[PROTOCOL_MAX_DATA_LEN]; // Data of many sensors
-}FrameData_t;
+typedef struct {
+    uint8_t addr;
+    uint8_t seq;
+    uint8_t cmd;
+    uint8_t status;
+    uint8_t version;
+    uint8_t payloadLen;
+    uint8_t payload[PROTO_MAX_PAYLOAD];
+} Frame_t;
 
-typedef struct{
-    uint8_t     addr;
-    uint8_t     seq;
-    uint8_t     cmd;
-    uint8_t     status;
-    uint8_t     version;
-    FrameData_t data;
-}Frame_t;
-
-typedef enum{
-    SENSOR_TEMPERATURE  = 0x01,
-    SENSOR_HUMIDITY     = 0x02,
-    SENSOR_PRESSURE     = 0x03,
-    SENSOR_ADC_RAW      = 0x04,
-    SENSOR_DIGITAL_IN   = 0x05,
-}eSensorType;
-
-typedef struct __attribute__((packed)) {
-    uint8_t  sensorId;
-    uint8_t  sensorType;
-    char     unit[6];
-    float    minVal;
-    float    maxVal;
-}SensorDesc_t;
+static inline uint8_t DataType_Size(eDataType dt){
+    return (dt == DTYPE_DOUBLE) ? 8U : 4U;
+}
 
 static inline uint16_t CRC16_Calc(const uint8_t *buf, uint16_t len){
     uint16_t crc = 0xFFFF;
@@ -112,52 +104,104 @@ static inline uint16_t CRC16_Calc(const uint8_t *buf, uint16_t len){
     return crc;
 }
 
-static inline uint8_t Frame_Build(uint8_t       *outBuf,
-                                   uint8_t        addr,
-                                   uint8_t        seq,
-                                   uint8_t        cmd,
-                                   uint8_t        status,
-                                   uint8_t        version,
-                                   const FrameData_t *data)   /* NULL = no data */
+static inline uint8_t Frame_Build(uint8_t       *out,
+                                   uint8_t        addr,  uint8_t seq,
+                                   uint8_t        cmd,   uint8_t status, uint8_t ver,
+                                   const uint8_t *payload, uint8_t payloadLen)
 {
-    bool    hasData = (data != NULL);
-    uint8_t lenField = hasData ? PROTOCOL_LEN_WITH_DATA : PROTOCOL_LEN_NO_DATA;
-
-    /* SOF */
-    outBuf[0] = PROTOCOL_SOF_0;
-    outBuf[1] = PROTOCOL_SOF_1;
-
-    /* LEN */
-    outBuf[2] = lenField;
-
-    /* ADDR .. VER */
-    outBuf[3] = addr;
-    outBuf[4] = seq;
-    outBuf[5] = cmd;
-    outBuf[6] = status;
-    outBuf[7] = version;
-
-    uint8_t crcUpTo = 8;    /* index of first CRC byte when no data */
-
-    if (hasData) {
-        memcpy(&outBuf[8], data->bytes, PROTOCOL_DATA_SIZE);
-        crcUpTo = 12;
-    }
-
-    /* CRC covers outBuf[0..crcUpTo-1] */
-    uint16_t crc       = CRC16_Calc(&outBuf[2], crcUpTo - 2);
-    outBuf[crcUpTo]     = (uint8_t)(crc >> 8);
-    outBuf[crcUpTo + 1] = (uint8_t)(crc & 0xFF);
-
-    return (uint8_t)(crcUpTo + PROTOCOL_CRC_SIZE);
+    out[0] = PROTO_SOF_0;
+    out[1] = PROTO_SOF_1;
+    out[2] = (uint8_t)(PROTO_LEN_MIN + payloadLen);
+    out[3] = addr;
+    out[4] = seq;
+    out[5] = cmd;
+    out[6] = status;
+    out[7] = ver;
+    if (payloadLen && payload)
+        memcpy(&out[8], payload, payloadLen);
+    uint8_t  ce  = (uint8_t)(PROTO_HEADER_SIZE + payloadLen);
+    uint16_t crc = CRC16_Calc(&out[3], ce);
+    out[ce]     = (uint8_t)(crc >> 8);
+    out[ce + 1] = (uint8_t)(crc & 0xFFU);
+    return (uint8_t)(ce + 2U);
 }
 
-static inline bool Frame_ValidCRC(const uint8_t *raw, uint8_t totalLen)
-{
-    if (totalLen < PROTOCOL_FRAME_NO_DATA) return false;
-    uint16_t calc = CRC16_Calc(&raw[2], totalLen - PROTOCOL_CRC_SIZE - PROTOCOL_SOF_SIZE);
-    uint16_t recv = (uint16_t)((raw[totalLen - 2] << 8) | raw[totalLen - 1]);
+static inline bool Frame_ValidCRC(const uint8_t *raw, uint8_t total){
+    if (total < PROTO_FRAME_MIN) return false;
+    uint16_t calc = CRC16_Calc(&raw[3], (uint16_t)(total - PROTO_PREFIX_SIZE - PROTO_CRC_SIZE));
+    uint16_t recv = (uint16_t)(((uint16_t)raw[total - 2U] << 8) | raw[total - 1U]);
     return (calc == recv);
+}
+
+static inline void Frame_Parse(const uint8_t *raw, uint8_t total, Frame_t *f){
+    f->addr = raw[3];
+    f->seq  = raw[4];
+    f->cmd = raw[5];
+    f->status = raw[6];
+    f->version = raw[7];
+    uint8_t pl = (uint8_t)(total - PROTO_PREFIX_SIZE - PROTO_LEN_MIN - PROTO_CRC_SIZE);
+    f->payloadLen = (pl > PROTO_MAX_PAYLOAD) ? PROTO_MAX_PAYLOAD : pl;
+    if (f->payloadLen){
+    	memcpy(f->payload, &raw[8], f->payloadLen);
+    	memset(f->payload + f->payloadLen, 0, PROTO_MAX_PAYLOAD - f->payloadLen);
+    }
+}
+
+static inline uint8_t Payload_PackTable(uint8_t            *buf,    uint8_t bufMax,
+                                         const SensorDesc_t *descs,  uint8_t count)
+{
+    if ((uint8_t)(1U + count * 3U) > bufMax) return 0U;
+    buf[0] = count;
+    for (uint8_t i = 0; i < count; i++) {
+        buf[1U + i * 3U]      = descs[i].sensorId;
+        buf[1U + i * 3U + 1U] = descs[i].sensorType;
+        buf[1U + i * 3U + 2U] = descs[i].dataType;
+    }
+    return (uint8_t)(1U + count * 3U);
+}
+
+static inline uint8_t Payload_UnpackTable(const uint8_t *payload, uint8_t payloadLen,
+                                           SensorDesc_t  *descs,   uint8_t descMax)
+{
+    if (payloadLen < 1U) return 0U;
+    uint8_t count = payload[0];
+    if (count > descMax) count = descMax;
+    for (uint8_t i = 0; i < count; i++) {
+        if ((uint8_t)(1U + i * 3U + 2U) >= payloadLen) break;
+        descs[i].sensorId   = payload[1U + i * 3U];
+        descs[i].sensorType = payload[1U + i * 3U + 1U];
+        descs[i].dataType   = payload[1U + i * 3U + 2U];
+    }
+    return count;
+}
+
+static inline bool Payload_PackReading(uint8_t *buf,    uint8_t *pos, uint8_t bufMax,
+                                        uint8_t  sensorId, eDataType dt,
+                                        SensorReading_t val)
+{
+    uint8_t sz = DataType_Size(dt);
+    if ((uint8_t)(*pos + 2U + sz) > bufMax) return false;
+    buf[(*pos)++] = sensorId;
+    buf[(*pos)++] = (uint8_t)dt;
+    memcpy(&buf[*pos], val.bytes, sz);
+    *pos = (uint8_t)(*pos + sz);
+    return true;
+}
+
+static inline bool Payload_UnpackReading(const uint8_t *payload, uint8_t payloadLen,
+                                          uint8_t       *pos,
+                                          uint8_t       *outId,  eDataType *outDt,
+                                          SensorReading_t *outVal)
+{
+    if ((uint8_t)(*pos + 2U) > payloadLen) return false;
+    *outId = payload[(*pos)++];
+    *outDt = (eDataType)payload[(*pos)++];
+    uint8_t sz = DataType_Size(*outDt);
+    if ((uint8_t)(*pos + sz) > payloadLen) return false;
+    memset(outVal->bytes, 0, 8);
+    memcpy(outVal->bytes, &payload[*pos], sz);
+    *pos = (uint8_t)(*pos + sz);
+    return true;
 }
 
 #endif /* INC_PROTOCOLDEFINITION_H_ */

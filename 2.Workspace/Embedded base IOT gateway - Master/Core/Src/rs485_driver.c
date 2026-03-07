@@ -1,35 +1,33 @@
 #include "rs485_driver.h"
 
-extern UART_HandleTypeDef huart2;
-
 QueueHandle_t xQueue_RS485_RxFrame = NULL;
-QueueHandle_t xQueue_RS485_TxFrame = NULL;
-TaskHandle_t  g_protocolTaskHandle = NULL;
+TaskHandle_t  g_protocolTaskHandle   = NULL;
+
+extern UART_HandleTypeDef huart2;
+extern TIM_HandleTypeDef  htim7;
+
+typedef enum { RX_STAGE_PREFIX = 0, RX_STAGE_REST } eRxStage;
 
 static eRxStage g_rxStage;
-static uint8_t  g_prefixBuf[PROTOCOL_PREFIX_SIZE];                    /* SOF(2)+LEN(1) */
-static uint8_t  g_restBuf[PROTOCOL_LEN_WITH_DATA + PROTOCOL_CRC_SIZE];   /* max 11 bytes  */
+static uint8_t  g_prefixBuf[PROTO_PREFIX_SIZE];                  /* SOF(2)+LEN(1)       */
+static uint8_t  g_restBuf[PROTO_LEN_MAX + PROTO_CRC_SIZE];    /* header+payload+CRC  */
 
 static void _RxStartPrefix(void){
     g_rxStage = RX_STAGE_PREFIX;
-    HAL_UART_Receive_DMA(&huart2, g_prefixBuf, PROTOCOL_PREFIX_SIZE);
+    HAL_UART_Receive_DMA(&huart2, g_prefixBuf, PROTO_PREFIX_SIZE);
 }
 
 static void _RxStartRest(uint8_t len){
     g_rxStage = RX_STAGE_REST;
-    HAL_UART_Receive_DMA(&huart2, g_restBuf, len + PROTOCOL_CRC_SIZE);
+    HAL_UART_Receive_DMA(&huart2, g_restBuf, (uint16_t)len + PROTO_CRC_SIZE);
 }
 
 void RS485_Driver_Init(void){
     xQueue_RS485_RxFrame = xQueueCreate(RS485_RX_FRAME_QUEUE_SIZE, sizeof(Frame_t));
-    xQueue_RS485_TxFrame = xQueueCreate(RS485_TX_QUEUE_SIZE,       sizeof(RS485TxReq_t));
     configASSERT(xQueue_RS485_RxFrame);
-    configASSERT(xQueue_RS485_TxFrame);
 
-    /* DE low = receive mode */
     HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
 
-    /* Start waiting for first frame prefix */
     _RxStartPrefix();
     return;
 }
@@ -38,15 +36,13 @@ void RS485_OnRxDmaComplete(void){
     BaseType_t xHigherPrioWoken = pdFALSE;
 
     if(g_rxStage == RX_STAGE_PREFIX){
-        if(g_prefixBuf[0] != PROTOCOL_SOF_0 ||
-            g_prefixBuf[1] != PROTOCOL_SOF_1){
+        if(g_prefixBuf[0] != PROTO_SOF_0 ||g_prefixBuf[1] != PROTO_SOF_1){
             _RxStartPrefix();
             return;
         }
 
-        uint8_t len = g_prefixBuf[2];  /* LEN field */
-
-        if(len != PROTOCOL_LEN_NO_DATA && len != PROTOCOL_LEN_WITH_DATA){
+        uint8_t len = g_prefixBuf[2];
+        if(len < PROTO_LEN_MIN  && len > PROTO_LEN_MAX){
             _RxStartPrefix();
             return;
         }
@@ -55,17 +51,17 @@ void RS485_OnRxDmaComplete(void){
         return;
     }
 
-    uint8_t len      = g_prefixBuf[2];
-    uint8_t totalLen = PROTOCOL_PREFIX_SIZE + len + PROTOCOL_CRC_SIZE;
+    uint8_t len = g_prefixBuf[2];
+    uint8_t totalLen = (uint8_t)(PROTO_PREFIX_SIZE + len + PROTO_CRC_SIZE);
 
-    if (totalLen > PROTOCOL_FRAME_MAX) {
+    if(totalLen < PROTO_LEN_MIN  && totalLen > PROTO_LEN_MAX){
         _RxStartPrefix();
         return;
     }
 
-    uint8_t raw[PROTOCOL_FRAME_MAX];
-    memcpy(raw, g_prefixBuf, PROTOCOL_PREFIX_SIZE);
-    memcpy(raw + PROTOCOL_PREFIX_SIZE, g_restBuf,  len + PROTOCOL_CRC_SIZE);
+    uint8_t raw[PROTO_FRAME_MAX];
+    memcpy(raw, g_prefixBuf, PROTO_PREFIX_SIZE);
+    memcpy(raw + PROTO_PREFIX_SIZE, g_restBuf, (size_t)(len + PROTO_CRC_SIZE));
 
     if(!Frame_ValidCRC(raw, totalLen)){
         _RxStartPrefix();
@@ -73,33 +69,9 @@ void RS485_OnRxDmaComplete(void){
     }
 
     Frame_t f;
-    f.addr    = raw[3];
-    f.seq     = raw[4];
-    f.cmd     = raw[5];
-    f.status  = raw[6];
-    f.version = raw[7];
+    Frame_Parse(raw, totalLen, &f);
 
-    uint8_t headerSizeAfterLenField = PROTOCOL_LEN_NO_DATA;
-    uint8_t dataLen = 0;
-
-    if(len > headerSizeAfterLenField){
-        dataLen = len - headerSizeAfterLenField;
-
-        if(dataLen > PROTOCOL_MAX_DATA_LEN){
-            _RxStartPrefix();
-            return;
-        }
-
-        memcpy(f.data.bytes, &raw[8], dataLen);
-    }
-
-    f.data.len = dataLen;
-
-    /* Push to Protocol_Task queue */
-    /* Note: Priority of this ISR >= configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY */
     xQueueSendFromISR(xQueue_RS485_RxFrame, &f, &xHigherPrioWoken);
-
-    /* Notify Protocol_Task directly – unblocks faster than queue alone */
     vTaskNotifyGiveFromISR(g_protocolTaskHandle, &xHigherPrioWoken);
 
     _RxStartPrefix();

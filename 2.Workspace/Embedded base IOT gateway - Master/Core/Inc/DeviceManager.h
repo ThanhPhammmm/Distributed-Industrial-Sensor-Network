@@ -7,25 +7,7 @@
 #include "Configuration.h"
 #include "semphr.h"
 
-typedef enum{
-    DEVMGR_STATE_IDLE     = 0,
-    DEVMGR_STATE_SCANNING = 1,
-    DEVMGR_STATE_RUNNING  = 2,
-}eDevMgrState;
-
-typedef enum{
-    SLAVE_UNKNOWN = 0,
-    SLAVE_ONLINE  = 1,
-    SLAVE_OFFLINE = 2,
-}eSlaveState;
-
-typedef struct{
-    uint8_t      addr;
-    eSlaveState  state;
-    uint8_t      configVersion;
-    uint8_t      sensorCount;
-    SensorDesc_t sensors[MAX_SENSORS_PER_SLAVE];
-} SlaveEntry_t;
+typedef enum { DM_IDLE = 0, DM_FETCHING = 1, DM_POLLING = 2 } eDmPhase;
 
 void DeviceManager_Init(void);
 void DeviceManager_Task(void *pvParams);

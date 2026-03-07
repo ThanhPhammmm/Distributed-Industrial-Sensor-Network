@@ -1,10 +1,17 @@
-06:36:39 **** Incremental Build of configuration Debug for project Embedded base IOT gateway - Master ****
+12:39:16 **** Incremental Build of configuration Debug for project Embedded base IOT gateway - Master ****
 make -j16 all 
+arm-none-eabi-gcc "../Core/Src/DeviceManager.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I"C:/Users/LENOVO/Documents/1.Personal/11.Embedded Projects/1.Embedded base IOT gateway/2.Workspace/Embedded base IOT gateway - Master/ThirdParty/FreeRTOS/portable/GCC/ARM_CM4F" -I../Core/Inc -I"C:/Users/LENOVO/Documents/1.Personal/11.Embedded Projects/1.Embedded base IOT gateway/2.Workspace/Embedded base IOT gateway - Master/ThirdParty/SEGGER/Config" -I"C:/Users/LENOVO/Documents/1.Personal/11.Embedded Projects/1.Embedded base IOT gateway/2.Workspace/Embedded base IOT gateway - Master/ThirdParty/SEGGER/OS" -I"C:/Users/LENOVO/Documents/1.Personal/11.Embedded Projects/1.Embedded base IOT gateway/2.Workspace/Embedded base IOT gateway - Master/ThirdParty/SEGGER/SEGGER" -I"C:/Users/LENOVO/Documents/1.Personal/11.Embedded Projects/1.Embedded base IOT gateway/2.Workspace/Embedded base IOT gateway - Master/ThirdParty/FreeRTOS" -I"C:/Users/LENOVO/Documents/1.Personal/11.Embedded Projects/1.Embedded base IOT gateway/2.Workspace/Embedded base IOT gateway - Master/ThirdParty/FreeRTOS/include" -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/DeviceManager.d" -MT"Core/Src/DeviceManager.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/DeviceManager.o"
+arm-none-eabi-gcc -o "Embedded base IOT gateway - Master.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\LENOVO\Documents\1.Personal\11.Embedded Projects\1.Embedded base IOT gateway\2.Workspace\Embedded base IOT gateway - Master\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Embedded base IOT gateway - Master.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Embedded base IOT gateway - Master.elf
+ 
 arm-none-eabi-size  Embedded\ base\ IOT\ gateway\ -\ Master.elf 
+arm-none-eabi-objdump -h -S Embedded\ base\ IOT\ gateway\ -\ Master.elf  > "Embedded base IOT gateway - Master.list"
    text	   data	    bss	    dec	    hex	filename
-  33388	     20	  85076	 118484	  1ced4	Embedded base IOT gateway - Master.elf
+  31836	     16	  81416	 113268	  1ba74	Embedded base IOT gateway - Master.elf
 Finished building: default.size.stdout
  
+Finished building: Embedded base IOT gateway - Master.list
+ 
 
-06:36:39 Build Finished. 0 errors, 0 warnings. (took 402ms)
+12:39:17 Build Finished. 0 errors, 0 warnings. (took 1s.512ms)
 

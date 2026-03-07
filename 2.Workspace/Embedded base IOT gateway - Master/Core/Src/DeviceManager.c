@@ -1,79 +1,53 @@
 #include "DeviceManager.h"
 
-static SlaveEntry_t      g_slaveTable[MAX_SLAVES];
-static uint8_t           g_slaveCount = 0U;
-static SemaphoreHandle_t g_mutex;
+typedef enum {
+    OP_NONE = 0,
+    OP_PING,
+    OP_GET_TABLE,
+    OP_GET_ALL_DATA,
+} ePendingOp;
 
-typedef enum{
-    OP_NONE             = 0,
-    OP_SCAN_PING,            /* initial scan: awaiting PING ACK              */
-    OP_SCAN_GET_TABLE,       /* initial scan: awaiting SENSOR_TABLE           */
-    OP_POLL_GET_DATA,        /* poll cycle: awaiting SENSOR_DATA              */
-}ePendingOp;
-
-typedef struct{
+typedef struct {
     ePendingOp op;
     uint8_t    addr;
-}PendingOp_t;
+    uint32_t   sentAtMs;
+} Pending_t;
 
-static eDevMgrState g_state = DEVMGR_STATE_IDLE;
-static PendingOp_t g_pending = { .op = OP_NONE };
-static uint8_t  g_scanAddr         = SLAVE_ADDR_MIN;
+static eDmPhase  g_state = DM_IDLE;
+static Pending_t g_pending = { .op = OP_NONE };
 
 static bool _handleResponse(const Frame_t *f){
-    if (g_pending.op == OP_NONE || f->addr != g_pending.addr) return false;
+    if (g_pending.op == OP_NONE) return false;
 
     switch (g_pending.op) {
     	case OP_NONE:
 
-	    case OP_SCAN_PING:
-			g_scanAddr++;
+	    case OP_PING:
 			break;
-	    case OP_SCAN_GET_TABLE:
+	    case OP_GET_TABLE:
 	    	break;
-	    case OP_POLL_GET_DATA:
+	    case OP_GET_ALL_DATA:
 	    	break;
     }
 	return 0;
 }
 
-static void _Advance(void){
-	switch(g_state){
-		case DEVMGR_STATE_IDLE:
-			break;
-
-		case DEVMGR_STATE_SCANNING:
-			break;
-
-		case DEVMGR_STATE_RUNNING:
-			break;
-	}
-}
-
 void DeviceManager_Init(void){
-    memset(g_slaveTable, 0, sizeof(g_slaveTable));
-    g_slaveCount = 0U;
-    g_mutex      = xSemaphoreCreateMutex();
-    configASSERT(g_mutex);
+	g_state = DM_IDLE;
+	g_pending.op = OP_NONE;
 }
+
 
 void DeviceManager_Task(void *pvParams){
     (void)pvParams;
     Frame_t frame;
 
     while(1){
-        const bool gotFrame = (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_TASK_LOOP_MS)) == pdTRUE);
-
-        xSemaphoreTake(g_mutex, portMAX_DELAY);
-
+        const bool gotFrame = (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE);
         if(gotFrame){
         	if(!_handleResponse(&frame)){
 
         	}
         }
-        if(g_pending.op == OP_NONE) _Advance();
-
-        xSemaphoreGive(g_mutex);
-
     }
 }

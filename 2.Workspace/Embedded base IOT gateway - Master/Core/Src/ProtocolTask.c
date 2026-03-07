@@ -4,19 +4,20 @@
 QueueHandle_t xQueue_ValidFrame = NULL;
 
 typedef struct{
+	bool    waiting;
     uint8_t     txSeq;
 }SlaveProtoState_t;
 
-static SlaveProtoState_t g_state[MAX_SLAVES];
+static SlaveProtoState_t g_state[PROTO_ADDR_MAX];
 
 void Protocol_Init(void){
-    xQueue_ValidFrame = xQueueCreate(PROTOCOL_VALID_FRAME_QUEUE_SIZE, sizeof(Frame_t));
+    xQueue_ValidFrame = xQueueCreate(PROTO_VALID_FRAME_QUEUE_SIZE, sizeof(Frame_t));
     configASSERT(xQueue_ValidFrame);
     memset(g_state, 0, sizeof(g_state));
 }
 
 static SlaveProtoState_t *_findSlaveByName(uint8_t addr){
-    if(addr < SLAVE_ADDR_MIN || addr > SLAVE_ADDR_MAX) return NULL;
+    if(addr < PROTO_ADDR_MIN || addr > PROTO_ADDR_MAX) return NULL;
     return &g_state[addr - 1U];
 }
 
