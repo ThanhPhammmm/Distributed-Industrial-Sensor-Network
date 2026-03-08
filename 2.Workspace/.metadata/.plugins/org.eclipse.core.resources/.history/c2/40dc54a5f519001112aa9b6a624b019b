@@ -1,0 +1,155 @@
+#include "slave_protocol.h"
+
+#define INTER_FRAME_GAP_MS   2U
+
+extern UART_HandleTypeDef huart2;
+
+typedef enum { RX_STAGE_PREFIX = 0, RX_STAGE_REST } eRxStage;
+
+static eRxStage g_rxStage;
+static uint8_t  g_pfx[PROTO_PREFIX_SIZE];
+static uint8_t  g_rest[PROTO_LEN_MAX + PROTO_CRC_SIZE];
+
+static volatile bool g_frameReady = false;
+static Frame_t       g_frame;
+static uint8_t       g_myAddr;
+static uint8_t       g_seq = 0U;
+
+static uint8_t  g_txBuf[PROTO_FRAME_MAX];
+
+static void _ArmPrefix(void){
+    g_rxStage = RX_STAGE_PREFIX;
+    HAL_UART_Receive_DMA(&huart2, g_pfx, PROTO_PREFIX_SIZE);
+}
+
+static void _ArmRest(uint8_t len){
+    g_rxStage = RX_STAGE_REST;
+    HAL_UART_Receive_DMA(&huart2, g_rest, (uint16_t)(len + PROTO_CRC_SIZE));
+}
+
+static void _Send(uint8_t cmd, uint8_t status, uint8_t ver, const uint8_t *payload, uint8_t payloadLen)
+{
+    uint8_t n = Frame_Build(g_txBuf, g_myAddr, g_seq++, cmd, status, ver, payload, payloadLen);
+
+    /* Abort DMA RX → UART is READY */
+    HAL_UART_AbortReceive(&huart2);
+
+    HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_SET);
+    HAL_UART_Transmit_DMA(&huart2, g_txBuf, n);
+}
+
+/* ── Command handlers ────────────────────────────────────────────── */
+static void _OnPing(void)
+{
+    uint8_t cnt = Slave_Sensors_GetCount();
+    _Send(CMD_ACK, STATUS_OK, SlaveConfig_GetVersion(), &cnt, 1U);
+}
+
+static void _OnGetSensorTable(void)
+{
+    uint8_t buf[PROTO_MAX_PAYLOAD];
+    uint8_t len = Slave_Sensors_PackTable(buf, PROTO_MAX_PAYLOAD);
+    if (len == 0U) { _Send(CMD_NACK, STATUS_ERROR, 0U, NULL, 0U); return; }
+    _Send(CMD_SENSOR_TABLE, STATUS_OK, 0U, buf, len);
+}
+
+static void _OnGetAllData(void)
+{
+    uint8_t buf[PROTO_MAX_PAYLOAD];
+    uint8_t len = Slave_Sensors_PackAllData(buf, PROTO_MAX_PAYLOAD);
+    if (len == 0U) { _Send(CMD_NACK, STATUS_ERROR, 0U, NULL, 0U); return; }
+    /* 2ms: master cần thời gian re-arm DMA RX sau khi gửi lệnh xong */
+    HAL_Delay(INTER_FRAME_GAP_MS);
+    _Send(CMD_ALL_DATA, STATUS_OK, 0U, buf, len);
+}
+
+void Slave_Protocol_OnRxDmaComplete(void){
+    if (g_rxStage == RX_STAGE_PREFIX) {
+        if (g_pfx[0] != PROTO_SOF_0 || g_pfx[1] != PROTO_SOF_1) {
+            _ArmPrefix(); return;
+        }
+        uint8_t len = g_pfx[2];
+        if (len < PROTO_LEN_MIN || len > PROTO_LEN_MAX) {
+            _ArmPrefix(); return;
+        }
+        _ArmRest(len);
+        return;
+    }
+
+    uint8_t len   = g_pfx[2];
+    uint8_t total = (uint8_t)(PROTO_PREFIX_SIZE + len + PROTO_CRC_SIZE);
+
+    uint8_t raw[PROTO_FRAME_MAX];
+    memcpy(raw, g_pfx,  PROTO_PREFIX_SIZE);
+    memcpy(raw + PROTO_PREFIX_SIZE, g_rest, (size_t)(len + PROTO_CRC_SIZE));
+
+    if (!Frame_ValidCRC(raw, total)) { _ArmPrefix(); return; }
+
+    uint8_t addr = raw[3];
+    if (addr != g_myAddr && addr != PROTO_ADDR_BROADCAST) {
+        _ArmPrefix(); return;
+    }
+
+    Frame_Parse(raw, total, &g_frame);
+    g_frameReady = true;
+}
+
+void Slave_Protocol_Init(uint8_t myAddr){
+    g_myAddr     = myAddr;
+    g_frameReady = false;
+    _ArmPrefix();
+}
+
+void Slave_Protocol_Process(void){
+    if (!g_frameReady) return;
+    g_frameReady = false;
+
+    if (g_frame.cmd == CMD_ACK || g_frame.cmd == CMD_NACK) {
+        _ArmPrefix(); return;
+    }
+
+    switch (g_frame.cmd) {
+		case CMD_PING:             _OnPing();           break;
+		case CMD_GET_SENSOR_TABLE: _OnGetSensorTable(); break;
+		case CMD_GET_ALL_DATA:     _OnGetAllData();     break;
+		case CMD_RESET:
+			_Send(CMD_ACK, STATUS_OK, 0U, NULL, 0U);
+			HAL_Delay(10);
+			NVIC_SystemReset();
+			break;
+		default:
+			_Send(CMD_NACK, STATUS_INVALID_CMD, 0U, NULL, 0U);
+			break;
+    }
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+    if (huart->Instance == USART2)
+        Slave_Protocol_OnRxDmaComplete();
+}
+
+void Slave_Protocol_OnTxDmaComplete(void){
+    __HAL_UART_ENABLE_IT(&huart2, UART_IT_TC);
+}
+
+void Slave_Protocol_OnTxComplete(void){
+    __HAL_UART_DISABLE_IT(&huart2, UART_IT_TC);
+    __HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_TC);
+    HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
+    _ArmPrefix();
+}
+
+void USART2_IRQHandler(void)
+{
+    HAL_UART_IRQHandler(&huart2);
+    if (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC) && __HAL_UART_GET_IT_SOURCE(&huart2, UART_IT_TC)){
+        Slave_Protocol_OnTxComplete();
+    }
+
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
+    if (huart->Instance == USART2)
+        Slave_Protocol_OnTxDmaComplete();
+}
+

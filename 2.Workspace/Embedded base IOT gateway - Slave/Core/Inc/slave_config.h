@@ -1,0 +1,11 @@
+#ifndef INC_SLAVE_CONFIG_H_
+#define INC_SLAVE_CONFIG_H_
+
+#define SLAVE_ADDRESS           0x01U
+#define SLAVE_SENSOR_READ_MS    200U
+#define SLAVE_SENSOR_TABLE_HASH 0x01U
+
+#define RS485_DE_PORT    GPIOA
+#define RS485_DE_PIN     GPIO_PIN_8
+
+#endif /* INC_SLAVE_CONFIG_H_ */

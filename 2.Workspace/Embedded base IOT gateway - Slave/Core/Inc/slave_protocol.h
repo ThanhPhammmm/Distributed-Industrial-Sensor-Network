@@ -1,0 +1,14 @@
+#ifndef INC_SLAVE_PROTOCOL_H_
+#define INC_SLAVE_PROTOCOL_H_
+
+#include "ProtocolDefinition.h"
+#include "stm32f1xx_hal.h"
+#include "slave_config.h"
+#include "slave_sensor.h"
+#include "slave_config_store.h"
+
+void Slave_Protocol_Init(uint8_t myAddr);
+void Slave_Protocol_Process(void);
+
+
+#endif /* INC_SLAVE_PROTOCOL_H_ */

@@ -58,6 +58,7 @@
 extern TIM_HandleTypeDef htim7;
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern DMA_HandleTypeDef hdma_usart2_tx;
+extern UART_HandleTypeDef huart2;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
@@ -185,7 +186,30 @@ void DMA1_Stream6_IRQHandler(void)
   /* USER CODE END DMA1_Stream6_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_usart2_tx);
   /* USER CODE BEGIN DMA1_Stream6_IRQn 1 */
+  // Kiểm tra flag nào đang set
+  if (__HAL_DMA_GET_FLAG(&hdma_usart2_tx, DMA_FLAG_TCIF2_6))
+  	while(1);   // LED ON = TC fire
+
+  if (__HAL_DMA_GET_FLAG(&hdma_usart2_tx, DMA_FLAG_TEIF2_6))
+      while(1);   // Kẹt ở đây = Transfer Error
+
+  if (__HAL_DMA_GET_FLAG(&hdma_usart2_tx, DMA_FLAG_FEIF2_6))
+      while(1);   // Kẹt ở đây = FIFO Error
   /* USER CODE END DMA1_Stream6_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART2_IRQn 0 */
+
+  /* USER CODE END USART2_IRQn 0 */
+  HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
+
+  /* USER CODE END USART2_IRQn 1 */
 }
 
 /**

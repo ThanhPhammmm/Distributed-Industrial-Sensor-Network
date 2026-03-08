@@ -3,6 +3,8 @@
 	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<item key="replaceBarOpen" value="false"/>
 	<list key="searchhistory">
+		<item value="TC"/>
+		<item value="RS485_Send"/>
 		<item value="g_state"/>
 		<item value="UART"/>
 		<item value="configUSE"/>

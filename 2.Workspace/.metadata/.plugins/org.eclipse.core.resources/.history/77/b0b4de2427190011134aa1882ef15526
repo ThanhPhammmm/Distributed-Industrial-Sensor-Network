@@ -1,0 +1,16 @@
+#ifndef INC_PROTOCOLTASK_H_
+#define INC_PROTOCOLTASK_H_
+
+#include <stdint.h>
+#include <stdbool.h>
+#include "FreeRTOS.h"
+#include "queue.h"
+#include "ProtocolDefinition.h"
+#include "Configuration.h"
+
+extern QueueHandle_t xQueue_ValidFrame;  /* Protocol → DeviceManager */
+
+void Protocol_Init(void);
+void Protocol_Task(void *pvParams);
+
+#endif /* INC_PROTOCOLTASK_H_ */

@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <FreeRTOS.h>
+#include <semphr.h>
 #include "ProtocolDefinition.h"
 #include "Configuration.h"
 
@@ -36,5 +38,16 @@ typedef struct {
 } SlaveSlot_t;
 
 void    Registry_Init(void);
+
+SlaveSlot_t Registry_GetSlot(uint8_t slotIdx);
+void Registry_SetState(uint8_t idx, eSlaveRegState s);
+void Registry_SetSensorTable(uint8_t idx, uint8_t count, const SensorDesc_t *d);
+void Registry_SetConfigVersion(uint8_t idx, uint8_t ver);
+void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, eDataType dt, SensorReading_t reading);
+void Registry_SetLastSeen(uint8_t idx, uint32_t ms);
+void Registry_SetMissedPolls(uint8_t idx, uint8_t n);
+void Registry_IncrementPoll(uint8_t idx);
+void Registry_SetRegistered(uint8_t idx, bool value);
+void Registry_IncrementNack(uint8_t idx);
 
 #endif /* INC_SLAVEREGISTRY_H_ */

@@ -1,0 +1,11 @@
+#ifndef INC_SLAVE_PROTOCOL_H_
+#define INC_SLAVE_PROTOCOL_H_
+
+#include <stdint.h>
+#include "ProtocolDefinition.h"
+
+void Slave_Protocol_Init(uint8_t myAddr);
+void Slave_Protocol_Process(void);         /* main loop        */
+
+
+#endif /* INC_SLAVE_PROTOCOL_H_ */

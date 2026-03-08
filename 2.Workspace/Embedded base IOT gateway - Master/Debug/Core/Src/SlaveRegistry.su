@@ -1,0 +1,11 @@
+../Core/Src/SlaveRegistry.c:7:6:Registry_Init	16	static,ignoring_inline_asm
+../Core/Src/SlaveRegistry.c:17:6:Registry_SetState	16	static
+../Core/Src/SlaveRegistry.c:24:13:Registry_GetSlot	136	static
+../Core/Src/SlaveRegistry.c:34:6:Registry_SetConfigVersion	16	static
+../Core/Src/SlaveRegistry.c:41:6:Registry_SetSensorTable	16	static
+../Core/Src/SlaveRegistry.c:51:6:Registry_UpdateReading	24	static
+../Core/Src/SlaveRegistry.c:66:6:Registry_SetLastSeen	16	static
+../Core/Src/SlaveRegistry.c:73:6:Registry_SetMissedPolls	16	static
+../Core/Src/SlaveRegistry.c:80:6:Registry_IncrementPoll	16	static
+../Core/Src/SlaveRegistry.c:87:6:Registry_SetRegistered	16	static
+../Core/Src/SlaveRegistry.c:94:6:Registry_IncrementNack	16	static
