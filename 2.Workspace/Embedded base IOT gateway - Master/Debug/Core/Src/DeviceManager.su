@@ -4,9 +4,11 @@
 ../Core/Src/DeviceManager.c:32:13:_TimedOut	8	static
 ../Core/Src/DeviceManager.c:36:13:_Send	120	static
 ../Core/Src/DeviceManager.c:44:13:_SetPend	16	static
-../Core/Src/DeviceManager.c:49:13:_Fetch	128	static
-../Core/Src/DeviceManager.c:66:13:_PollBuild	136	static
-../Core/Src/DeviceManager.c:80:13:_Poll	16	static
-../Core/Src/DeviceManager.c:91:13:_handleResponse	192	static
-../Core/Src/DeviceManager.c:197:6:DeviceManager_Init	4	static
-../Core/Src/DeviceManager.c:203:6:DeviceManager_Task	120	static
+../Core/Src/DeviceManager.c:49:13:_GoOffline	16	static
+../Core/Src/DeviceManager.c:53:13:_Fetch	128	static
+../Core/Src/DeviceManager.c:70:13:_PollBuild	136	static
+../Core/Src/DeviceManager.c:84:13:_Poll	16	static
+../Core/Src/DeviceManager.c:95:13:_handleResponse	192	static
+../Core/Src/DeviceManager.c:201:6:DeviceManager_Init	4	static
+../Core/Src/DeviceManager.c:206:10:DeviceManager_GetState	4	static
+../Core/Src/DeviceManager.c:208:6:DeviceManager_Task	128	static

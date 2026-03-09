@@ -22,8 +22,22 @@
 
 #define PRIO_PROTOCOL   6
 #define PRIO_DEVMGR     5
+#define PRIO_LCD        4
+#define PRIO_BUTTON     3
 
-#define STACK_PROTOCOL  512U
-#define STACK_DEVMGR    512U
+#define STACK_PROTOCOL  1024U
+#define STACK_DEVMGR    1024U
+#define STACK_LCD       1024U
+#define STACK_BUTTON    256U
+
+#define LCD_I2C_ADDR     0x27U
+#define LCD_COLS         16U
+#define LCD_ROWS         2U
+#define LCD_REFRESH_MS   200U
+
+#define BTN_POLL_MS        10U
+#define BTN_DEBOUNCE_MS    30U
+#define BTN_LONG_PRESS_MS  800U
+#define BTN_QUEUE_SIZE     8U
 
 #endif /* INC_CONFIGURATION_H_ */

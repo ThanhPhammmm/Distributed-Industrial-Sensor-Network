@@ -9,3 +9,8 @@
 ../Core/Src/SlaveRegistry.c:80:6:Registry_IncrementPoll	2
 ../Core/Src/SlaveRegistry.c:87:6:Registry_SetRegistered	2
 ../Core/Src/SlaveRegistry.c:94:6:Registry_IncrementNack	2
+../Core/Src/SlaveRegistry.c:101:9:Registry_GetRegisteredCount	3
+../Core/Src/SlaveRegistry.c:110:9:Registry_CountByState	3
+../Core/Src/SlaveRegistry.c:119:6:Registry_IsRegistered	2
+../Core/Src/SlaveRegistry.c:127:6:Registry_Toggle	3
+../Core/Src/SlaveRegistry.c:144:6:Registry_ResetForRun	3

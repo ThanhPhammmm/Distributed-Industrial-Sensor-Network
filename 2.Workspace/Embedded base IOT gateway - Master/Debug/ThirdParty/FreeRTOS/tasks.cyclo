@@ -29,7 +29,7 @@
 ../ThirdParty/FreeRTOS/tasks.c:4521:18:xTaskGetIdleTaskHandleForCore	3
 ../ThirdParty/FreeRTOS/tasks.c:4588:12:xTaskCatchUpTicks	2
 ../ThirdParty/FreeRTOS/tasks.c:4712:12:xTaskIncrementTick	13
-../ThirdParty/FreeRTOS/tasks.c:5095:10:vTaskSwitchContext	4
+../ThirdParty/FreeRTOS/tasks.c:5095:10:vTaskSwitchContext	8
 ../ThirdParty/FreeRTOS/tasks.c:5282:6:vTaskPlaceOnEventList	2
 ../ThirdParty/FreeRTOS/tasks.c:5311:6:vTaskPlaceOnUnorderedEventList	3
 ../ThirdParty/FreeRTOS/tasks.c:5380:12:xTaskRemoveFromEventList	6

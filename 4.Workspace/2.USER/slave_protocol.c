@@ -117,7 +117,11 @@ static void _OnGetAllData(void)
 {
     uint8_t buf[PROTO_MAX_PAYLOAD];
     uint8_t len = Slave_Sensors_PackAllData(buf, PROTO_MAX_PAYLOAD);
-    if (len == 0U) { _Send(CMD_NACK, STATUS_ERROR, 0U, NULL, 0U); return; }
+    if (len == 0) { 
+			_Send(CMD_NACK, STATUS_ERROR, 0U, NULL, 0U); 
+			return; 
+		}
+		
     delay_ms(INTER_FRAME_GAP_MS);
     _Send(CMD_ALL_DATA, STATUS_OK, 0U, buf, len);
 
@@ -182,7 +186,7 @@ void Slave_Protocol_OnRxDmaComplete(void)
     if (!Frame_ValidCRC(raw, total)) { _ArmPrefix(); return; }
 
     uint8_t addr = raw[3];
-    if (addr != g_myAddr && addr != PROTO_ADDR_BROADCAST) {
+    if (addr != g_myAddr) {
         _ArmPrefix(); return;
     }
 

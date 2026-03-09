@@ -49,5 +49,10 @@ void Registry_SetMissedPolls(uint8_t idx, uint8_t n);
 void Registry_IncrementPoll(uint8_t idx);
 void Registry_SetRegistered(uint8_t idx, bool value);
 void Registry_IncrementNack(uint8_t idx);
+uint8_t Registry_GetRegisteredCount(void);
+uint8_t Registry_CountByState(eSlaveRegState s);
+bool Registry_IsRegistered(uint8_t idx);
+bool Registry_Toggle(uint8_t idx);
+void Registry_ResetForRun(void);
 
 #endif /* INC_SLAVEREGISTRY_H_ */

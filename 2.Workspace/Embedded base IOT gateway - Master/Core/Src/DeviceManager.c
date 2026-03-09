@@ -30,7 +30,7 @@ static Pending_t g_pending = { .op = OP_NONE };
 static uint8_t   g_fetchSlot = 0;
 
 static bool _TimedOut(void){
-    return (g_pending.op != OP_NONE) && ((HAL_GetTick() - g_pending.sentAtMs) > PROTO_TIMEOUT_MS);
+    return (g_pending.op != OP_NONE) && ((xTaskGetTickCount() - g_pending.sentAtMs) > PROTO_TIMEOUT_MS);
 }
 
 static void _Send(uint8_t addr, uint8_t cmd){
@@ -46,10 +46,14 @@ static void _SetPend(ePendingOp op, uint8_t addr){
 	g_pending.addr = addr;
 }
 
+static void _GoOffline(uint8_t slotIdx){
+    Registry_SetState(slotIdx, SREG_OFFLINE);
+}
+
 static void _Fetch(void){
     while (g_fetchSlot < MAX_SLAVE_SLOTS) {
         SlaveSlot_t s = Registry_GetSlot(g_fetchSlot);
-        if (s.registered == 1 || s.state >= SREG_READY) {
+        if (!s.registered || s.state >= SREG_READY) {
             g_fetchSlot++;
             continue;
         }
@@ -59,7 +63,7 @@ static void _Fetch(void){
     }
     /* All registered slots handled – begin polling */
     g_state      = DM_POLLING;
-    g_lastPollMs = HAL_GetTick();
+    g_lastPollMs = xTaskGetTickCount();
     g_pollActive = false;
 }
 
@@ -80,7 +84,7 @@ static void _PollBuild(void){
 static void _Poll(void){
     if (g_pollIdx >= g_pollCount) {
         g_pollActive = false;
-        g_lastPollMs = HAL_GetTick();
+        g_lastPollMs = xTaskGetTickCount();
         return;
     }
     PollEntry_t *e = &g_pollList[g_pollIdx++];
@@ -100,7 +104,7 @@ static bool _handleResponse(const Frame_t *f){
 	            SlaveSlot_t snap    = Registry_GetSlot(g_pending.addr);
 
 	            Registry_SetState(g_pending.addr, SREG_FETCHING);
-	            Registry_SetRegistered(g_pending.addr, true);
+	            //Registry_SetRegistered(g_pending.addr, true);
 	            bool tableValid = (snap.sensorCount > 0U) && (snap.configVersion == pingVer);
 
 	            if (tableValid) {
@@ -119,11 +123,11 @@ static bool _handleResponse(const Frame_t *f){
 	                _SetPend(OP_GET_TABLE, g_pending.addr);
 	                _Send(f->addr, CMD_GET_SENSOR_TABLE);
 	            }
-
-	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
-	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
-	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
-	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+//
+//	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+//	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+//	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+//	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 
 	            return true;
 	        }
@@ -140,11 +144,11 @@ static bool _handleResponse(const Frame_t *f){
 				Registry_SetSensorTable(g_pending.addr, count, descs);
 				g_pending.op = OP_NONE;
 				g_fetchSlot++;
-
-			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
-			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
-			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
-			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+//
+//			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+//			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+//			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+//			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 
 				return true;
 			}
@@ -170,16 +174,16 @@ static bool _handleResponse(const Frame_t *f){
 	                Registry_UpdateReading(g_pending.addr, sid, dt, val);
 	            }
 
-	            Registry_SetLastSeen(g_pending.addr, HAL_GetTick());
+	            Registry_SetLastSeen(g_pending.addr, xTaskGetTickCount());
 	            Registry_SetMissedPolls(g_pending.addr, 0U);
 	            Registry_SetState(g_pending.addr, SREG_ONLINE);
 	            Registry_IncrementPoll(g_pending.addr);
 	            g_pending.op = OP_NONE;
-
-	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
-	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
-	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
-	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+//
+//	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+//	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+//	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+//	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 
 	            return true;
 	        }
@@ -195,21 +199,50 @@ static bool _handleResponse(const Frame_t *f){
 }
 
 void DeviceManager_Init(void){
-	//g_state = DM_IDLE;
-	g_state = DM_FETCHING;
+	g_state = DM_IDLE;
 	g_pending.op = OP_NONE;
 }
+
+eDmPhase DeviceManager_GetState(void){ return g_state; }
 
 void DeviceManager_Task(void *pvParams){
     (void)pvParams;
     Frame_t frame;
+    eSysState prevSys = SYS_IDLE;
 
     while(1){
-        const bool gotFrame = (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE);
-        if(gotFrame){
-        	if(!_handleResponse(&frame)){
+        eSysState sys = SysState_Get();
 
-        	}
+        if (sys != prevSys) {
+            if (sys == SYS_RUN) {
+                Registry_ResetForRun();
+                g_state      = DM_FETCHING;
+                g_fetchSlot  = 0;
+                g_pending.op    = OP_NONE;
+                g_pollActive = false;
+            }
+            else {
+            	g_state   = DM_IDLE;
+                g_pending.op = OP_NONE;
+                while (xQueueReceive(xQueue_ValidFrame, &frame, 0) == pdTRUE) {}
+            }
+            prevSys = sys;
+        }
+
+        if (sys != SYS_RUN) {
+            vTaskDelay(pdMS_TO_TICKS(DEVMGR_LOOP_MS));
+            continue;
+        }
+
+        const bool gotFrame = (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE);
+        if (gotFrame) {
+            if (frame.cmd == 0xFFU) {
+                _GoOffline(g_pending.addr);
+                if (g_state == DM_FETCHING) g_fetchSlot++;
+                g_pending.op = OP_NONE;
+            } else {
+            	_handleResponse(&frame);
+            }
         }
 
         if(g_pending.op == OP_NONE){
@@ -220,7 +253,7 @@ void DeviceManager_Task(void *pvParams){
 				if (g_pollActive) {
 					_Poll();
 				}
-				else if ((HAL_GetTick() - g_lastPollMs) >= DEVMGR_POLL_INTERVAL_MS) {
+				else if ((xTaskGetTickCount() - g_lastPollMs) >= DEVMGR_POLL_INTERVAL_MS) {
 					_PollBuild();
 					_Poll();
 				}
