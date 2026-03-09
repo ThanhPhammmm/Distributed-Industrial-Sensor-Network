@@ -1,0 +1,4 @@
+../Core/Inc/ProtocolDefinition.h:91:23:DataType_Size	16	static
+../Core/Src/slave_sensor.c:41:9:Slave_Sensors_GetCount	4	static
+../Core/Src/slave_sensor.c:43:9:Slave_Sensors_PackTable	24	static
+../Core/Src/slave_sensor.c:54:9:Slave_Sensors_PackAllData	32	static

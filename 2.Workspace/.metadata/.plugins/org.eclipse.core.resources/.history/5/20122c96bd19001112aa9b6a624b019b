@@ -1,0 +1,131 @@
+#include "DeviceManager.h"
+
+typedef enum {
+    OP_NONE = 0,
+    OP_PING,
+    OP_GET_TABLE,
+    OP_GET_ALL_DATA,
+} ePendingOp;
+
+typedef struct {
+    ePendingOp op;
+    uint8_t    addr;
+} Pending_t;
+
+static eDmPhase  g_state = DM_IDLE;
+static Pending_t g_pending = { .op = OP_NONE };
+static uint8_t   g_fetchSlot = 0;
+
+static void _Send(uint8_t addr, uint8_t cmd){
+    TxCmd_t tx;
+    memset(&tx, 0, sizeof(tx));
+    tx.addr = addr;
+    tx.cmd  = cmd;
+    xQueueSend(xQueue_TxCmd, &tx, pdMS_TO_TICKS(20));
+}
+
+static void _SetPend(ePendingOp op, uint8_t addr){
+	g_pending.op = op;
+	g_pending.addr = addr;
+}
+
+static void _Fetch(void){
+    while (g_fetchSlot < MAX_SLAVE_SLOTS) {
+        SlaveSlot_t s = Registry_GetSlot(g_fetchSlot);
+        if (s.registered || s.state >= SREG_READY) {
+            g_fetchSlot++;
+            continue;
+        }
+        _SetPend(OP_PING, g_fetchSlot);
+        _Send(s.addr, CMD_PING);
+        return;
+    }
+    /* All registered slots handled – begin polling */
+    g_state = DM_POLLING;
+}
+
+static bool _handleResponse(const Frame_t *f){
+    if (g_pending.op == OP_NONE) return false;
+
+    switch (g_pending.op) {
+    	case OP_NONE:
+	    case OP_PING:
+	    	if (f->cmd == CMD_ACK && f->payloadLen >= 1U) {
+	            uint8_t     pingVer = f->version;
+	            uint8_t     nSens   = f->payload[0];
+	            SlaveSlot_t snap    = Registry_GetSlot(g_pending.addr);
+
+	            Registry_SetState(g_pending.addr, SREG_FETCHING);
+
+	            bool tableValid = (snap.sensorCount > 0U) && (snap.configVersion == pingVer);
+
+	            if (tableValid) {
+	                Registry_SetState(g_pending.addr, SREG_READY);
+	                g_pending.op = OP_NONE;
+	                g_fetchSlot++;
+	            }
+	            else if (nSens == 0U) {
+	                Registry_SetConfigVersion(g_pending.addr, pingVer);
+	                Registry_SetSensorTable(g_pending.addr, 0U, NULL);
+	                g_pending.op = OP_NONE;
+	                g_fetchSlot++;
+	            }
+	            else {
+	                Registry_SetConfigVersion(g_pending.addr, pingVer);
+	                _SetPend(OP_GET_TABLE, g_pending.addr);
+	                _Send(f->addr, CMD_GET_SENSOR_TABLE);
+	            }
+	            return true;
+	        }
+	        /* Ping failed */
+	        Registry_SetState(g_pending.addr, SREG_ERROR);
+	        g_pending.op = OP_NONE;
+	        g_fetchSlot++;
+	        return true;
+		case OP_GET_TABLE:
+			if (f->cmd == CMD_SENSOR_TABLE && f->payloadLen >= 1U) {
+				SensorDesc_t descs[MAX_SENSORS_PER_SLAVE];
+				uint8_t count = Payload_UnpackTable(f->payload, f->payloadLen, descs, MAX_SENSORS_PER_SLAVE);
+				Registry_SetSensorTable(g_pending.addr, count, descs);
+				g_pending.op = OP_NONE;
+				g_fetchSlot++;
+				return true;
+			}
+			if (f->cmd == CMD_NACK || f->cmd == 0xFFU) {
+				Registry_SetState(g_pending.slotIdx, SREG_ERROR);
+				g_pending.op = OP_NONE;
+				g_fetchSlot++;
+				return true;
+			}
+			break;
+	    case OP_GET_ALL_DATA:
+	    	break;
+    }
+	return 0;
+}
+
+void DeviceManager_Init(void){
+	//g_state = DM_IDLE;
+	g_state = DM_FETCHING;
+	g_pending.op = OP_NONE;
+}
+
+void DeviceManager_Task(void *pvParams){
+    (void)pvParams;
+    Frame_t frame;
+
+    while(1){
+        const bool gotFrame = (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE);
+        if(gotFrame){
+        	if(!_handleResponse(&frame)){
+
+        	}
+        }
+
+        if(g_pending.op == OP_NONE){
+        	if(g_state == DM_FETCHING){
+        		_Fetch();
+        	}
+        }
+    }
+}

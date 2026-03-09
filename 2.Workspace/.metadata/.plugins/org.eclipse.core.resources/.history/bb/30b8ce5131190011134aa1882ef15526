@@ -1,0 +1,138 @@
+#include "rs485_driver.h"
+
+QueueHandle_t xQueue_RS485_RxFrame = NULL;
+QueueHandle_t xQueue_RS485_TxFrame = NULL;
+TaskHandle_t  g_protocolTaskHandle   = NULL;
+
+extern UART_HandleTypeDef huart2;
+extern TIM_HandleTypeDef  htim7;
+
+typedef enum { RX_STAGE_PREFIX = 0, RX_STAGE_REST } eRxStage;
+
+static eRxStage g_rxStage;
+static uint8_t  g_prefixBuf[PROTO_PREFIX_SIZE];                  /* SOF(2)+LEN(1)       */
+static uint8_t  g_restBuf[PROTO_LEN_MAX + PROTO_CRC_SIZE];    /* header+payload+CRC  */
+
+static void _RxStartPrefix(void){
+    g_rxStage = RX_STAGE_PREFIX;
+    HAL_UART_Receive_DMA(&huart2, g_prefixBuf, PROTO_PREFIX_SIZE);
+}
+
+static void _RxStartRest(uint8_t len){
+    g_rxStage = RX_STAGE_REST;
+    HAL_UART_Receive_DMA(&huart2, g_restBuf, (uint16_t)len + PROTO_CRC_SIZE);
+}
+
+void RS485_Driver_Init(void){
+    xQueue_RS485_RxFrame = xQueueCreate(RS485_RX_FRAME_QUEUE_SIZE, sizeof(Frame_t));
+    xQueue_RS485_TxFrame = xQueueCreate(RS485_TX_QUEUE_SIZE, sizeof(RS485TxReq_t));
+    configASSERT(xQueue_RxFrame && xQueue_TxFrame);
+
+    HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
+
+    _RxStartPrefix();
+    return;
+}
+
+void RS485_OnRxDmaComplete(void){
+    BaseType_t xHigherPrioWoken = pdFALSE;
+
+    if(g_rxStage == RX_STAGE_PREFIX){
+        if(g_prefixBuf[0] != PROTO_SOF_0 ||g_prefixBuf[1] != PROTO_SOF_1){
+            _RxStartPrefix();
+            return;
+        }
+
+        uint8_t len = g_prefixBuf[2];
+        if(len < PROTO_LEN_MIN  && len > PROTO_LEN_MAX){
+            _RxStartPrefix();
+            return;
+        }
+
+        _RxStartRest(len);
+        return;
+    }
+
+    uint8_t len = g_prefixBuf[2];
+    uint8_t totalLen = (uint8_t)(PROTO_PREFIX_SIZE + len + PROTO_CRC_SIZE);
+
+    if(totalLen < PROTO_LEN_MIN  && totalLen > PROTO_LEN_MAX){
+        _RxStartPrefix();
+        return;
+    }
+
+    uint8_t raw[PROTO_FRAME_MAX];
+    memcpy(raw, g_prefixBuf, PROTO_PREFIX_SIZE);
+    memcpy(raw + PROTO_PREFIX_SIZE, g_restBuf, (size_t)(len + PROTO_CRC_SIZE));
+
+    if(!Frame_ValidCRC(raw, totalLen)){
+        _RxStartPrefix();
+        return;
+    }
+
+    Frame_t f;
+    Frame_Parse(raw, totalLen, &f);
+
+    xQueueSendFromISR(xQueue_RS485_RxFrame, &f, &xHigherPrioWoken);
+    vTaskNotifyGiveFromISR(g_protocolTaskHandle, &xHigherPrioWoken);
+
+    _RxStartPrefix();
+
+    portYIELD_FROM_ISR(xHigherPrioWoken);
+}
+
+bool RS485_Send(uint8_t addr,   uint8_t seq,
+                uint8_t cmd,    uint8_t status, uint8_t ver,
+                const uint8_t *payload, uint8_t payloadLen)
+{
+    RS485TxReq_t req;
+    req.len = Frame_Build(req.buf, addr, seq, cmd, status, ver,
+                          payload, payloadLen);
+    if (HAL_UART_GetState(&huart2) == HAL_UART_STATE_READY) {
+        HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_SET);
+        HAL_UART_Transmit_DMA(&huart2, req.buf, req.len);
+        return true;
+    }
+    return (xQueueSend(xQueue_RS485_TxFrame, &req, pdMS_TO_TICKS(10)) == pdTRUE);
+}
+
+void RS485_OnTxComplete(void){
+    __HAL_UART_DISABLE_IT(&huart2, UART_IT_TC);
+    __HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_TC);
+    HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
+
+    RS485TxReq_t req;
+    BaseType_t   woken = pdFALSE;
+    if (xQueueReceiveFromISR(xQueue_RS485_TxFrame, &req, &woken) == pdTRUE) {
+        HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_SET);
+        HAL_UART_Transmit_DMA(&huart2, req.buf, req.len);
+    }
+    portYIELD_FROM_ISR(woken);
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+    if (huart->Instance != USART2) return;
+    RS485_OnRxDmaComplete();
+}
+
+void USART2_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART2_IRQn 0 */
+	if (__HAL_UART_GET_IT_SOURCE(&huart2, UART_IT_TC) && __HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC)){
+		RS485_OnTxComplete();
+	}
+  /* USER CODE END USART2_IRQn 0 */
+
+	HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
+
+  /* USER CODE END USART2_IRQn 1 */
+}
+
+void RS485_OnTxDmaComplete(void){
+    __HAL_UART_ENABLE_IT(&huart2, UART_IT_TC);
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *h){
+    if (h->Instance == USART2) RS485_OnTxDmaComplete();
+}

@@ -1,6 +1,7 @@
 #include "rs485_driver.h"
 
 QueueHandle_t xQueue_RS485_RxFrame = NULL;
+QueueHandle_t xQueue_RS485_TxFrame = NULL;
 TaskHandle_t  g_protocolTaskHandle   = NULL;
 
 extern UART_HandleTypeDef huart2;
@@ -11,6 +12,15 @@ typedef enum { RX_STAGE_PREFIX = 0, RX_STAGE_REST } eRxStage;
 static eRxStage g_rxStage;
 static uint8_t  g_prefixBuf[PROTO_PREFIX_SIZE];                  /* SOF(2)+LEN(1)       */
 static uint8_t  g_restBuf[PROTO_LEN_MAX + PROTO_CRC_SIZE];    /* header+payload+CRC  */
+
+void RS485_OnTimeout(void){
+    HAL_TIM_Base_Stop_IT(&htim7);
+    Frame_t    s = {0};   /* addr=0, cmd=0 → timeout sentinel */
+    BaseType_t w = pdFALSE;
+    xQueueSendFromISR(xQueue_RS485_RxFrame, &s, &w);
+    vTaskNotifyGiveFromISR(g_protocolTaskHandle, &w);
+    portYIELD_FROM_ISR(w);
+}
 
 static void _RxStartPrefix(void){
     g_rxStage = RX_STAGE_PREFIX;
@@ -24,11 +34,9 @@ static void _RxStartRest(uint8_t len){
 
 void RS485_Driver_Init(void){
     xQueue_RS485_RxFrame = xQueueCreate(RS485_RX_FRAME_QUEUE_SIZE, sizeof(Frame_t));
-    configASSERT(xQueue_RS485_RxFrame);
+    xQueue_RS485_TxFrame = xQueueCreate(RS485_TX_FRAME_QUEUE_SIZE, sizeof(RS485TxReq_t));
+    configASSERT(xQueue_RS485_RxFrame && xQueue_RS485_TxFrame);
 
-    HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
-
-    _RxStartPrefix();
     return;
 }
 
@@ -42,7 +50,7 @@ void RS485_OnRxDmaComplete(void){
         }
 
         uint8_t len = g_prefixBuf[2];
-        if(len < PROTO_LEN_MIN  && len > PROTO_LEN_MAX){
+        if(len < PROTO_LEN_MIN  || len > PROTO_LEN_MAX){
             _RxStartPrefix();
             return;
         }
@@ -54,7 +62,7 @@ void RS485_OnRxDmaComplete(void){
     uint8_t len = g_prefixBuf[2];
     uint8_t totalLen = (uint8_t)(PROTO_PREFIX_SIZE + len + PROTO_CRC_SIZE);
 
-    if(totalLen < PROTO_LEN_MIN  && totalLen > PROTO_LEN_MAX){
+    if(totalLen < PROTO_LEN_MIN  || totalLen > PROTO_LEN_MAX){
         _RxStartPrefix();
         return;
     }
@@ -74,12 +82,35 @@ void RS485_OnRxDmaComplete(void){
     xQueueSendFromISR(xQueue_RS485_RxFrame, &f, &xHigherPrioWoken);
     vTaskNotifyGiveFromISR(g_protocolTaskHandle, &xHigherPrioWoken);
 
-    _RxStartPrefix();
-
+    //_RxStartPrefix();
     portYIELD_FROM_ISR(xHigherPrioWoken);
+}
+
+static RS485TxReq_t req;
+
+bool RS485_Send(uint8_t addr,   uint8_t seq,
+                uint8_t cmd,    uint8_t status, uint8_t ver,
+                const uint8_t *payload, uint8_t payloadLen)
+{
+    req.len = Frame_Build(req.buf, addr, seq, cmd, status, ver, payload, payloadLen);
+    HAL_UART_AbortReceive(&huart2);
+    HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_SET);
+    HAL_StatusTypeDef ret = HAL_UART_Transmit_DMA(&huart2, req.buf, req.len);
+    if (ret != HAL_OK) {
+    	//
+    }
+    return (ret == HAL_OK);
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
+    if (huart->Instance != USART2) return;
+    HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
+    _RxStartPrefix();
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     if (huart->Instance != USART2) return;
     RS485_OnRxDmaComplete();
 }
+
+
