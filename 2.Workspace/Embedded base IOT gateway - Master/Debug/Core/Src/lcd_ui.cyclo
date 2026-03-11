@@ -6,9 +6,9 @@
 ../Core/Src/lcd_ui.c:64:13:_DrawStopMenu	3
 ../Core/Src/lcd_ui.c:71:13:_DrawSlaveList	2
 ../Core/Src/lcd_ui.c:79:13:_DrawRun	12
-../Core/Src/lcd_ui.c:137:13:_Btn_Idle	3
-../Core/Src/lcd_ui.c:146:13:_Btn_StopMenu	7
-../Core/Src/lcd_ui.c:173:13:_Btn_SlaveList	7
-../Core/Src/lcd_ui.c:201:13:_Btn_Run	7
-../Core/Src/lcd_ui.c:230:6:LCD_UI_Init	1
-../Core/Src/lcd_ui.c:234:6:LCD_Task	12
+../Core/Src/lcd_ui.c:136:13:_Btn_Idle	3
+../Core/Src/lcd_ui.c:145:13:_Btn_StopMenu	7
+../Core/Src/lcd_ui.c:172:13:_Btn_SlaveList	7
+../Core/Src/lcd_ui.c:200:13:_Btn_Run	7
+../Core/Src/lcd_ui.c:229:6:LCD_UI_Init	1
+../Core/Src/lcd_ui.c:233:6:LCD_Task	12

@@ -97,8 +97,7 @@ static void _DrawRun(void){
     }
 
     SlaveSlot_t s = Registry_GetSlot(g_slotView);
-    if (s.sensorCount > 0U && g_senView >= s.sensorCount)
-        g_senView = 0;
+    if (s.sensorCount > 0U && g_senView >= s.sensorCount) g_senView = 0;
 
     snprintf(l1, sizeof(l1), "0x%02X %-10s", s.addr, _StateStr(s.state));
 

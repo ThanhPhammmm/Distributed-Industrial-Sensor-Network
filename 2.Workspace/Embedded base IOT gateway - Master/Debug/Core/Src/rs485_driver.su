@@ -7,6 +7,6 @@
 ../Core/Src/rs485_driver.c:30:13:_RxStartRest	16	static
 ../Core/Src/rs485_driver.c:35:6:RS485_Driver_Init	16	static,ignoring_inline_asm
 ../Core/Src/rs485_driver.c:43:6:RS485_OnRxDmaComplete	232	static,ignoring_inline_asm
-../Core/Src/rs485_driver.c:91:6:RS485_Send	48	static
-../Core/Src/rs485_driver.c:105:6:HAL_UART_TxCpltCallback	16	static
-../Core/Src/rs485_driver.c:111:6:HAL_UART_RxCpltCallback	16	static
+../Core/Src/rs485_driver.c:92:6:RS485_Send	48	static
+../Core/Src/rs485_driver.c:106:6:HAL_UART_TxCpltCallback	16	static
+../Core/Src/rs485_driver.c:112:6:HAL_UART_RxCpltCallback	16	static

@@ -4,4 +4,6 @@
 #include "stm32f10x_flash.h"
 #include <string.h>
 
-uint8_t SlaveConfig_GetVersion(void) { return 0; }
+uint8_t SlaveConfig_GetVersion(void) { 
+	return 0; 
+}

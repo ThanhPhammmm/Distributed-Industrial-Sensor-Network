@@ -6,7 +6,7 @@
 ../Core/Src/rs485_driver.c:25:13:_RxStartPrefix	1
 ../Core/Src/rs485_driver.c:30:13:_RxStartRest	1
 ../Core/Src/rs485_driver.c:35:6:RS485_Driver_Init	4
-../Core/Src/rs485_driver.c:43:6:RS485_OnRxDmaComplete	10
-../Core/Src/rs485_driver.c:91:6:RS485_Send	1
-../Core/Src/rs485_driver.c:105:6:HAL_UART_TxCpltCallback	2
-../Core/Src/rs485_driver.c:111:6:HAL_UART_RxCpltCallback	2
+../Core/Src/rs485_driver.c:43:6:RS485_OnRxDmaComplete	11
+../Core/Src/rs485_driver.c:92:6:RS485_Send	1
+../Core/Src/rs485_driver.c:106:6:HAL_UART_TxCpltCallback	2
+../Core/Src/rs485_driver.c:112:6:HAL_UART_RxCpltCallback	2

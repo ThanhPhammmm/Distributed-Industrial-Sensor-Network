@@ -187,14 +187,14 @@ void DMA1_Stream6_IRQHandler(void)
   HAL_DMA_IRQHandler(&hdma_usart2_tx);
   /* USER CODE BEGIN DMA1_Stream6_IRQn 1 */
   // Kiểm tra flag nào đang set
-  if (__HAL_DMA_GET_FLAG(&hdma_usart2_tx, DMA_FLAG_TCIF2_6))
-  	while(1);   // Kẹt
-
-  if (__HAL_DMA_GET_FLAG(&hdma_usart2_tx, DMA_FLAG_TEIF2_6))
-      while(1);   // Kẹt
-
-  if (__HAL_DMA_GET_FLAG(&hdma_usart2_tx, DMA_FLAG_FEIF2_6))
-      while(1);   // Kẹt
+//  if (__HAL_DMA_GET_FLAG(&hdma_usart2_tx, DMA_FLAG_TCIF2_6))
+//  	while(1);   // Kẹt
+//
+//  if (__HAL_DMA_GET_FLAG(&hdma_usart2_tx, DMA_FLAG_TEIF2_6))
+//      while(1);   // Kẹt
+//
+//  if (__HAL_DMA_GET_FLAG(&hdma_usart2_tx, DMA_FLAG_FEIF2_6))
+//      while(1);   // Kẹt
   /* USER CODE END DMA1_Stream6_IRQn 1 */
 }
 

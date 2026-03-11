@@ -79,8 +79,9 @@ void RS485_OnRxDmaComplete(void){
     Frame_t f;
     Frame_Parse(raw, totalLen, &f);
 
-    xQueueSendFromISR(xQueue_RS485_RxFrame, &f, &xHigherPrioWoken);
-    vTaskNotifyGiveFromISR(g_protocolTaskHandle, &xHigherPrioWoken);
+    if(xQueueSendFromISR(xQueue_RS485_RxFrame, &f, &xHigherPrioWoken) == pdTRUE){
+    	vTaskNotifyGiveFromISR(g_protocolTaskHandle, &xHigherPrioWoken);
+    }
 
     //_RxStartPrefix();
     portYIELD_FROM_ISR(xHigherPrioWoken);

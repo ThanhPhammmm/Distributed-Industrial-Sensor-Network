@@ -1,7 +1,7 @@
 ../ThirdParty/FreeRTOS/tasks.c:1612:20:prvCreateTask	4
 ../ThirdParty/FreeRTOS/tasks.c:1710:16:xTaskCreate	2
 ../ThirdParty/FreeRTOS/tasks.c:1785:13:prvInitialiseNewTask	8
-../ThirdParty/FreeRTOS/tasks.c:2011:17:prvAddNewTaskToReadyList	7
+../ThirdParty/FreeRTOS/tasks.c:2011:17:prvAddNewTaskToReadyList	8
 ../ThirdParty/FreeRTOS/tasks.c:2203:10:vTaskDelete	10
 ../ThirdParty/FreeRTOS/tasks.c:2348:16:xTaskDelayUntil	11
 ../ThirdParty/FreeRTOS/tasks.c:2440:10:vTaskDelay	4
@@ -16,7 +16,7 @@
 ../ThirdParty/FreeRTOS/tasks.c:3358:10:vTaskResume	6
 ../ThirdParty/FreeRTOS/tasks.c:3419:16:xTaskResumeFromISR	5
 ../ThirdParty/FreeRTOS/tasks.c:3513:19:prvCreateIdleTasks	5
-../ThirdParty/FreeRTOS/tasks.c:3657:6:vTaskStartScheduler	3
+../ThirdParty/FreeRTOS/tasks.c:3657:6:vTaskStartScheduler	4
 ../ThirdParty/FreeRTOS/tasks.c:3760:6:vTaskEndScheduler	1
 ../ThirdParty/FreeRTOS/tasks.c:3775:6:vTaskSuspendAll	1
 ../ThirdParty/FreeRTOS/tasks.c:3924:12:xTaskResumeAll	13
@@ -29,7 +29,7 @@
 ../ThirdParty/FreeRTOS/tasks.c:4521:18:xTaskGetIdleTaskHandleForCore	3
 ../ThirdParty/FreeRTOS/tasks.c:4588:12:xTaskCatchUpTicks	2
 ../ThirdParty/FreeRTOS/tasks.c:4712:12:xTaskIncrementTick	13
-../ThirdParty/FreeRTOS/tasks.c:5095:10:vTaskSwitchContext	8
+../ThirdParty/FreeRTOS/tasks.c:5095:10:vTaskSwitchContext	9
 ../ThirdParty/FreeRTOS/tasks.c:5282:6:vTaskPlaceOnEventList	2
 ../ThirdParty/FreeRTOS/tasks.c:5311:6:vTaskPlaceOnUnorderedEventList	3
 ../ThirdParty/FreeRTOS/tasks.c:5380:12:xTaskRemoveFromEventList	6

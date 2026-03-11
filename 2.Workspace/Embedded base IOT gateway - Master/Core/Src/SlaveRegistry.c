@@ -157,3 +157,10 @@ void Registry_ResetForRun(void){
     xSemaphoreGive(g_mtx);
 }
 
+void Registry_IncrementTimeout(uint8_t idx){
+    if (idx >= MAX_SLAVE_SLOTS) return;
+    xSemaphoreTake(g_mtx, portMAX_DELAY);
+    g_slots[idx].stats.timeouts++;
+    g_slots[idx].missedPolls++;
+    xSemaphoreGive(g_mtx);
+}

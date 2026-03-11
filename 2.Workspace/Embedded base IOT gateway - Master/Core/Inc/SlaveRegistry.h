@@ -54,5 +54,6 @@ uint8_t Registry_CountByState(eSlaveRegState s);
 bool Registry_IsRegistered(uint8_t idx);
 bool Registry_Toggle(uint8_t idx);
 void Registry_ResetForRun(void);
+void Registry_IncrementTimeout(uint8_t idx);
 
 #endif /* INC_SLAVEREGISTRY_H_ */

@@ -1,6 +1,6 @@
-../Core/Src/ProtocolTask.c:18:13:_TimerStart	1
-../Core/Src/ProtocolTask.c:23:13:_TimerStop	1
-../Core/Src/ProtocolTask.c:25:6:Protocol_Init	4
-../Core/Src/ProtocolTask.c:32:27:_findSlaveByName	3
-../Core/Src/ProtocolTask.c:37:13:_DoSend	2
-../Core/Src/ProtocolTask.c:46:6:Protocol_Task	12
+../Core/Src/ProtocolTask.c:21:13:_TimerStart	1
+../Core/Src/ProtocolTask.c:26:13:_TimerStop	1
+../Core/Src/ProtocolTask.c:28:6:Protocol_Init	4
+../Core/Src/ProtocolTask.c:35:27:_findSlaveByName	3
+../Core/Src/ProtocolTask.c:40:13:_DoSend	2
+../Core/Src/ProtocolTask.c:49:6:Protocol_Task	13

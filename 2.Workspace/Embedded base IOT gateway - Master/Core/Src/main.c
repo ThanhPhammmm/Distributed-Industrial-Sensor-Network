@@ -58,6 +58,7 @@ DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
+#define DWT_CTRL    (*(volatile uint32_t*)0xE0001000)
 
 /* USER CODE END PV */
 
@@ -127,6 +128,10 @@ int main(void)
   MX_TIM7_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+  DWT_CTRL |= ( 1 << 0);
+  SEGGER_SYSVIEW_Conf();
+  SEGGER_SYSVIEW_Start();
+
   SysState_Init();
   Registry_Init();
   RS485_Driver_Init();

@@ -4,6 +4,9 @@
 QueueHandle_t xQueue_ValidFrame = NULL;
 QueueHandle_t xQueue_TxCmd      = NULL;
 
+extern QueueHandle_t xQueue_RS485_RxFrame;
+extern QueueHandle_t xQueue_RS485_TxFrame;
+
 extern TIM_HandleTypeDef htim7;
 
 typedef struct{
@@ -44,13 +47,18 @@ static void _DoSend(SlaveProtoState_t *s){
 }
 
 void Protocol_Task(void *pvParams){
+
 	(void)pvParams;
     Frame_t frame;
     TxCmd_t c;
 
 	while(1){
-		ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(PROTO_TIMEOUT_MS));
-		//ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		volatile size_t  freeHeap    = xPortGetFreeHeapSize();
+		volatile UBaseType_t rxQLen  = uxQueueMessagesWaiting(xQueue_RS485_RxFrame);
+		volatile UBaseType_t txQLen  = uxQueueMessagesWaiting(xQueue_RS485_TxFrame);
+		volatile uint32_t    notifyCnt = ulTaskNotifyValueClear(NULL, 0);
+
+		ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(DEVMGR_LOOP_MS));
 
 		while(xQueueReceive(xQueue_RS485_RxFrame, &frame, 0) == pdTRUE){
             if (frame.addr == 0U && frame.cmd == 0U) {
@@ -74,18 +82,18 @@ void Protocol_Task(void *pvParams){
                 continue;
             }
             SlaveProtoState_t *s = _findSlaveByName(frame.addr);
-            if (s == NULL){
+            if (s == NULL || !s->waiting){
                 continue;
             }
-            _TimerStop();
 
             if(frame.seq != s->txSeq){
                 continue;
             }
-
+            _TimerStop();
+            s->retryCnt = 0;
             s->waiting = false;
             s->txSeq = (uint8_t)((s->txSeq + 1) & 0xFFU);
-            xQueueSend(xQueue_ValidFrame, &frame, 0);
+            xQueueSend(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(10));
 		}
 
 		if (xQueueReceive(xQueue_TxCmd, &c, 0) == pdTRUE) {
