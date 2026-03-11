@@ -16,7 +16,7 @@ typedef struct{
     uint8_t retryCnt;
 } SlaveProtoState_t;
 
-static SlaveProtoState_t g_state[PROTO_ADDR_MAX];
+static SlaveProtoState_t g_state[MAX_SLAVE_SLOTS];
 
 static void _TimerStart(void){
     __HAL_TIM_SET_COUNTER(&htim7, 0);

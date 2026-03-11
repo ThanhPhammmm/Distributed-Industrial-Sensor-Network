@@ -1,10 +1,10 @@
-21:46:23 **** Incremental Build of configuration Debug for project Embedded base IOT gateway - Master ****
+11:06:08 **** Incremental Build of configuration Debug for project Embedded base IOT gateway - Master ****
 make -j16 all 
 arm-none-eabi-size  Embedded\ base\ IOT\ gateway\ -\ Master.elf 
    text	   data	    bss	    dec	    hex	filename
-  65860	    476	 112000	 178336	  2b8a0	Embedded base IOT gateway - Master.elf
+  65860	    476	  86040	 152376	  25338	Embedded base IOT gateway - Master.elf
 Finished building: default.size.stdout
  
 
-21:46:23 Build Finished. 0 errors, 0 warnings. (took 450ms)
+11:06:09 Build Finished. 0 errors, 0 warnings. (took 344ms)
 
