@@ -164,7 +164,3 @@ void Registry_IncrementTimeout(uint8_t idx){
     g_slots[idx].missedPolls++;
     xSemaphoreGive(g_mtx);
 }
-
-uint8_t Registry_GetAddr(uint8_t idx){
-    return (idx < MAX_SLAVE_SLOTS) ? k_addrs[idx] : 0U;
-}

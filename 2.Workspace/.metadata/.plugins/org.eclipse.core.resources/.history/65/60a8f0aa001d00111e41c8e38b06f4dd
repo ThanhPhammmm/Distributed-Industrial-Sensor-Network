@@ -97,7 +97,6 @@ static void _Poll(void){
 
 static bool _handleResponse(const Frame_t *f){
     if (g_pending.op == OP_NONE) return false;
-    if (f->addr != Registry_GetAddr(g_pending.slotIdx)) return false;
 
     switch (g_pending.op) {
     	case OP_NONE:
@@ -254,7 +253,7 @@ void DeviceManager_Task(void *pvParams){
             else {
             	g_state   = DM_IDLE;
                 g_pending.op = OP_NONE;
-                while (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE) {}
+                while (xQueueReceive(xQueue_ValidFrame, &frame, 0) == pdTRUE) {}
             }
             prevSys = sys;
         }

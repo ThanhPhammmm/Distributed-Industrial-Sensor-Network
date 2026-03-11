@@ -15,3 +15,4 @@
 ../Core/Src/SlaveRegistry.c:127:6:Registry_Toggle	3
 ../Core/Src/SlaveRegistry.c:144:6:Registry_ResetForRun	3
 ../Core/Src/SlaveRegistry.c:160:6:Registry_IncrementTimeout	2
+../Core/Src/SlaveRegistry.c:168:9:Registry_GetAddr	2
