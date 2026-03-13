@@ -16,6 +16,7 @@ typedef struct {
 static uint32_t g_lastPollMs = 0;
 static bool     g_pollActive = false;
 static uint8_t  g_pollIdx   = 0;
+static uint32_t g_lastRecoveryMs = 0;
 
 typedef struct {
 	uint8_t slotIdx;
@@ -95,6 +96,28 @@ static void _Poll(void){
     _Send(e->addr, CMD_GET_ALL_DATA);
 }
 
+static void _TryRecovery(void){
+    uint32_t now = xTaskGetTickCount();
+    if ((now - g_lastRecoveryMs) < DEVMGR_RECOVERY_INTERVAL_MS) return;
+    g_lastRecoveryMs = now;
+
+    bool hasOffline = false;
+    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+        SlaveSlot_t s = Registry_GetSlot(i);
+        if (s.registered && s.state == SREG_OFFLINE) {
+            Registry_SetState(i, SREG_DECLARED);
+            hasOffline = true;
+        }
+    }
+
+    if (hasOffline) {
+        g_state      = DM_FETCHING;
+        g_fetchSlot  = 0;
+        g_pollActive = false;
+        g_pending.op = OP_NONE;
+    }
+}
+
 static void _handleResponse(const Frame_t *f){
     if (g_pending.op == OP_NONE) return;
     if (f->addr != Registry_GetAddr(g_pending.slotIdx)) return;
@@ -147,6 +170,7 @@ static void _handleResponse(const Frame_t *f){
 				uint8_t count = Payload_UnpackTable(f->payload, f->payloadLen, descs, MAX_SENSORS_PER_SLAVE);
 				if(Registry_GetSensorCount(g_pending.slotIdx) != count) return;
 				Registry_SetSensorTable(g_pending.slotIdx, count, descs);
+                Registry_SetState(g_pending.slotIdx, SREG_READY);
 				g_pending.op = OP_NONE;
 				g_fetchSlot++;
 
@@ -207,11 +231,6 @@ static void _handleResponse(const Frame_t *f){
 	return;
 }
 
-void DeviceManager_Init(void){
-	g_state = DM_IDLE;
-	g_pending.op = OP_NONE;
-}
-
 eDmPhase DeviceManager_GetState(void){ return g_state; }
 
 static void _HandleTimeout(void){
@@ -246,13 +265,14 @@ void DeviceManager_Task(void *pvParams){
         if (sys != prevSys) {
             if (sys == SYS_RUN) {
                 Registry_ResetForRun();
-                g_state      = DM_FETCHING;
-                g_fetchSlot  = 0;
-                g_pending.op    = OP_NONE;
+                g_state = DM_FETCHING;
+                g_fetchSlot = 0;
+                g_pending.op = OP_NONE;
                 g_pollActive = false;
+                g_lastRecoveryMs = xTaskGetTickCount();
             }
             else {
-            	g_state   = DM_IDLE;
+            	g_state = DM_IDLE;
                 g_pending.op = OP_NONE;
                 while (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE) {}
             }
@@ -290,7 +310,16 @@ void DeviceManager_Task(void *pvParams){
 					_PollBuild();
 					_Poll();
 				}
+				else{
+					_TryRecovery();
+				}
         	}
         }
     }
+}
+
+void DeviceManager_Init(void){
+	g_state = DM_IDLE;
+	g_pending.op = OP_NONE;
+	g_lastRecoveryMs     = 0;
 }

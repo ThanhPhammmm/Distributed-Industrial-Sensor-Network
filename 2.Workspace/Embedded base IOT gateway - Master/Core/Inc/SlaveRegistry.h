@@ -57,5 +57,6 @@ void Registry_IncrementTimeout(uint8_t idx);
 uint8_t Registry_GetAddr(uint8_t idx);
 void Registry_SetSensorCount(uint8_t idx, uint8_t count);
 uint8_t Registry_GetSensorCount(uint8_t idx);
+uint8_t Registry_GetOnlineCount(void);
 
 #endif /* INC_SLAVEREGISTRY_H_ */
