@@ -62,7 +62,7 @@ void RS485_OnRxDmaComplete(void){
     uint8_t len = g_prefixBuf[2];
     uint8_t totalLen = (uint8_t)(PROTO_PREFIX_SIZE + len + PROTO_CRC_SIZE);
 
-    if(totalLen < PROTO_LEN_MIN  || totalLen > PROTO_LEN_MAX){
+    if(totalLen < PROTO_FRAME_MIN  || totalLen > PROTO_FRAME_MAX){
         _RxStartPrefix();
         return;
     }

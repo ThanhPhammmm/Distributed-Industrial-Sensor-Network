@@ -95,9 +95,9 @@ static void _Poll(void){
     _Send(e->addr, CMD_GET_ALL_DATA);
 }
 
-static bool _handleResponse(const Frame_t *f){
-    if (g_pending.op == OP_NONE) return false;
-    if (f->addr != Registry_GetAddr(g_pending.slotIdx)) return false;
+static void _handleResponse(const Frame_t *f){
+    if (g_pending.op == OP_NONE) return;
+    if (f->addr != Registry_GetAddr(g_pending.slotIdx)) return;
 
     switch (g_pending.op) {
     	case OP_NONE:
@@ -124,6 +124,7 @@ static bool _handleResponse(const Frame_t *f){
 	            }
 	            else {
 	                Registry_SetConfigVersion(g_pending.slotIdx, pingVer);
+	                Registry_SetSensorCount(g_pending.slotIdx, nSens);
 	                _SetPend(OP_GET_TABLE, g_pending.slotIdx);
 	                _Send(f->addr, CMD_GET_SENSOR_TABLE);
 	            }
@@ -133,18 +134,18 @@ static bool _handleResponse(const Frame_t *f){
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 
-	            return true;
+	    	    return;
 	        }
 	        /* Ping failed */
 	        Registry_SetState(g_pending.slotIdx, SREG_ERROR);
 	        g_pending.op = OP_NONE;
 	        g_fetchSlot++;
 
-	        return true;
 		case OP_GET_TABLE:
 			if (f->cmd == CMD_SENSOR_TABLE && f->payloadLen >= 1U) {
 				SensorDesc_t descs[MAX_SENSORS_PER_SLAVE];
 				uint8_t count = Payload_UnpackTable(f->payload, f->payloadLen, descs, MAX_SENSORS_PER_SLAVE);
+				if(Registry_GetSensorCount(g_pending.slotIdx) != count) return;
 				Registry_SetSensorTable(g_pending.slotIdx, count, descs);
 				g_pending.op = OP_NONE;
 				g_fetchSlot++;
@@ -154,13 +155,12 @@ static bool _handleResponse(const Frame_t *f){
 			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
 			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 
-				return true;
+			    return;
 			}
 			if (f->cmd == CMD_NACK || f->cmd == 0xFFU) {
 				Registry_SetState(g_pending.slotIdx, SREG_ERROR);
 				g_pending.op = OP_NONE;
 				g_fetchSlot++;
-				return true;
 			}
 			break;
 	    case OP_GET_ALL_DATA:
@@ -189,7 +189,7 @@ static bool _handleResponse(const Frame_t *f){
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 
-	            return true;
+	    	    return;
 	        }
 	        if (f->cmd == CMD_NACK || f->cmd == 0xFFU) {
 	            Registry_IncrementNack(g_pending.slotIdx);
@@ -200,12 +200,11 @@ static bool _handleResponse(const Frame_t *f){
 	                Registry_SetState(g_pending.slotIdx, SREG_OFFLINE);
 	            }
 	            g_pending.op = OP_NONE;
-	            return true;
 	        }
 	        break;
 	    default: break;
     }
-	return 0;
+	return;
 }
 
 void DeviceManager_Init(void){
@@ -218,6 +217,7 @@ eDmPhase DeviceManager_GetState(void){ return g_state; }
 static void _HandleTimeout(void){
     switch (g_pending.op) {
     case OP_PING:
+    	return;
     case OP_GET_TABLE:
         Registry_SetState(g_pending.slotIdx, SREG_ERROR);
         g_fetchSlot++;

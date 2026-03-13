@@ -38,7 +38,6 @@ typedef struct {
 } SlaveSlot_t;
 
 void    Registry_Init(void);
-
 SlaveSlot_t Registry_GetSlot(uint8_t slotIdx);
 void Registry_SetState(uint8_t idx, eSlaveRegState s);
 void Registry_SetSensorTable(uint8_t idx, uint8_t count, const SensorDesc_t *d);
@@ -56,5 +55,7 @@ bool Registry_Toggle(uint8_t idx);
 void Registry_ResetForRun(void);
 void Registry_IncrementTimeout(uint8_t idx);
 uint8_t Registry_GetAddr(uint8_t idx);
+void Registry_SetSensorCount(uint8_t idx, uint8_t count);
+uint8_t Registry_GetSensorCount(uint8_t idx);
 
 #endif /* INC_SLAVEREGISTRY_H_ */

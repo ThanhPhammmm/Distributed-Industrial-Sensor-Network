@@ -5,6 +5,10 @@
 #define SLAVE_SLOT_ADDRS      { 0x01U, 0x02U}
 #define MAX_SENSORS_PER_SLAVE 8U
 
+#define TIM7_CLOCK_HZ       84000000UL
+#define TIM7_PRESCALER      (8399U)
+#define TIM7_PERIOD_MS(ms)  ((uint16_t)((TIM7_CLOCK_HZ / (TIM7_PRESCALER+1)) * (ms) / 1000U - 1U))
+
 #define RS485_BAUDRATE        115200U
 #define RS485_DE_PORT         GPIOA
 #define RS485_DE_PIN          GPIO_PIN_4
@@ -20,7 +24,7 @@
 #define DEVMGR_POLL_INTERVAL_MS   500U
 #define DEVMGR_OFFLINE_THRESHOLD  5U
 #define DEVMGR_LOOP_MS            5U
-#define DEVMGR_TIMOUT_MS		  5000U
+#define DEVMGR_TIMOUT_MS		  (PROTO_TIMEOUT_MS * (PROTO_RETRY_MAX + 2))
 
 #define PRIO_PROTOCOL   6
 #define PRIO_DEVMGR     5

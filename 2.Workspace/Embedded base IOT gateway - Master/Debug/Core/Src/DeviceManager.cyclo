@@ -8,8 +8,8 @@
 ../Core/Src/DeviceManager.c:56:13:_Fetch	6
 ../Core/Src/DeviceManager.c:73:13:_PollBuild	6
 ../Core/Src/DeviceManager.c:87:13:_Poll	2
-../Core/Src/DeviceManager.c:98:13:_handleResponse	24
-../Core/Src/DeviceManager.c:211:6:DeviceManager_Init	1
-../Core/Src/DeviceManager.c:216:10:DeviceManager_GetState	1
-../Core/Src/DeviceManager.c:218:13:_HandleTimeout	5
+../Core/Src/DeviceManager.c:98:13:_handleResponse	25
+../Core/Src/DeviceManager.c:210:6:DeviceManager_Init	1
+../Core/Src/DeviceManager.c:215:10:DeviceManager_GetState	1
+../Core/Src/DeviceManager.c:217:13:_HandleTimeout	6
 ../Core/Src/DeviceManager.c:238:6:DeviceManager_Task	14

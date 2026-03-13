@@ -9,7 +9,7 @@
 ../Core/Src/DeviceManager.c:73:13:_PollBuild	136	static
 ../Core/Src/DeviceManager.c:87:13:_Poll	16	static
 ../Core/Src/DeviceManager.c:98:13:_handleResponse	200	static
-../Core/Src/DeviceManager.c:211:6:DeviceManager_Init	4	static
-../Core/Src/DeviceManager.c:216:10:DeviceManager_GetState	4	static
-../Core/Src/DeviceManager.c:218:13:_HandleTimeout	128	static
+../Core/Src/DeviceManager.c:210:6:DeviceManager_Init	4	static
+../Core/Src/DeviceManager.c:215:10:DeviceManager_GetState	4	static
+../Core/Src/DeviceManager.c:217:13:_HandleTimeout	128	static
 ../Core/Src/DeviceManager.c:238:6:DeviceManager_Task	128	static
