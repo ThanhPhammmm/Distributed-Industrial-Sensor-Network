@@ -80,9 +80,9 @@ static void _DrawRun(void){
     char l1[17], l2[17];
 
     if (DeviceManager_GetState() == DM_FETCHING) {
-        uint8_t rdy = (uint8_t)(Registry_CountByState(SREG_READY) + Registry_CountByState(SREG_ONLINE));
+        uint8_t rdy = (uint8_t)(Registry_CountByState(SREG_READY));
         snprintf(l1, sizeof(l1), "RUN [FETCHING]");
-        snprintf(l2, sizeof(l2), "Ready:%u/%u", rdy, Registry_GetRegisteredCount());
+        snprintf(l2, sizeof(l2), "Ready:%u/%u", rdy, Registry_GetRegisteredCount() - Registry_GetOnlineCount());
         LCD_Write2Lines(l1, l2);
         return;
     }

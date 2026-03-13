@@ -107,6 +107,14 @@ uint8_t Registry_GetRegisteredCount(void){
     xSemaphoreGive(g_mtx);
     return n;
 }
+uint8_t Registry_GetOnlineCount(void){
+    xSemaphoreTake(g_mtx, portMAX_DELAY);
+    uint8_t n = 0;
+    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+        if (g_slots[i].state == SREG_ONLINE) n++;
+    xSemaphoreGive(g_mtx);
+    return n;
+}
 
 uint8_t Registry_CountByState(eSlaveRegState s){
     xSemaphoreTake(g_mtx, portMAX_DELAY);
@@ -131,11 +139,12 @@ bool Registry_Toggle(uint8_t idx){
     if (g_slots[idx].registered) {
         uint8_t addr = g_slots[idx].addr;
         memset(&g_slots[idx], 0, sizeof(SlaveSlot_t));
-        g_slots[idx].addr  = addr;
+        g_slots[idx].addr = addr;
         g_slots[idx].state = SREG_UNREGISTERED;
-    } else {
+    }
+    else {
         g_slots[idx].registered = true;
-        g_slots[idx].state      = SREG_DECLARED;
+        g_slots[idx].state = SREG_DECLARED;
     }
     bool r = g_slots[idx].registered;
     xSemaphoreGive(g_mtx);
@@ -149,10 +158,10 @@ void Registry_ResetForRun(void){
             g_slots[i].state = SREG_UNREGISTERED;
             continue;
         }
-        g_slots[i].state       = SREG_DECLARED;
+        g_slots[i].state = SREG_DECLARED;
         g_slots[i].missedPolls = 0;
         g_slots[i].lastSeenMs  = 0;
-        memset(&g_slots[i].stats,      0, sizeof(SlaveStats_t));
+        memset(&g_slots[i].stats, 0, sizeof(SlaveStats_t));
         memset(g_slots[i].lastReading, 0, sizeof(g_slots[i].lastReading));
     }
     xSemaphoreGive(g_mtx);
