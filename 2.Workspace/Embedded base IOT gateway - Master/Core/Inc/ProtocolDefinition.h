@@ -32,7 +32,6 @@
 #define PROTO_FRAME_MAX       (PROTO_PREFIX_SIZE + PROTO_LEN_MAX + PROTO_CRC_SIZE)
 #define PROTO_ADDR_MIN        1U
 #define PROTO_ADDR_MAX        254U
-#define PROTO_ADDR_BROADCAST  0xFFU
 
 typedef enum {
     CMD_PING             = 0x01,

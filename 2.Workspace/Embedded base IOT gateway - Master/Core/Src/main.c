@@ -28,6 +28,9 @@
 #include "ProtocolTask.h"
 #include "DeviceManager.h"
 #include "SlaveRegistry.h"
+#include "lcd_ui.h"
+#include "button.h"
+#include "lcd_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +49,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim7;
 
 UART_HandleTypeDef huart2;
@@ -53,6 +58,7 @@ DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
+#define DWT_CTRL    (*(volatile uint32_t*)0xE0001000)
 
 /* USER CODE END PV */
 
@@ -62,6 +68,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM7_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 void ITM_SendString(const char *s);
@@ -71,6 +78,19 @@ void ITM_SendString(const char *s);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    // pcTaskName = tên task bị overflow
+    volatile char *name = pcTaskName;
+    (void)name;
+    while (1) {}   // đặt breakpoint ở đây → xem pcTaskName
+}
+
+void vApplicationMallocFailedHook(void)
+{
+    // Heap hết → task không tạo được
+    while (1) {}
+}
 
 /* USER CODE END 0 */
 
@@ -106,14 +126,24 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_TIM7_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+  DWT_CTRL |= ( 1 << 0);
+  SEGGER_SYSVIEW_Conf();
+  SEGGER_SYSVIEW_Start();
+
+  SysState_Init();
   Registry_Init();
   RS485_Driver_Init();
   Protocol_Init();
   DeviceManager_Init();
+  Button_Init();
+  LCD_UI_Init();
 
   xTaskCreate(Protocol_Task, "Protocol", STACK_PROTOCOL, NULL, PRIO_PROTOCOL, &g_protocolTaskHandle);
-  xTaskCreate(DeviceManager_Task, "DevMgr",   STACK_DEVMGR, NULL, PRIO_DEVMGR, NULL);
+  xTaskCreate(DeviceManager_Task, "DevMgr", STACK_DEVMGR, NULL, PRIO_DEVMGR, NULL);
+  xTaskCreate(LCD_Task, "LCD", STACK_LCD, NULL, PRIO_LCD, NULL);
+  xTaskCreate(Button_Task, "Btn", STACK_BUTTON, NULL, PRIO_BUTTON, NULL);
 
   //start the freeRTOS scheduler
   vTaskStartScheduler();
@@ -178,6 +208,40 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
   * @brief TIM7 Initialization Function
   * @param None
   * @retval None
@@ -195,9 +259,9 @@ static void MX_TIM7_Init(void)
 
   /* USER CODE END TIM7_Init 1 */
   htim7.Instance = TIM7;
-  htim7.Init.Prescaler = 8399;
+  htim7.Init.Prescaler = TIM7_PRESCALER;
   htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim7.Init.Period = 4999;
+  htim7.Init.Period = TIM7_PERIOD_MS(PROTO_TIMEOUT_MS);
   htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
   {

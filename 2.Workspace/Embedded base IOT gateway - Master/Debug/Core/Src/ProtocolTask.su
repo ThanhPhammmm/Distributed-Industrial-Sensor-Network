@@ -1,6 +1,6 @@
-../Core/Src/ProtocolTask.c:18:13:_TimerStart	8	static
-../Core/Src/ProtocolTask.c:23:13:_TimerStop	8	static
-../Core/Src/ProtocolTask.c:25:6:Protocol_Init	16	static,ignoring_inline_asm
-../Core/Src/ProtocolTask.c:32:27:_findSlaveByName	16	static
-../Core/Src/ProtocolTask.c:37:13:_DoSend	40	static
-../Core/Src/ProtocolTask.c:46:6:Protocol_Task	344	static
+../Core/Src/ProtocolTask.c:21:13:_TimerStart	8	static
+../Core/Src/ProtocolTask.c:26:13:_TimerStop	8	static
+../Core/Src/ProtocolTask.c:28:6:Protocol_Init	16	static,ignoring_inline_asm
+../Core/Src/ProtocolTask.c:35:27:_findSlaveByName	16	static
+../Core/Src/ProtocolTask.c:40:13:_DoSend	40	static
+../Core/Src/ProtocolTask.c:49:6:Protocol_Task	360	static

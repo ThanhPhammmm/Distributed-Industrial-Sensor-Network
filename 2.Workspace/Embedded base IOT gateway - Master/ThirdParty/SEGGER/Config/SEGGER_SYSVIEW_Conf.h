@@ -78,7 +78,7 @@ Additional information:
 * TODO: Add your defines here.                                       *
 **********************************************************************
 */
-#define SEGGER_UART_REC 1
+#define SEGGER_UART_REC 0
 
 #if (SEGGER_UART_REC == 1)
   extern void HIF_UART_EnableTXEInterrupt  (void);

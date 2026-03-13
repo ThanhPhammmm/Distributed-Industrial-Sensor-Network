@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\slave.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\slave.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Sun Mar 08 10:33:03 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Mar 13 08:10:13 2026
 <BR><P>
 <H3>Maximum Stack Usage =        220 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -672,7 +672,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[44]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[61]"></a>Slave_Protocol_OnRxDmaComplete</STRONG> (Thumb, 212 bytes, Stack size 32 bytes, slave_protocol.o(i.Slave_Protocol_OnRxDmaComplete))
+<P><STRONG><a name="[61]"></a>Slave_Protocol_OnRxDmaComplete</STRONG> (Thumb, 206 bytes, Stack size 32 bytes, slave_protocol.o(i.Slave_Protocol_OnRxDmaComplete))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = Slave_Protocol_OnRxDmaComplete &rArr; Frame_Parse
 </UL>
 <BR>[Calls]<UL><LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_ArmRest
@@ -743,7 +743,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_OnGetSensorTable
 </UL>
 
-<P><STRONG><a name="[96]"></a>Slave_Sensors_Read</STRONG> (Thumb, 120 bytes, Stack size 0 bytes, slave_sensor.o(i.Slave_Sensors_Read))
+<P><STRONG><a name="[96]"></a>Slave_Sensors_Read</STRONG> (Thumb, 126 bytes, Stack size 0 bytes, slave_sensor.o(i.Slave_Sensors_Read))
 <BR><BR>[Called By]<UL><LI><a href="#[44]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
@@ -824,7 +824,7 @@ Global Symbols
 <LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Slave_Protocol_Process
 </UL>
 
-<P><STRONG><a name="[44]"></a>main</STRONG> (Thumb, 138 bytes, Stack size 0 bytes, main.o(i.main))
+<P><STRONG><a name="[44]"></a>main</STRONG> (Thumb, 140 bytes, Stack size 0 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 220<LI>Call Chain = main &rArr; Slave_Protocol_Process &rArr; _OnGetSensorTable &rArr; _Send &rArr; Frame_Build &rArr; CRC16_Calc
 </UL>
 <BR>[Calls]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Slave_Sensors_Read
@@ -1007,7 +1007,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Slave_Protocol_Process
 </UL>
 
-<P><STRONG><a name="[83]"></a>_Send</STRONG> (Thumb, 72 bytes, Stack size 48 bytes, slave_protocol.o(i._Send))
+<P><STRONG><a name="[83]"></a>_Send</STRONG> (Thumb, 64 bytes, Stack size 48 bytes, slave_protocol.o(i._Send))
 <BR><BR>[Stack]<UL><LI>Max Depth = 100<LI>Call Chain = _Send &rArr; Frame_Build &rArr; CRC16_Calc
 </UL>
 <BR>[Calls]<UL><LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_StartTxDma

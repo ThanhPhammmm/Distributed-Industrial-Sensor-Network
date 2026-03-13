@@ -62,7 +62,7 @@ void RS485_OnRxDmaComplete(void){
     uint8_t len = g_prefixBuf[2];
     uint8_t totalLen = (uint8_t)(PROTO_PREFIX_SIZE + len + PROTO_CRC_SIZE);
 
-    if(totalLen < PROTO_LEN_MIN  || totalLen > PROTO_LEN_MAX){
+    if(totalLen < PROTO_FRAME_MIN  || totalLen > PROTO_FRAME_MAX){
         _RxStartPrefix();
         return;
     }
@@ -79,8 +79,9 @@ void RS485_OnRxDmaComplete(void){
     Frame_t f;
     Frame_Parse(raw, totalLen, &f);
 
-    xQueueSendFromISR(xQueue_RS485_RxFrame, &f, &xHigherPrioWoken);
-    vTaskNotifyGiveFromISR(g_protocolTaskHandle, &xHigherPrioWoken);
+    if(xQueueSendFromISR(xQueue_RS485_RxFrame, &f, &xHigherPrioWoken) == pdTRUE){
+    	vTaskNotifyGiveFromISR(g_protocolTaskHandle, &xHigherPrioWoken);
+    }
 
     //_RxStartPrefix();
     portYIELD_FROM_ISR(xHigherPrioWoken);

@@ -52,11 +52,12 @@ void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, eDataType dt, SensorR
     if (idx >= MAX_SLAVE_SLOTS) return;
     if (sensorId < 1U || sensorId > MAX_SENSORS_PER_SLAVE) return;
     xSemaphoreTake(g_mtx, portMAX_DELAY);
-    g_slots[idx].lastReading[sensorId - 1U] = reading;
+    //g_slots[idx].lastReading[sensorId - 1U] = reading;
     /* Keep cached dataType in sync */
     for (uint8_t i = 0; i < g_slots[idx].sensorCount; i++) {
-        if (g_slots[idx].sensors[i].sensorId == sensorId) {
-            g_slots[idx].sensors[i].dataType = (uint8_t)dt;
+        if (g_slots[idx].sensors[i].sensorId == sensorId && g_slots[idx].sensors[i].dataType == dt) {
+            //g_slots[idx].sensors[i].dataType = (uint8_t)dt;
+            g_slots[idx].lastReading[sensorId - 1U] = reading;
             break;
         }
     }
@@ -98,3 +99,84 @@ void Registry_IncrementNack(uint8_t idx){
     xSemaphoreGive(g_mtx);
 }
 
+uint8_t Registry_GetRegisteredCount(void){
+    xSemaphoreTake(g_mtx, portMAX_DELAY);
+    uint8_t n = 0;
+    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+        if (g_slots[i].registered) n++;
+    xSemaphoreGive(g_mtx);
+    return n;
+}
+
+uint8_t Registry_CountByState(eSlaveRegState s){
+    xSemaphoreTake(g_mtx, portMAX_DELAY);
+    uint8_t n = 0;
+    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+        if (g_slots[i].state == s) n++;
+    xSemaphoreGive(g_mtx);
+    return n;
+}
+
+bool Registry_IsRegistered(uint8_t idx){
+    if (idx >= MAX_SLAVE_SLOTS) return false;
+    xSemaphoreTake(g_mtx, portMAX_DELAY);
+    bool r = g_slots[idx].registered;
+    xSemaphoreGive(g_mtx);
+    return r;
+}
+
+bool Registry_Toggle(uint8_t idx){
+    if (idx >= MAX_SLAVE_SLOTS) return false;
+    xSemaphoreTake(g_mtx, portMAX_DELAY);
+    if (g_slots[idx].registered) {
+        uint8_t addr = g_slots[idx].addr;
+        memset(&g_slots[idx], 0, sizeof(SlaveSlot_t));
+        g_slots[idx].addr  = addr;
+        g_slots[idx].state = SREG_UNREGISTERED;
+    } else {
+        g_slots[idx].registered = true;
+        g_slots[idx].state      = SREG_DECLARED;
+    }
+    bool r = g_slots[idx].registered;
+    xSemaphoreGive(g_mtx);
+    return r;
+}
+
+void Registry_ResetForRun(void){
+    xSemaphoreTake(g_mtx, portMAX_DELAY);
+    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+        if (!g_slots[i].registered) {
+            g_slots[i].state = SREG_UNREGISTERED;
+            continue;
+        }
+        g_slots[i].state       = SREG_DECLARED;
+        g_slots[i].missedPolls = 0;
+        g_slots[i].lastSeenMs  = 0;
+        memset(&g_slots[i].stats,      0, sizeof(SlaveStats_t));
+        memset(g_slots[i].lastReading, 0, sizeof(g_slots[i].lastReading));
+    }
+    xSemaphoreGive(g_mtx);
+}
+
+void Registry_IncrementTimeout(uint8_t idx){
+    if (idx >= MAX_SLAVE_SLOTS) return;
+    xSemaphoreTake(g_mtx, portMAX_DELAY);
+    g_slots[idx].stats.timeouts++;
+    g_slots[idx].missedPolls++;
+    xSemaphoreGive(g_mtx);
+}
+
+uint8_t Registry_GetAddr(uint8_t idx){
+    return (idx < MAX_SLAVE_SLOTS) ? k_addrs[idx] : 0U;
+}
+
+void Registry_SetSensorCount(uint8_t idx, uint8_t count){
+	if(count > MAX_SENSORS_PER_SLAVE) return;
+    xSemaphoreTake(g_mtx, portMAX_DELAY);
+    g_slots[idx].sensorCount = count;
+    xSemaphoreGive(g_mtx);
+}
+
+uint8_t Registry_GetSensorCount(uint8_t idx){
+	return g_slots[idx].sensorCount;
+}

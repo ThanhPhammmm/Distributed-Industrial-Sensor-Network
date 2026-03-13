@@ -9,7 +9,7 @@ typedef enum {
 
 typedef struct {
     ePendingOp op;
-    uint8_t    addr;
+    uint8_t    slotIdx;
     uint32_t   sentAtMs;
 } Pending_t;
 
@@ -30,7 +30,7 @@ static Pending_t g_pending = { .op = OP_NONE };
 static uint8_t   g_fetchSlot = 0;
 
 static bool _TimedOut(void){
-    return (g_pending.op != OP_NONE) && ((HAL_GetTick() - g_pending.sentAtMs) > PROTO_TIMEOUT_MS);
+    return (g_pending.op != OP_NONE) && ((xTaskGetTickCount() - g_pending.sentAtMs) > DEVMGR_TIMOUT_MS);
 }
 
 static void _Send(uint8_t addr, uint8_t cmd){
@@ -39,17 +39,24 @@ static void _Send(uint8_t addr, uint8_t cmd){
     tx.addr = addr;
     tx.cmd  = cmd;
     xQueueSend(xQueue_TxCmd, &tx, pdMS_TO_TICKS(20));
+    xTaskNotifyGive(g_protocolTaskHandle);
 }
 
 static void _SetPend(ePendingOp op, uint8_t addr){
 	g_pending.op = op;
-	g_pending.addr = addr;
+	g_pending.slotIdx = addr;
+    g_pending.sentAtMs = xTaskGetTickCount();
+
+}
+
+static void _GoOffline(uint8_t slotIdx){
+    Registry_SetState(slotIdx, SREG_OFFLINE);
 }
 
 static void _Fetch(void){
     while (g_fetchSlot < MAX_SLAVE_SLOTS) {
         SlaveSlot_t s = Registry_GetSlot(g_fetchSlot);
-        if (s.registered == 1 || s.state >= SREG_READY) {
+        if (!s.registered || s.state == SREG_READY || s.state == SREG_ONLINE || s.state == SREG_FETCHING) {
             g_fetchSlot++;
             continue;
         }
@@ -59,7 +66,7 @@ static void _Fetch(void){
     }
     /* All registered slots handled – begin polling */
     g_state      = DM_POLLING;
-    g_lastPollMs = HAL_GetTick();
+    g_lastPollMs = xTaskGetTickCount();
     g_pollActive = false;
 }
 
@@ -80,7 +87,7 @@ static void _PollBuild(void){
 static void _Poll(void){
     if (g_pollIdx >= g_pollCount) {
         g_pollActive = false;
-        g_lastPollMs = HAL_GetTick();
+        g_lastPollMs = xTaskGetTickCount();
         return;
     }
     PollEntry_t *e = &g_pollList[g_pollIdx++];
@@ -88,8 +95,9 @@ static void _Poll(void){
     _Send(e->addr, CMD_GET_ALL_DATA);
 }
 
-static bool _handleResponse(const Frame_t *f){
-    if (g_pending.op == OP_NONE) return false;
+static void _handleResponse(const Frame_t *f){
+    if (g_pending.op == OP_NONE) return;
+    if (f->addr != Registry_GetAddr(g_pending.slotIdx)) return;
 
     switch (g_pending.op) {
     	case OP_NONE:
@@ -97,47 +105,48 @@ static bool _handleResponse(const Frame_t *f){
 	    	if (f->cmd == CMD_ACK && f->payloadLen >= 1U) {
 	            uint8_t     pingVer = f->version;
 	            uint8_t     nSens   = f->payload[0];
-	            SlaveSlot_t snap    = Registry_GetSlot(g_pending.addr);
+	            SlaveSlot_t snap    = Registry_GetSlot(g_pending.slotIdx);
 
-	            Registry_SetState(g_pending.addr, SREG_FETCHING);
-	            Registry_SetRegistered(g_pending.addr, true);
+	            Registry_SetState(g_pending.slotIdx, SREG_FETCHING);
+	            //Registry_SetRegistered(g_pending.addr, true);
 	            bool tableValid = (snap.sensorCount > 0U) && (snap.configVersion == pingVer);
 
 	            if (tableValid) {
-	                Registry_SetState(g_pending.addr, SREG_READY);
+	                Registry_SetState(g_pending.slotIdx, SREG_READY);
 	                g_pending.op = OP_NONE;
 	                g_fetchSlot++;
 	            }
 	            else if (nSens == 0U) {
-	                Registry_SetConfigVersion(g_pending.addr, pingVer);
-	                Registry_SetSensorTable(g_pending.addr, 0U, NULL);
+	                Registry_SetConfigVersion(g_pending.slotIdx, pingVer);
+	                Registry_SetSensorTable(g_pending.slotIdx, 0U, NULL);
 	                g_pending.op = OP_NONE;
 	                g_fetchSlot++;
 	            }
 	            else {
-	                Registry_SetConfigVersion(g_pending.addr, pingVer);
-	                _SetPend(OP_GET_TABLE, g_pending.addr);
+	                Registry_SetConfigVersion(g_pending.slotIdx, pingVer);
+	                Registry_SetSensorCount(g_pending.slotIdx, nSens);
+	                _SetPend(OP_GET_TABLE, g_pending.slotIdx);
 	                _Send(f->addr, CMD_GET_SENSOR_TABLE);
 	            }
 
-	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+	            HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 
-	            return true;
+	    	    return;
 	        }
 	        /* Ping failed */
-	        Registry_SetState(g_pending.addr, SREG_ERROR);
+	        Registry_SetState(g_pending.slotIdx, SREG_ERROR);
 	        g_pending.op = OP_NONE;
 	        g_fetchSlot++;
 
-	        return true;
 		case OP_GET_TABLE:
 			if (f->cmd == CMD_SENSOR_TABLE && f->payloadLen >= 1U) {
 				SensorDesc_t descs[MAX_SENSORS_PER_SLAVE];
 				uint8_t count = Payload_UnpackTable(f->payload, f->payloadLen, descs, MAX_SENSORS_PER_SLAVE);
-				Registry_SetSensorTable(g_pending.addr, count, descs);
+				if(Registry_GetSensorCount(g_pending.slotIdx) != count) return;
+				Registry_SetSensorTable(g_pending.slotIdx, count, descs);
 				g_pending.op = OP_NONE;
 				g_fetchSlot++;
 
@@ -146,13 +155,12 @@ static bool _handleResponse(const Frame_t *f){
 			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
 			    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 
-				return true;
+			    return;
 			}
 			if (f->cmd == CMD_NACK || f->cmd == 0xFFU) {
-				Registry_SetState(g_pending.addr, SREG_ERROR);
+				Registry_SetState(g_pending.slotIdx, SREG_ERROR);
 				g_pending.op = OP_NONE;
 				g_fetchSlot++;
-				return true;
 			}
 			break;
 	    case OP_GET_ALL_DATA:
@@ -167,13 +175,13 @@ static bool _handleResponse(const Frame_t *f){
 	            SensorReading_t val;
 
 	            while (Payload_UnpackReading(f->payload, f->payloadLen, &pos, &sid, &dt, &val)) {
-	                Registry_UpdateReading(g_pending.addr, sid, dt, val);
+	                Registry_UpdateReading(g_pending.slotIdx, sid, dt, val);
 	            }
 
-	            Registry_SetLastSeen(g_pending.addr, HAL_GetTick());
-	            Registry_SetMissedPolls(g_pending.addr, 0U);
-	            Registry_SetState(g_pending.addr, SREG_ONLINE);
-	            Registry_IncrementPoll(g_pending.addr);
+	            Registry_SetLastSeen(g_pending.slotIdx, xTaskGetTickCount());
+	            Registry_SetMissedPolls(g_pending.slotIdx, 0U);
+	            Registry_SetState(g_pending.slotIdx, SREG_ONLINE);
+	            Registry_IncrementPoll(g_pending.slotIdx);
 	            g_pending.op = OP_NONE;
 
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
@@ -181,36 +189,94 @@ static bool _handleResponse(const Frame_t *f){
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 
-	            return true;
+	    	    return;
 	        }
 	        if (f->cmd == CMD_NACK || f->cmd == 0xFFU) {
-	            Registry_IncrementNack(g_pending.addr);
+	            Registry_IncrementNack(g_pending.slotIdx);
+	            SlaveSlot_t snap = Registry_GetSlot(g_pending.slotIdx);
+	            uint8_t missed = snap.missedPolls + 1U;
+	            Registry_SetMissedPolls(g_pending.slotIdx, missed);
+	            if (missed >= DEVMGR_OFFLINE_THRESHOLD) {
+	                Registry_SetState(g_pending.slotIdx, SREG_OFFLINE);
+	            }
 	            g_pending.op = OP_NONE;
-	            return true;
 	        }
 	        break;
 	    default: break;
     }
-	return 0;
+	return;
 }
 
 void DeviceManager_Init(void){
-	//g_state = DM_IDLE;
-	g_state = DM_FETCHING;
+	g_state = DM_IDLE;
 	g_pending.op = OP_NONE;
+}
+
+eDmPhase DeviceManager_GetState(void){ return g_state; }
+
+static void _HandleTimeout(void){
+    switch (g_pending.op) {
+    case OP_PING:
+    	return;
+    case OP_GET_TABLE:
+        Registry_SetState(g_pending.slotIdx, SREG_ERROR);
+        g_fetchSlot++;
+        break;
+    case OP_GET_ALL_DATA:
+        Registry_IncrementTimeout(g_pending.slotIdx);
+        {
+            SlaveSlot_t s = Registry_GetSlot(g_pending.slotIdx);
+            if (s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD)
+                _GoOffline(g_pending.slotIdx);
+        }
+        break;
+    default: break;
+    }
+    g_pending.op = OP_NONE;
 }
 
 void DeviceManager_Task(void *pvParams){
     (void)pvParams;
     Frame_t frame;
+    eSysState prevSys = SYS_IDLE;
 
     while(1){
-        const bool gotFrame = (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE);
-        if(gotFrame){
-        	if(!_handleResponse(&frame)){
+        eSysState sys = SysState_Get();
 
-        	}
+        if (sys != prevSys) {
+            if (sys == SYS_RUN) {
+                Registry_ResetForRun();
+                g_state      = DM_FETCHING;
+                g_fetchSlot  = 0;
+                g_pending.op    = OP_NONE;
+                g_pollActive = false;
+            }
+            else {
+            	g_state   = DM_IDLE;
+                g_pending.op = OP_NONE;
+                while (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE) {}
+            }
+            prevSys = sys;
         }
+
+        if (sys != SYS_RUN) {
+            vTaskDelay(pdMS_TO_TICKS(DEVMGR_LOOP_MS));
+            continue;
+        }
+
+        const bool gotFrame = (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE);
+        if (gotFrame) {
+            if (frame.cmd == 0xFFU) {
+                _GoOffline(g_pending.slotIdx);
+                if (g_state == DM_FETCHING) g_fetchSlot++;
+                g_pending.op = OP_NONE;
+            }
+            else {
+            	_handleResponse(&frame);
+            }
+        }
+
+        if (_TimedOut()) _HandleTimeout();
 
         if(g_pending.op == OP_NONE){
         	if(g_state == DM_FETCHING){
@@ -220,7 +286,7 @@ void DeviceManager_Task(void *pvParams){
 				if (g_pollActive) {
 					_Poll();
 				}
-				else if ((HAL_GetTick() - g_lastPollMs) >= DEVMGR_POLL_INTERVAL_MS) {
+				else if ((xTaskGetTickCount() - g_lastPollMs) >= DEVMGR_POLL_INTERVAL_MS) {
 					_PollBuild();
 					_Poll();
 				}

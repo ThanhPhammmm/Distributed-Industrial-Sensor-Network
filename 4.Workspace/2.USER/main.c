@@ -38,7 +38,9 @@ static volatile uint32_t g_tick = 0U;
 
 void SysTick_Handler(void) { g_tick++; }
 
-uint32_t millis(void) { return g_tick; }
+uint32_t millis(void) { 
+	return g_tick; 
+}
 
 void delay_ms(uint32_t ms)
 {
