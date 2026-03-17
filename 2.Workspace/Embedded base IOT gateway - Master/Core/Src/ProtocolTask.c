@@ -1,5 +1,6 @@
 #include "ProtocolTask.h"
 #include "rs485_driver.h"
+#include "watchdog.h"
 
 QueueHandle_t xQueue_ValidFrame = NULL;
 QueueHandle_t xQueue_TxCmd      = NULL;
@@ -59,6 +60,7 @@ void Protocol_Task(void *pvParams){
 		volatile uint32_t    notifyCnt = ulTaskNotifyValueClear(NULL, 0);
 
 		ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(DEVMGR_LOOP_MS));
+		Watchdog_Kick(WDG_TASK_PROTOCOL);
 
 		while(xQueueReceive(xQueue_RS485_RxFrame, &frame, 0) == pdTRUE){
             if (frame.addr == 0U && frame.cmd == 0U) {

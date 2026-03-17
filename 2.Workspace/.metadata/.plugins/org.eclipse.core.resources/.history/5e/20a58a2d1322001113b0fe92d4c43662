@@ -1,0 +1,78 @@
+#include "button.h"
+#include "stm32f4xx_hal.h"
+#include <stdbool.h>
+
+QueueHandle_t xQueue_BtnEvent = NULL;
+
+static const struct {
+    GPIO_TypeDef *port;
+    uint16_t      pin;
+} k_pins[3] = {
+    { GPIOA, GPIO_PIN_8  },
+    { GPIOA, GPIO_PIN_9  },
+    { GPIOA, GPIO_PIN_10 },
+};
+
+#define DEBOUNCE_CNT  (BTN_DEBOUNCE_MS  / BTN_POLL_MS)
+#define LONG_CNT      (BTN_LONG_PRESS_MS / BTN_POLL_MS)
+
+typedef struct {
+    uint16_t debounce;
+    uint16_t held;
+    bool active;
+    bool longFired;
+} BtnState_t;
+
+static BtnState_t g_st[3];
+
+void Button_Init(void){
+    xQueue_BtnEvent = xQueueCreate(BTN_QUEUE_SIZE, sizeof(BtnEvent_t));
+    configASSERT(xQueue_BtnEvent);
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIO_InitTypeDef g = {0};
+    g.Pin  = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10;
+    g.Mode = GPIO_MODE_INPUT;
+    g.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOA, &g);
+}
+
+void Button_Task(void *pvParams)
+{
+    (void)pvParams;
+
+    while(1) {
+        vTaskDelay(pdMS_TO_TICKS(BTN_POLL_MS));
+        Watchdog_Kick(WDG_TASK_BUTTON);
+
+        for (uint8_t i = 0; i < 3U; i++) {
+            bool pressed = (HAL_GPIO_ReadPin(k_pins[i].port, k_pins[i].pin) == GPIO_PIN_RESET);
+            BtnState_t *s = &g_st[i];
+
+            if (pressed) {
+                if (s->debounce < DEBOUNCE_CNT) {
+                    s->debounce++;
+                }
+                else {
+                    s->active = true;
+                    s->held++;
+                    if (!s->longFired && s->held >= LONG_CNT) {
+                        BtnEvent_t ev = { .btn = (eBtn)i, .type = BTN_LONG };
+                        xQueueSend(xQueue_BtnEvent, &ev, 0);
+                        s->longFired = true;
+                    }
+                }
+            }
+            else {
+                if (s->active && !s->longFired) {
+                    BtnEvent_t ev = { .btn = (eBtn)i, .type = BTN_SHORT };
+                    xQueueSend(xQueue_BtnEvent, &ev, 0);
+                }
+                s->debounce  = 0;
+                s->held      = 0;
+                s->active    = false;
+                s->longFired = false;
+            }
+        }
+    }
+}

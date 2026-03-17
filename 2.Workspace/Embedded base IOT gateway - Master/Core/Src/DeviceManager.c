@@ -1,4 +1,5 @@
 #include "DeviceManager.h"
+#include "watchdog.h"
 
 typedef enum {
     OP_NONE = 0,
@@ -285,6 +286,8 @@ void DeviceManager_Task(void *pvParams){
         }
 
         const bool gotFrame = (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE);
+        Watchdog_Kick(WDG_TASK_DEVMGR);
+
         if (gotFrame) {
             if (frame.cmd == 0xFFU) {
                 _GoOffline(g_pending.slotIdx);

@@ -59,9 +59,11 @@ typedef enum {
 } eSensorType;
 
 typedef enum {
-    DTYPE_FLOAT  = 0x01,
-    DTYPE_INT32  = 0x02,
-    DTYPE_DOUBLE = 0x03,
+    DTYPE_FLOAT  	= 0x01,
+    DTYPE_INT32  	= 0x02,
+    DTYPE_DOUBLE 	= 0x03,
+	DTYPE_INT		= 0x04,
+	DTYPE_CHAR		= 0x05,
 } eDataType;
 
 typedef struct {
@@ -74,6 +76,9 @@ typedef union {
     float    f;
     int32_t  i;
     double   d;
+    int		 i2;
+    char	 c;
+
     uint8_t  bytes[8];
 } SensorReading_t;
 
@@ -88,7 +93,21 @@ typedef struct {
 } Frame_t;
 
 static inline uint8_t DataType_Size(eDataType dt){
-    return (dt == DTYPE_DOUBLE) ? 8U : 4U;
+	switch(dt){
+		case DTYPE_FLOAT:
+			return 4U;
+		case DTYPE_INT32:
+			return 4U;
+		case DTYPE_DOUBLE:
+			return 8U;
+		case DTYPE_INT:
+			return 4U;
+		case DTYPE_CHAR:
+			return 1U;
+
+        default:
+            return 0U;
+	}
 }
 
 static inline uint16_t CRC16_Calc(const uint8_t *buf, uint16_t len){

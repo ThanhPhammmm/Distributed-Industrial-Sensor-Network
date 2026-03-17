@@ -8,6 +8,7 @@
 #include "stm32f4xx_hal.h"
 #include <stdio.h>
 #include <string.h>
+#include "watchdog.h"
 
 typedef enum {
     SCREEN_IDLE       = 0,
@@ -37,10 +38,12 @@ static char _TypeChar(uint8_t t){
 
 static void _FmtVal(char *buf, uint8_t sz,  const SensorReading_t *r, uint8_t dt){
     switch ((eDataType)dt) {
-    case DTYPE_FLOAT:  snprintf(buf, sz, "%.1f",  (double)r->f); break;
-    case DTYPE_DOUBLE: snprintf(buf, sz, "%.3f",  r->d);         break;
-    case DTYPE_INT32:  snprintf(buf, sz, "%ld",   (long)r->i);   break;
-    default:           snprintf(buf, sz, "?");                    break;
+    case DTYPE_FLOAT:  snprintf(buf, sz, "%.2f",  r->f); 	break;
+    case DTYPE_DOUBLE: snprintf(buf, sz, "%.4f",  r->d);	break;
+    case DTYPE_INT32:  snprintf(buf, sz, "%ld",   r->i);   	break;
+    case DTYPE_INT:	   snprintf(buf, sz, "%d", r->i2);		break;
+    case DTYPE_CHAR:   snprintf(buf, sz, "%d", r->c);		break;
+    default:           snprintf(buf, sz, "?");              break;
     }
 }
 
@@ -87,7 +90,6 @@ static void _DrawRun(void){
         return;
     }
 
-    /* Ensure g_slotView points to a registered slot */
     {
         uint8_t orig = g_slotView;
         while (!Registry_IsRegistered(g_slotView)) {
@@ -235,9 +237,11 @@ void LCD_Task(void *pvParams){
     LCD_Init();
     _Dirty();
 
-    for (;;) {
+    while(1) {
         BtnEvent_t ev;
         bool gotBtn = (xQueueReceive(xQueue_BtnEvent, &ev, pdMS_TO_TICKS(LCD_REFRESH_MS)) == pdTRUE);
+        Watchdog_Kick(WDG_TASK_LCD);
+
         if (gotBtn) {
             switch (g_screen) {
             case SCREEN_IDLE:       _Btn_Idle(ev);       break;

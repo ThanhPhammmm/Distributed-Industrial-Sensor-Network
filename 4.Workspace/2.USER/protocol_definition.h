@@ -45,9 +45,11 @@ typedef enum {
 } eSensorType;
 
 typedef enum {
-    DTYPE_FLOAT  = 0x01,
-    DTYPE_INT32  = 0x02,
-    DTYPE_DOUBLE = 0x03,
+		DTYPE_FLOAT  	= 0x01,
+		DTYPE_INT32  	= 0x02,
+		DTYPE_DOUBLE 	= 0x03,
+		DTYPE_INT			= 0x04,
+		DTYPE_CHAR		= 0x05,
 } eDataType;
 
 static inline uint8_t DataType_Size(eDataType dt)
@@ -65,6 +67,8 @@ typedef union {
     float    f;
     int32_t  i;
     double   d;
+		int			 i2;
+		char		 c;
     uint8_t  bytes[8];
 } SensorReading_t;
 
