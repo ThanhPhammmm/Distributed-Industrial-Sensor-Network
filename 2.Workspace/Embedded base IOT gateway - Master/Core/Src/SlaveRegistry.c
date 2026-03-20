@@ -44,7 +44,7 @@ void Registry_SetSensorTable(uint8_t idx, uint8_t count, const SensorDesc_t *d){
     g_slots[idx].sensorCount = (count > MAX_SENSORS_PER_SLAVE) ? MAX_SENSORS_PER_SLAVE : count;
     if (g_slots[idx].sensorCount && d)
     	memcpy(g_slots[idx].sensors, d, g_slots[idx].sensorCount * sizeof(SensorDesc_t));
-    g_slots[idx].state = SREG_READY;
+    //g_slots[idx].state = SREG_READY;
     xSemaphoreGive(g_mtx);
 }
 

@@ -53,7 +53,7 @@ Core/Src/DeviceManager.o: ../Core/Src/DeviceManager.c \
  ../Core/Inc/SlaveRegistry.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/semphr.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/queue.h \
- ../Core/Inc/system_state.h
+ ../Core/Inc/system_state.h ../Core/Inc/watchdog.h
 ../Core/Inc/DeviceManager.h:
 ../Core/Inc/ProtocolDefinition.h:
 ../Core/Inc/ProtocolTask.h:
@@ -112,3 +112,4 @@ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/semphr.h:
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/queue.h:
 ../Core/Inc/system_state.h:
+../Core/Inc/watchdog.h:

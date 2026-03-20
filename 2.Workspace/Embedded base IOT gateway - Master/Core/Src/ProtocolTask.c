@@ -1,11 +1,11 @@
 #include "ProtocolTask.h"
 #include "rs485_driver.h"
+#include "watchdog.h"
 
 QueueHandle_t xQueue_ValidFrame = NULL;
 QueueHandle_t xQueue_TxCmd      = NULL;
 
 extern QueueHandle_t xQueue_RS485_RxFrame;
-extern QueueHandle_t xQueue_RS485_TxFrame;
 
 extern TIM_HandleTypeDef htim7;
 
@@ -55,10 +55,10 @@ void Protocol_Task(void *pvParams){
 	while(1){
 		volatile size_t  freeHeap    = xPortGetFreeHeapSize();
 		volatile UBaseType_t rxQLen  = uxQueueMessagesWaiting(xQueue_RS485_RxFrame);
-		volatile UBaseType_t txQLen  = uxQueueMessagesWaiting(xQueue_RS485_TxFrame);
 		volatile uint32_t    notifyCnt = ulTaskNotifyValueClear(NULL, 0);
 
 		ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(DEVMGR_LOOP_MS));
+		Watchdog_Kick(WDG_TASK_PROTOCOL);
 
 		while(xQueueReceive(xQueue_RS485_RxFrame, &frame, 0) == pdTRUE){
             if (frame.addr == 0U && frame.cmd == 0U) {

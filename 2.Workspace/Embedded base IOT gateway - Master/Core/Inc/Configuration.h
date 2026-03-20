@@ -31,11 +31,13 @@
 #define PRIO_DEVMGR     5
 #define PRIO_LCD        4
 #define PRIO_BUTTON     3
+#define PRIO_WATCHDOG   7
 
 #define STACK_PROTOCOL  1024U
-#define STACK_DEVMGR    1024U
-#define STACK_LCD       1024U
+#define STACK_DEVMGR    768U
+#define STACK_LCD       768U
 #define STACK_BUTTON    256U
+#define STACK_WATCHDOG  256U
 
 #define LCD_I2C_ADDR     0x27U
 #define LCD_COLS         16U
@@ -46,5 +48,11 @@
 #define BTN_DEBOUNCE_MS    30U
 #define BTN_LONG_PRESS_MS  800U
 #define BTN_QUEUE_SIZE     8U
+
+#define WDG_CHECK_INTERVAL_MS     	5000U
+#define WDG_DEADLINE_PROTOCOL_MS   	100000U
+#define WDG_DEADLINE_DEVMGR_MS     	100000U
+#define WDG_DEADLINE_LCD_MS        	100000U
+#define WDG_DEADLINE_BUTTON_MS     	100000U
 
 #endif /* INC_CONFIGURATION_H_ */

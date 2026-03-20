@@ -31,6 +31,7 @@
 #include "lcd_ui.h"
 #include "button.h"
 #include "lcd_driver.h"
+#include "watchdog.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -137,13 +138,26 @@ int main(void)
   RS485_Driver_Init();
   Protocol_Init();
   DeviceManager_Init();
+  Watchdog_Init();
   Button_Init();
   LCD_UI_Init();
 
-  xTaskCreate(Protocol_Task, "Protocol", STACK_PROTOCOL, NULL, PRIO_PROTOCOL, &g_protocolTaskHandle);
-  xTaskCreate(DeviceManager_Task, "DevMgr", STACK_DEVMGR, NULL, PRIO_DEVMGR, NULL);
-  xTaskCreate(LCD_Task, "LCD", STACK_LCD, NULL, PRIO_LCD, NULL);
-  xTaskCreate(Button_Task, "Btn", STACK_BUTTON, NULL, PRIO_BUTTON, NULL);
+  BaseType_t ret;
+
+  ret = xTaskCreate(Protocol_Task, "Protocol", STACK_PROTOCOL, NULL, PRIO_PROTOCOL, &g_protocolTaskHandle);
+  configASSERT(ret == pdPASS);
+
+  ret = xTaskCreate(DeviceManager_Task, "DevMgr", STACK_DEVMGR, NULL, PRIO_DEVMGR, NULL);
+  configASSERT(ret == pdPASS);
+
+  ret = xTaskCreate(LCD_Task, "LCD", STACK_LCD, NULL, PRIO_LCD, NULL);
+  configASSERT(ret == pdPASS);
+
+  ret = xTaskCreate(Button_Task, "Btn", STACK_BUTTON, NULL, PRIO_BUTTON, NULL);
+  configASSERT(ret == pdPASS);
+
+  ret = xTaskCreate(Watchdog_Task, "WDG", STACK_WATCHDOG, NULL, PRIO_WATCHDOG, NULL);
+  configASSERT(ret == pdPASS);
 
   //start the freeRTOS scheduler
   vTaskStartScheduler();

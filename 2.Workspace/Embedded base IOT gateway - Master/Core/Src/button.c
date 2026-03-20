@@ -1,6 +1,7 @@
 #include "button.h"
 #include "stm32f4xx_hal.h"
 #include <stdbool.h>
+#include "watchdog.h"
 
 QueueHandle_t xQueue_BtnEvent = NULL;
 
@@ -37,12 +38,12 @@ void Button_Init(void){
     HAL_GPIO_Init(GPIOA, &g);
 }
 
-void Button_Task(void *pvParams)
-{
+void Button_Task(void *pvParams){
     (void)pvParams;
 
-    for (;;) {
+    while(1) {
         vTaskDelay(pdMS_TO_TICKS(BTN_POLL_MS));
+        Watchdog_Kick(WDG_TASK_BUTTON);
 
         for (uint8_t i = 0; i < 3U; i++) {
             bool pressed = (HAL_GPIO_ReadPin(k_pins[i].port, k_pins[i].pin) == GPIO_PIN_RESET);
