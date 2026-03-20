@@ -1,7 +1,6 @@
 #include "rs485_driver.h"
 
 QueueHandle_t xQueue_RS485_RxFrame = NULL;
-QueueHandle_t xQueue_RS485_TxFrame = NULL;
 TaskHandle_t  g_protocolTaskHandle   = NULL;
 
 extern UART_HandleTypeDef huart2;
@@ -34,8 +33,7 @@ static void _RxStartRest(uint8_t len){
 
 void RS485_Driver_Init(void){
     xQueue_RS485_RxFrame = xQueueCreate(RS485_RX_FRAME_QUEUE_SIZE, sizeof(Frame_t));
-    xQueue_RS485_TxFrame = xQueueCreate(RS485_TX_FRAME_QUEUE_SIZE, sizeof(RS485TxReq_t));
-    configASSERT(xQueue_RS485_RxFrame && xQueue_RS485_TxFrame);
+    configASSERT(xQueue_RS485_RxFrame);
 
     return;
 }
