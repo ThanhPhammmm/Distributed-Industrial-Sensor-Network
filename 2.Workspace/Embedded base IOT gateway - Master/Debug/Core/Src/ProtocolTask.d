@@ -17,7 +17,8 @@ Core/Src/ProtocolTask.o: ../Core/Src/ProtocolTask.c \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/queue.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/list.h \
- ../Core/Inc/ProtocolDefinition.h ../Core/Inc/Configuration.h \
+ ../Core/Inc/ProtocolDefinition.h ../Core/Inc/slave_config.h \
+ ../Core/Inc/SlaveRegistry.h ../Core/Inc/Configuration.h \
  ../Core/Inc/rs485_driver.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h \
  ../Core/Inc/main.h ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
@@ -70,6 +71,8 @@ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h:
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/list.h:
 ../Core/Inc/ProtocolDefinition.h:
+../Core/Inc/slave_config.h:
+../Core/Inc/SlaveRegistry.h:
 ../Core/Inc/Configuration.h:
 ../Core/Inc/rs485_driver.h:
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h:

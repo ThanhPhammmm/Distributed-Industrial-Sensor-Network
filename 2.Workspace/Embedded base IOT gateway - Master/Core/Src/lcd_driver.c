@@ -37,7 +37,7 @@ static void _Nibble(uint8_t byte, bool rs){
 }
 
 static void _Byte(uint8_t byte, bool rs){
-    _Nibble((uint8_t)(byte & 0xF0U),        rs);
+    _Nibble((uint8_t)(byte & 0xF0U), rs);
     _Nibble((uint8_t)((byte << 4) & 0xF0U), rs);
     vTaskDelay(pdMS_TO_TICKS(2));
 }
@@ -83,7 +83,7 @@ void LCD_SetBacklight(bool on){
 
 void LCD_Write2Lines(const char *line1, const char *line2)
 {
-    char   buf[LCD_COLS + 1U];
+    char buf[LCD_COLS + 1U];
     size_t n;
 
     LCD_SetCursor(0, 0);

@@ -1,20 +1,20 @@
 #include "rs485_driver.h"
 
 QueueHandle_t xQueue_RS485_RxFrame = NULL;
-TaskHandle_t  g_protocolTaskHandle   = NULL;
+TaskHandle_t g_protocolTaskHandle = NULL;
 
 extern UART_HandleTypeDef huart2;
-extern TIM_HandleTypeDef  htim7;
+extern TIM_HandleTypeDef htim7;
 
 typedef enum { RX_STAGE_PREFIX = 0, RX_STAGE_REST } eRxStage;
 
 static eRxStage g_rxStage;
-static uint8_t  g_prefixBuf[PROTO_PREFIX_SIZE];                  /* SOF(2)+LEN(1)       */
-static uint8_t  g_restBuf[PROTO_LEN_MAX + PROTO_CRC_SIZE];    /* header+payload+CRC  */
+static uint8_t g_prefixBuf[PROTO_PREFIX_SIZE];                  /* SOF(2)+LEN(1)       */
+static uint8_t g_restBuf[PROTO_LEN_MAX + PROTO_CRC_SIZE];    /* header+payload+CRC  */
 
 void RS485_OnTimeout(void){
     HAL_TIM_Base_Stop_IT(&htim7);
-    Frame_t    s = {0};   /* addr=0, cmd=0 → timeout sentinel */
+    Frame_t s = {0}; /* addr=0, cmd=0 → timeout sentinel */
     BaseType_t w = pdFALSE;
     xQueueSendFromISR(xQueue_RS485_RxFrame, &s, &w);
     vTaskNotifyGiveFromISR(g_protocolTaskHandle, &w);
@@ -48,7 +48,7 @@ void RS485_OnRxDmaComplete(void){
         }
 
         uint8_t len = g_prefixBuf[2];
-        if(len < PROTO_LEN_MIN  || len > PROTO_LEN_MAX){
+        if(len < PROTO_LEN_MIN || len > PROTO_LEN_MAX){
             _RxStartPrefix();
             return;
         }
@@ -60,7 +60,7 @@ void RS485_OnRxDmaComplete(void){
     uint8_t len = g_prefixBuf[2];
     uint8_t totalLen = (uint8_t)(PROTO_PREFIX_SIZE + len + PROTO_CRC_SIZE);
 
-    if(totalLen < PROTO_FRAME_MIN  || totalLen > PROTO_FRAME_MAX){
+    if(totalLen < PROTO_FRAME_MIN || totalLen > PROTO_FRAME_MAX){
         _RxStartPrefix();
         return;
     }
@@ -87,8 +87,8 @@ void RS485_OnRxDmaComplete(void){
 
 static RS485TxReq_t req;
 
-bool RS485_Send(uint8_t addr,   uint8_t seq,
-                uint8_t cmd,    uint8_t status, uint8_t ver,
+bool RS485_Send(uint8_t addr, uint8_t seq,
+                uint8_t cmd, uint8_t status, uint8_t ver,
                 const uint8_t *payload, uint8_t payloadLen)
 {
     req.len = Frame_Build(req.buf, addr, seq, cmd, status, ver, payload, payloadLen);
@@ -102,14 +102,25 @@ bool RS485_Send(uint8_t addr,   uint8_t seq,
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
-    if (huart->Instance != USART2) return;
-    HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
-    _RxStartPrefix();
+    if (huart->Instance == USART2){
+		HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
+		_RxStartPrefix();
+		return;
+    }
+    if (huart->Instance == USART3){
+    	//
+    }
+
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
-    if (huart->Instance != USART2) return;
-    RS485_OnRxDmaComplete();
+    if (huart->Instance == USART2){
+    	RS485_OnRxDmaComplete();
+    	return;
+    }
+    if (huart->Instance == USART3){
+    	//
+    }
 }
 
 

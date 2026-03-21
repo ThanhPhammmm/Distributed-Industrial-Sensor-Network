@@ -10,13 +10,13 @@ typedef enum {
 
 typedef struct {
     ePendingOp op;
-    uint8_t    slotIdx;
-    uint32_t   sentAtMs;
+    uint8_t slotIdx;
+    uint32_t sentAtMs;
 } Pending_t;
 
 static uint32_t g_lastPollMs = 0;
-static bool     g_pollActive = false;
-static uint8_t  g_pollIdx   = 0;
+static bool g_pollActive = false;
+static uint8_t g_pollIdx   = 0;
 static uint32_t g_lastRecoveryMs = 0;
 
 typedef struct {
@@ -25,11 +25,11 @@ typedef struct {
 } PollEntry_t;
 
 static PollEntry_t g_pollList[MAX_SLAVE_SLOTS];
-static uint8_t     g_pollCount = 0;
+static uint8_t g_pollCount = 0;
 
-static eDmPhase  g_state = DM_IDLE;
+static eDmPhase g_state = DM_IDLE;
 static Pending_t g_pending = { .op = OP_NONE };
-static uint8_t   g_fetchSlot = 0;
+static uint8_t g_fetchSlot = 0;
 
 static bool _TimedOut(void){
     return (g_pending.op != OP_NONE) && ((xTaskGetTickCount() - g_pending.sentAtMs) > DEVMGR_TIMOUT_MS);
@@ -67,7 +67,7 @@ static void _Fetch(void){
         return;
     }
     /* All registered slots handled – begin polling */
-    g_state      = DM_POLLING;
+    g_state = DM_POLLING;
     g_lastPollMs = xTaskGetTickCount();
     g_pollActive = false;
 }
@@ -82,7 +82,7 @@ static void _PollBuild(void){
             g_pollCount++;
         }
     }
-    g_pollIdx    = 0;
+    g_pollIdx = 0;
     g_pollActive = (g_pollCount > 0U);
 }
 
@@ -112,8 +112,8 @@ static void _TryRecovery(void){
     }
 
     if (hasOffline) {
-        g_state      = DM_FETCHING;
-        g_fetchSlot  = 0;
+        g_state = DM_FETCHING;
+        g_fetchSlot = 0;
         g_pollActive = false;
         g_pending.op = OP_NONE;
     }
@@ -127,9 +127,9 @@ static void _handleResponse(const Frame_t *f){
     	case OP_NONE:
 	    case OP_PING:
 	    	if (f->cmd == CMD_ACK && f->payloadLen >= 1U) {
-	            uint8_t     pingVer = f->version;
-	            uint8_t     nSens   = f->payload[0];
-	            SlaveSlot_t snap    = Registry_GetSlot(g_pending.slotIdx);
+	            uint8_t pingVer = f->version;
+	            uint8_t nSens = f->payload[0];
+	            SlaveSlot_t snap = Registry_GetSlot(g_pending.slotIdx);
 
 	            Registry_SetState(g_pending.slotIdx, SREG_FETCHING);
 	            //Registry_SetRegistered(g_pending.addr, true);
@@ -194,9 +194,9 @@ static void _handleResponse(const Frame_t *f){
 	             * Payload: [sensorId:1][dataType:1][data:4or8] × n
 	             *
 	             */
-	            uint8_t         pos = 0;
-	            uint8_t         sid;
-	            eDataType       dt;
+	            uint8_t pos = 0;
+	            uint8_t sid;
+	            eDataType dt;
 	            SensorReading_t val;
 
 	            while (Payload_UnpackReading(f->payload, f->payloadLen, &pos, &sid, &dt, &val)) {
@@ -324,5 +324,5 @@ void DeviceManager_Task(void *pvParams){
 void DeviceManager_Init(void){
 	g_state = DM_IDLE;
 	g_pending.op = OP_NONE;
-	g_lastRecoveryMs     = 0;
+	g_lastRecoveryMs = 0;
 }

@@ -4,9 +4,9 @@
 #include <string.h>
 
 typedef struct {
-    uint8_t         id;
-    uint8_t         sensorType;
-    uint8_t         dataType;
+    uint8_t id;
+    uint8_t sensorType;
+    uint8_t dataType;
     SensorReading_t reading;
 } SensorEntry_t;
 
@@ -21,20 +21,20 @@ static SensorEntry_t g_sensors[] = {
 
 #elif SLAVE_ADDRESS == 0x02
 static SensorEntry_t g_sensors[] = {
-    { 1, SENSOR_TEMPERATURE, DTYPE_FLOAT  },
-    { 2, SENSOR_HUMIDITY,    DTYPE_INT32  },
-    { 3, SENSOR_PRESSURE,    DTYPE_DOUBLE },
-    { 4, SENSOR_ADC_RAW,     DTYPE_INT  },
-		{ 5, SENSOR_DIGITAL_IN,  DTYPE_CHAR },
+    { 1, SENSOR_TEMPERATURE, DTYPE_FLOAT},
+    { 2, SENSOR_HUMIDITY, DTYPE_INT32},
+    { 3, SENSOR_PRESSURE, DTYPE_DOUBLE },
+    { 4, SENSOR_ADC_RAW, DTYPE_INT},
+		{ 5, SENSOR_DIGITAL_IN, DTYPE_CHAR },
 };
 
 #elif SLAVE_ADDRESS == 0x03
 static SensorEntry_t g_sensors[] = {
-    { 1, SENSOR_TEMPERATURE, DTYPE_FLOAT  },
-    { 2, SENSOR_HUMIDITY,    DTYPE_FLOAT  },
-    { 3, SENSOR_PRESSURE,    DTYPE_DOUBLE },
-    { 4, SENSOR_ADC_RAW,     DTYPE_INT32  },
-    { 5, SENSOR_DIGITAL_IN,  DTYPE_INT32  },
+    { 1, SENSOR_TEMPERATURE, DTYPE_FLOAT},
+    { 2, SENSOR_HUMIDITY, DTYPE_FLOAT},
+    { 3, SENSOR_PRESSURE, DTYPE_DOUBLE },
+    { 4, SENSOR_ADC_RAW, DTYPE_INT32},
+    { 5, SENSOR_DIGITAL_IN, DTYPE_INT32},
 };
 
 #else
@@ -65,7 +65,7 @@ void Slave_Sensors_Read(void){
 							case SENSOR_TEMPERATURE: 
 								s->reading.f = 25.11f; 
 							break;
-							case SENSOR_HUMIDITY:    
+							case SENSOR_HUMIDITY:
 								s->reading.f = 62.22f; 
 							break;
 							case SENSOR_PRESSURE:
@@ -78,8 +78,8 @@ void Slave_Sensors_Read(void){
 								s->reading.f = 1.55f;
 							break;
 							
-							default:                 
-								s->reading.f = 8.8f;  
+							default:
+								s->reading.f = 8.8f;
 							break;
             }
             break;
@@ -88,7 +88,7 @@ void Slave_Sensors_Read(void){
 							case SENSOR_TEMPERATURE: 
 								s->reading.d = 11.25f; 
 							break;
-							case SENSOR_HUMIDITY:    
+							case SENSOR_HUMIDITY:
 								s->reading.d = 22.62f; 
 							break;
 							case SENSOR_PRESSURE:
@@ -101,8 +101,8 @@ void Slave_Sensors_Read(void){
 								s->reading.d = 2.78f;
 							break;
 							
-							default:                 
-								s->reading.d = 8.8f;  
+							default: 
+								s->reading.d = 8.8f;
 							break;
             }
             break;
@@ -111,7 +111,7 @@ void Slave_Sensors_Read(void){
 							case SENSOR_TEMPERATURE: 
 								s->reading.i = 11; 
 							break;
-							case SENSOR_HUMIDITY:    
+							case SENSOR_HUMIDITY:
 								s->reading.i = 22; 
 							break;
 							case SENSOR_PRESSURE:
@@ -124,8 +124,8 @@ void Slave_Sensors_Read(void){
 								s->reading.i = 2;
 							break;
 							
-							default:                 
-								s->reading.i = 8;  
+							default: 
+								s->reading.i = 8;
 							break;
             }
             break;
@@ -134,7 +134,7 @@ void Slave_Sensors_Read(void){
 							case SENSOR_TEMPERATURE: 
 								s->reading.i2 = 11; 
 							break;
-							case SENSOR_HUMIDITY:    
+							case SENSOR_HUMIDITY:
 								s->reading.i2 = 22; 
 							break;
 							case SENSOR_PRESSURE:
@@ -147,8 +147,8 @@ void Slave_Sensors_Read(void){
 								s->reading.i2 = 2;
 							break;
 							
-							default:                 
-								s->reading.i2 = 8;  
+							default: 
+								s->reading.i2 = 8;
 							break;
             }
             break;
@@ -157,7 +157,7 @@ void Slave_Sensors_Read(void){
 							case SENSOR_TEMPERATURE: 
 								s->reading.c = 55; 
 							break;
-							case SENSOR_HUMIDITY:    
+							case SENSOR_HUMIDITY:
 								s->reading.c = 66; 
 							break;
 							case SENSOR_PRESSURE:
@@ -170,8 +170,8 @@ void Slave_Sensors_Read(void){
 								s->reading.c = 99;
 							break;
 							
-							default:                 
-								s->reading.c = 8;  
+							default: 
+								s->reading.c = 8;
 							break;
             }
             break;
@@ -187,7 +187,7 @@ uint8_t Slave_Sensors_PackTable(uint8_t *buf, uint8_t bufMax){
     if ((uint8_t)(1U + k_cnt * 3U) > bufMax) return 0U;
     buf[0] = k_cnt;
     for (i = 0; i < k_cnt; i++) {
-        buf[1U + i * 3U]      = g_sensors[i].id;
+        buf[1U + i * 3U] = g_sensors[i].id;
         buf[1U + i * 3U + 1U] = g_sensors[i].sensorType;
         buf[1U + i * 3U + 2U] = g_sensors[i].dataType;
     }
@@ -198,7 +198,7 @@ uint8_t Slave_Sensors_PackAllData(uint8_t *buf, uint8_t bufMax){
     uint8_t pos = 0;
     uint8_t i;
     for (i = 0; i < k_cnt; i++) {
-        SensorEntry_t *s  = &g_sensors[i];
+        SensorEntry_t *s = &g_sensors[i];
         uint8_t sz = DataType_Size((eDataType)s->dataType);
         if ((uint8_t)(pos + 2U + sz) > bufMax) break;
         buf[pos++] = s->id;

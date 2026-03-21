@@ -3,10 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <FreeRTOS.h>
-#include <semphr.h>
-#include "ProtocolDefinition.h"
 #include "Configuration.h"
+#include "slave_config.h"
 
 typedef enum {
     SREG_UNREGISTERED = 0,  /* slot inactive                       */
@@ -37,7 +35,7 @@ typedef struct {
     SlaveStats_t     stats;
 } SlaveSlot_t;
 
-void    Registry_Init(void);
+void Registry_Init(void);
 SlaveSlot_t Registry_GetSlot(uint8_t slotIdx);
 void Registry_SetState(uint8_t idx, eSlaveRegState s);
 void Registry_SetSensorTable(uint8_t idx, uint8_t count, const SensorDesc_t *d);

@@ -11,52 +11,52 @@
 #include "watchdog.h"
 
 typedef enum {
-    SCREEN_IDLE       = 0,
-    SCREEN_STOP_MENU  = 1,
+    SCREEN_IDLE = 0,
+    SCREEN_STOP_MENU = 1,
     SCREEN_SLAVE_LIST = 2,
-    SCREEN_RUN        = 3,
+    SCREEN_RUN = 3,
 } eScreen;
 
-static eScreen g_screen    = SCREEN_IDLE;
-static uint8_t g_menuRow   = 0;
-static uint8_t g_slotView  = 0;
-static uint8_t g_senView   = 0;
-static bool    g_redraw    = true;
+static eScreen g_screen = SCREEN_IDLE;
+static uint8_t g_menuRow = 0;
+static uint8_t g_slotView = 0;
+static uint8_t g_senView = 0;
+static bool g_redraw = true;
 
 static inline void _Dirty(void) { g_redraw = true; }
 
 static char _TypeChar(uint8_t t){
     switch ((eSensorType)t) {
     case SENSOR_TEMPERATURE: return 'T';
-    case SENSOR_HUMIDITY:    return 'H';
-    case SENSOR_PRESSURE:    return 'P';
-    case SENSOR_ADC_RAW:     return 'A';
-    case SENSOR_DIGITAL_IN:  return 'D';
-    default:                 return '?';
+    case SENSOR_HUMIDITY: return 'H';
+    case SENSOR_PRESSURE: return 'P';
+    case SENSOR_ADC_RAW: return 'A';
+    case SENSOR_DIGITAL_IN: return 'D';
+    default: return '?';
     }
 }
 
-static void _FmtVal(char *buf, uint8_t sz,  const SensorReading_t *r, uint8_t dt){
+static void _FmtVal(char *buf, uint8_t sz, const SensorReading_t *r, uint8_t dt){
     switch ((eDataType)dt) {
-    case DTYPE_FLOAT:  snprintf(buf, sz, "%.2f",  r->f); 	break;
-    case DTYPE_DOUBLE: snprintf(buf, sz, "%.4f",  r->d);	break;
-    case DTYPE_INT32:  snprintf(buf, sz, "%ld",   r->i);   	break;
-    case DTYPE_INT:	   snprintf(buf, sz, "%d", r->i2);		break;
-    case DTYPE_CHAR:   snprintf(buf, sz, "%d", r->c);		break;
-    default:           snprintf(buf, sz, "?");              break;
+    case DTYPE_FLOAT: snprintf(buf, sz, "%.2f", r->f); 	break;
+    case DTYPE_DOUBLE: snprintf(buf, sz, "%.4f", r->d);	break;
+    case DTYPE_INT32: snprintf(buf, sz, "%ld", r->i); 	break;
+    case DTYPE_INT:	 snprintf(buf, sz, "%d", r->i2);		break;
+    case DTYPE_CHAR: snprintf(buf, sz, "%d", r->c);		break;
+    default: snprintf(buf, sz, "?"); break;
     }
 }
 
 static const char *_StateStr(eSlaveRegState s){
     switch (s) {
-    case SREG_UNREGISTERED: return "UNREG   ";
-    case SREG_DECLARED:     return "DECLARED";
-    case SREG_FETCHING:     return "FETCHING";
-    case SREG_READY:        return "READY   ";
-    case SREG_ONLINE:       return "ONLINE  ";
-    case SREG_OFFLINE:      return "OFFLINE ";
-    case SREG_ERROR:        return "ERROR   ";
-    default:                return "???     ";
+    case SREG_UNREGISTERED: return "UNREG";
+    case SREG_DECLARED: return "DECLARED";
+    case SREG_FETCHING: return "FETCHING";
+    case SREG_READY: return "READY";
+    case SREG_ONLINE: return "ONLINE";
+    case SREG_OFFLINE: return "OFFLINE";
+    case SREG_ERROR: return "ERROR";
+    default: return "???";
     }
 }
 
@@ -108,7 +108,7 @@ static void _DrawRun(void){
     }
     else {
         char tmp[17] = {0};
-        uint8_t pos     = 0;
+        uint8_t pos = 0;
 
         for (uint8_t i = 0; i < s.sensorCount && pos < LCD_COLS; i++) {
             uint8_t si = (uint8_t)((g_senView + i) % s.sensorCount);
@@ -120,7 +120,7 @@ static void _DrawRun(void){
                     s.sensors[si].dataType);
 
             char piece[14];
-            int  n = snprintf(piece, sizeof(piece), "%c:%s ", _TypeChar(s.sensors[si].sensorType), val);
+            int n = snprintf(piece, sizeof(piece), "%c:%s ", _TypeChar(s.sensors[si].sensorType), val);
             if (n > 0 && (uint8_t)(pos + (uint8_t)n) <= LCD_COLS) {
                 memcpy(tmp + pos, piece, (size_t)n);
                 pos = (uint8_t)(pos + (uint8_t)n);
@@ -138,7 +138,7 @@ static void _DrawRun(void){
 static void _Btn_Idle(BtnEvent_t ev){
     if (ev.btn == BTN_OK && ev.type == BTN_SHORT) {
         SysState_Set(SYS_STOP);
-        g_screen  = SCREEN_STOP_MENU;
+        g_screen = SCREEN_STOP_MENU;
         g_menuRow = 0;
         _Dirty();
     }
@@ -153,19 +153,19 @@ static void _Btn_StopMenu(BtnEvent_t ev){
     if (ev.btn == BTN_OK && ev.type == BTN_SHORT) {
         if (g_menuRow == 0U) {
             g_slotView = 0;
-            g_screen   = SCREEN_SLAVE_LIST;
+            g_screen = SCREEN_SLAVE_LIST;
             _Dirty();
         } else {
             if (Registry_GetRegisteredCount() == 0U) {
-                LCD_Write2Lines("!! No slaves !!", "Register first  ");
+                LCD_Write2Lines("!! No slaves !!", "Register first");
                 vTaskDelay(pdMS_TO_TICKS(1000));
                 _Dirty();
                 return;
             }
             SysState_Set(SYS_RUN);
             g_slotView = 0;
-            g_senView  = 0;
-            g_screen   = SCREEN_RUN;
+            g_senView = 0;
+            g_screen = SCREEN_RUN;
             _Dirty();
         }
     }
@@ -192,7 +192,7 @@ static void _Btn_SlaveList(BtnEvent_t ev){
             _Dirty();
         }
         else {
-            g_screen  = SCREEN_STOP_MENU;
+            g_screen = SCREEN_STOP_MENU;
             g_menuRow = 0;
             _Dirty();
         }
@@ -209,7 +209,7 @@ static void _Btn_Run(BtnEvent_t ev){
     }
     if (ev.btn == BTN_DOWN) {
         g_slotView = (uint8_t)((g_slotView + 1U) % MAX_SLAVE_SLOTS);
-        g_senView  = 0;
+        g_senView = 0;
         _Dirty(); return;
     }
     if (ev.btn == BTN_OK) {
@@ -221,7 +221,7 @@ static void _Btn_Run(BtnEvent_t ev){
         }
         else {
             SysState_Set(SYS_STOP);
-            g_screen  = SCREEN_STOP_MENU;
+            g_screen = SCREEN_STOP_MENU;
             g_menuRow = 0;
             _Dirty();
         }
@@ -244,19 +244,19 @@ void LCD_Task(void *pvParams){
 
         if (gotBtn) {
             switch (g_screen) {
-            case SCREEN_IDLE:       _Btn_Idle(ev);       break;
-            case SCREEN_STOP_MENU:  _Btn_StopMenu(ev);   break;
-            case SCREEN_SLAVE_LIST: _Btn_SlaveList(ev);  break;
-            case SCREEN_RUN:        _Btn_Run(ev);         break;
+            case SCREEN_IDLE: _Btn_Idle(ev); break;
+            case SCREEN_STOP_MENU: _Btn_StopMenu(ev); break;
+            case SCREEN_SLAVE_LIST: _Btn_SlaveList(ev);break;
+            case SCREEN_RUN: _Btn_Run(ev); break;
             }
         }
 
         if (g_redraw || g_screen == SCREEN_RUN) {
             switch (g_screen) {
-            case SCREEN_IDLE:       _DrawIdle();       break;
-            case SCREEN_STOP_MENU:  _DrawStopMenu();   break;
-            case SCREEN_SLAVE_LIST: _DrawSlaveList();  break;
-            case SCREEN_RUN:        _DrawRun();        break;
+            case SCREEN_IDLE: _DrawIdle(); break;
+            case SCREEN_STOP_MENU: _DrawStopMenu(); break;
+            case SCREEN_SLAVE_LIST: _DrawSlaveList(); break;
+            case SCREEN_RUN: _DrawRun(); break;
             }
             g_redraw = false;
         }

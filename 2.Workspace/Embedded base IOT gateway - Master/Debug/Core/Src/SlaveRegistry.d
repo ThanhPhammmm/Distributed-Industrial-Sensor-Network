@@ -1,5 +1,6 @@
 Core/Src/SlaveRegistry.o: ../Core/Src/SlaveRegistry.c \
- ../Core/Inc/SlaveRegistry.h \
+ ../Core/Inc/SlaveRegistry.h ../Core/Inc/Configuration.h \
+ ../Core/Inc/slave_config.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/FreeRTOS.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/FreeRTOSConfig.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/SEGGER/OS/SEGGER_SYSVIEW_FreeRTOS.h \
@@ -18,8 +19,10 @@ Core/Src/SlaveRegistry.o: ../Core/Src/SlaveRegistry.c \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/queue.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/list.h \
- ../Core/Inc/ProtocolDefinition.h ../Core/Inc/Configuration.h
+ ../Core/Inc/Configuration.h ../Core/Inc/slave_config.h
 ../Core/Inc/SlaveRegistry.h:
+../Core/Inc/Configuration.h:
+../Core/Inc/slave_config.h:
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/FreeRTOS.h:
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/FreeRTOSConfig.h:
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/SEGGER/OS/SEGGER_SYSVIEW_FreeRTOS.h:
@@ -38,5 +41,5 @@ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/queue.h:
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h:
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/list.h:
-../Core/Inc/ProtocolDefinition.h:
 ../Core/Inc/Configuration.h:
+../Core/Inc/slave_config.h:

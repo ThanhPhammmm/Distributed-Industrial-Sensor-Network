@@ -8,7 +8,11 @@
 #include "SlaveRegistry.h"
 #include "system_state.h"
 
-typedef enum { DM_IDLE = 0, DM_FETCHING = 1, DM_POLLING = 2 } eDmPhase;
+typedef enum { 
+    DM_IDLE = 0, 
+    DM_FETCHING = 1, 
+    DM_POLLING = 2 
+} eDmPhase;
 
 void DeviceManager_Init(void);
 void DeviceManager_Task(void *pvParams);

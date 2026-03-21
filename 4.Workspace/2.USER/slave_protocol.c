@@ -20,8 +20,8 @@ static uint8_t  g_rest[PROTO_LEN_MAX + PROTO_CRC_SIZE];
 static uint8_t  g_txBuf[PROTO_FRAME_MAX];
 
 static volatile uint8_t g_frameReady = 0U;
-static Frame_t           g_frame;
-static uint8_t           g_myAddr;
+static Frame_t g_frame;
+static uint8_t g_myAddr;
 
 extern void delay_ms(uint32_t ms);
 
@@ -35,7 +35,7 @@ static void _AbortRxDma(void){
 static void _ArmPrefix(void){
     _AbortRxDma();
 		
-    DMA1_Channel6->CMAR  = (uint32_t)g_pfx;
+    DMA1_Channel6->CMAR = (uint32_t)g_pfx;
     DMA1_Channel6->CNDTR = PROTO_PREFIX_SIZE;
     g_rxStage = RX_STAGE_PREFIX;
 		DMA_ClearFlag(DMA1_FLAG_GL6);
@@ -46,7 +46,7 @@ static void _ArmPrefix(void){
 static void _ArmRest(uint8_t len){
     _AbortRxDma();
 		
-    DMA1_Channel6->CMAR  = (uint32_t)g_rest;
+    DMA1_Channel6->CMAR = (uint32_t)g_rest;
     DMA1_Channel6->CNDTR = (uint16_t)(len + PROTO_CRC_SIZE);
     g_rxStage = RX_STAGE_REST;
 		DMA_ClearFlag(DMA1_FLAG_GL6);
@@ -55,7 +55,7 @@ static void _ArmRest(uint8_t len){
 }
 
 void Slave_Protocol_Init(uint8_t myAddr){
-    g_myAddr     = myAddr;
+    g_myAddr = myAddr;
     g_frameReady = 0U;
     _ArmPrefix();
 }
@@ -66,7 +66,7 @@ static void _StartTxDma(const uint8_t *buf, uint8_t n){
     DMA_ClearFlag(DMA1_FLAG_GL7 | DMA1_FLAG_TC7 |
                   DMA1_FLAG_HT7 | DMA1_FLAG_TE7);
 
-    DMA1_Channel7->CMAR  = (uint32_t)buf;
+    DMA1_Channel7->CMAR = (uint32_t)buf;
     DMA1_Channel7->CNDTR = n;
 			
 		USART_ClearFlag(USART2, USART_FLAG_TC);
@@ -89,7 +89,7 @@ static void _OnPing(void){
 	
 		GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
 		delay_ms(1);
-		GPIO_SetBits(GPIOC, GPIO_Pin_13);   // LED OFF
+		GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
 		delay_ms(1);
 }
 
@@ -104,7 +104,7 @@ static void _OnGetSensorTable(void){
 		
 		GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
 		delay_ms(1);
-		GPIO_SetBits(GPIOC, GPIO_Pin_13);   // LED OFF
+		GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
 		delay_ms(1);
 }
 
@@ -121,7 +121,7 @@ static void _OnGetAllData(void){
 
 		GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
 		delay_ms(1);
-		GPIO_SetBits(GPIOC, GPIO_Pin_13);   // LED OFF
+		GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
 		delay_ms(1);
 }
 
@@ -134,9 +134,9 @@ void Slave_Protocol_Process(void){
     }
 
     switch (g_frame.cmd) {
-			case CMD_PING:             _OnPing();           break;
+			case CMD_PING: _OnPing(); break;
 			case CMD_GET_SENSOR_TABLE: _OnGetSensorTable(); break;
-			case CMD_GET_ALL_DATA:     _OnGetAllData();     break;
+			case CMD_GET_ALL_DATA: _OnGetAllData(); break;
 			case CMD_RESET:
 					_Send(CMD_ACK, STATUS_OK, 0U, NULL, 0U);
 					delay_ms(10U);
@@ -163,16 +163,16 @@ void Slave_Protocol_OnRxDmaComplete(void){
         return;
     }
 
-    uint8_t len   = g_pfx[2];
+    uint8_t len = g_pfx[2];
     uint8_t total = (uint8_t)(PROTO_PREFIX_SIZE + len + PROTO_CRC_SIZE);
 
-		if(total < PROTO_LEN_MIN  || total > PROTO_LEN_MAX){
+		if(total < PROTO_LEN_MIN || total > PROTO_LEN_MAX){
         _ArmPrefix();
         return;
     }
 				
     static uint8_t raw[PROTO_FRAME_MAX];
-    memcpy(raw, g_pfx,  PROTO_PREFIX_SIZE);
+    memcpy(raw, g_pfx, PROTO_PREFIX_SIZE);
     memcpy(raw + PROTO_PREFIX_SIZE, g_rest, (size_t)(len + PROTO_CRC_SIZE));
 
     if (!Frame_ValidCRC(raw, total)) { _ArmPrefix(); return; }

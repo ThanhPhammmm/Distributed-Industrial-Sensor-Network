@@ -7,15 +7,15 @@ QueueHandle_t xQueue_BtnEvent = NULL;
 
 static const struct {
     GPIO_TypeDef *port;
-    uint16_t      pin;
+    uint16_t pin;
 } k_pins[3] = {
-    { GPIOA, GPIO_PIN_8  },
-    { GPIOA, GPIO_PIN_9  },
+    { GPIOA, GPIO_PIN_8 },
+    { GPIOA, GPIO_PIN_9 },
     { GPIOA, GPIO_PIN_10 },
 };
 
-#define DEBOUNCE_CNT  (BTN_DEBOUNCE_MS  / BTN_POLL_MS)
-#define LONG_CNT      (BTN_LONG_PRESS_MS / BTN_POLL_MS)
+#define DEBOUNCE_CNT (BTN_DEBOUNCE_MS / BTN_POLL_MS)
+#define LONG_CNT (BTN_LONG_PRESS_MS / BTN_POLL_MS)
 
 typedef struct {
     uint16_t debounce;
@@ -32,7 +32,7 @@ void Button_Init(void){
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
     GPIO_InitTypeDef g = {0};
-    g.Pin  = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10;
+    g.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10;
     g.Mode = GPIO_MODE_INPUT;
     g.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOA, &g);
@@ -68,9 +68,9 @@ void Button_Task(void *pvParams){
                     BtnEvent_t ev = { .btn = (eBtn)i, .type = BTN_SHORT };
                     xQueueSend(xQueue_BtnEvent, &ev, 0);
                 }
-                s->debounce  = 0;
-                s->held      = 0;
-                s->active    = false;
+                s->debounce = 0;
+                s->held = 0;
+                s->active = false;
                 s->longFired = false;
             }
         }

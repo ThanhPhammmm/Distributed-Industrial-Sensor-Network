@@ -1,0 +1,20 @@
+#ifndef INC_SLAVE_CONFIG_H_
+#define INC_SLAVE_CONFIG_H_
+
+typedef struct {
+    uint8_t sensorId;
+    uint8_t sensorType;
+    uint8_t dataType;
+} SensorDesc_t;
+
+typedef union {
+    float    f;
+    int32_t  i;
+    double   d;
+    int		 i2;
+    char	 c;
+
+    uint8_t  bytes[8];
+} SensorReading_t;
+
+#endif /* INC_SLAVE_CONFIG_H_ */
