@@ -16,7 +16,7 @@ typedef struct {
 
 static uint32_t g_lastPollMs = 0;
 static bool g_pollActive = false;
-static uint8_t g_pollIdx   = 0;
+static uint8_t g_pollIdx = 0;
 static uint32_t g_lastRecoveryMs = 0;
 
 typedef struct {
@@ -39,7 +39,7 @@ static void _Send(uint8_t addr, uint8_t cmd){
     TxCmd_t tx;
     memset(&tx, 0, sizeof(tx));
     tx.addr = addr;
-    tx.cmd  = cmd;
+    tx.cmd = cmd;
     xQueueSend(xQueue_TxCmd, &tx, pdMS_TO_TICKS(20));
     xTaskNotifyGive(g_protocolTaskHandle);
 }
@@ -76,7 +76,7 @@ static void _PollBuild(void){
     g_pollCount = 0;
     for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
         SlaveSlot_t s = Registry_GetSlot(i);
-        if (s.registered &&  (s.state == SREG_READY || s.state == SREG_ONLINE) && s.sensorCount > 0U){
+        if (s.registered && (s.state == SREG_READY || s.state == SREG_ONLINE) && s.sensorCount > 0U){
             g_pollList[g_pollCount].slotIdx = i;
             g_pollList[g_pollCount].addr = s.addr;
             g_pollCount++;

@@ -85,17 +85,13 @@ void ITM_SendString(const char *s);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
-{
-    // pcTaskName = tên task bị overflow
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName){
     volatile char *name = pcTaskName;
     (void)name;
-    while (1) {}// đặt breakpoint ở đây → xem pcTaskName
+    while (1) {}
 }
 
-void vApplicationMallocFailedHook(void)
-{
-    // Heap hết → task không tạo được
+void vApplicationMallocFailedHook(void){
     while (1) {}
 }
 
