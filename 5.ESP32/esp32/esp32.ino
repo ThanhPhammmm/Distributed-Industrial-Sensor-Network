@@ -25,12 +25,19 @@
 #define FRAME_MAX        (PREFIX_SIZE + PROTO_LEN_MAX + CRC_SIZE)
 
 #define CMD_UPSTREAM_PUSH  0x09
+#define CMD_UPSTREAM_ALARM 0x0A
 
 #define DTYPE_FLOAT  0x01
 #define DTYPE_INT32  0x02
 #define DTYPE_DOUBLE 0x03
 #define DTYPE_INT    0x04
 #define DTYPE_CHAR   0x05
+
+#define ALARM_NONE     0
+#define ALARM_WARN     1
+#define ALARM_CRITICAL 2
+
+#define TOPIC_PREFIX "gateway"
 
 static QueueHandle_t g_uartEventQueue = NULL;
 
@@ -64,7 +71,169 @@ static bool validateCRC(const uint8_t *raw, uint16_t total){
 }
 
 static uint8_t dataTypeSize(uint8_t dt){
-    return (dt == DTYPE_DOUBLE) ? 8U : 4U;
+    switch(dt){
+      case DTYPE_FLOAT:
+        return 4U;
+      case DTYPE_INT32:
+        return 4U;
+      case DTYPE_DOUBLE:
+        return 8U;
+      case DTYPE_INT:
+        return 4U;
+      case DTYPE_CHAR:
+        return 1U;
+      default:
+        return 0U;
+    }
+}
+
+static const char* sentorTypeData(uint8_t dt){
+    switch (dt) {
+    case 0x01: return "float";
+    case 0x02: return "int32";
+    case 0x03: return "double";
+    case 0x04: return "int";
+    case 0x05: return "char";
+    default: return "data";
+    }
+}
+static const char* sensorTypeName(uint8_t st){
+    switch (st) {
+    case 0x01: return "temperature";
+    case 0x02: return "humidity";
+    case 0x03: return "pressure";
+    case 0x04: return "adc_raw";
+    case 0x05: return "digital_in";
+    default: return "sensor";
+    }
+}
+
+static const char* alarmLevelStr(uint8_t level){
+    switch (level) {
+    case ALARM_WARN: return "WARN";
+    case ALARM_CRITICAL: return "CRITICAL";
+    default: return "NONE";
+    }
+}
+
+static void valueToStr(char *buf, size_t sz, uint8_t dt, const uint8_t *data){
+    switch (dt) {
+    case DTYPE_FLOAT:{ 
+      float f; 
+      memcpy(&f, data, 4); 
+      snprintf(buf, sz, "%.2f", f); 
+      break; 
+      }
+    case DTYPE_INT32: { 
+      int32_t i; 
+      memcpy(&i, data, 4); 
+      snprintf(buf, sz, "%ld", (long)i);
+      break; 
+      }
+    case DTYPE_DOUBLE: { 
+      double d; 
+      memcpy(&d, data, 8); 
+      snprintf(buf, sz, "%.4f", d); 
+      break; 
+      }
+    case DTYPE_INT: {
+      int i2;
+      memcpy(&i2, data, 4);
+      snprintf(buf, sz, "%d", i2); 
+      break; 
+     }
+    case DTYPE_CHAR: {
+      char c;
+      memcpy(&c, data, 1);
+      snprintf(buf, sz, "%d", c); 
+      break; 
+     }
+    default: snprintf(buf, sz, "0"); break;
+    }
+    
+}
+
+/*
+ * Payload: [slaveAddr:1][sensorCount:1]
+ *            [sensorId:1][sensorType:1][dataType:1][data:4or8] × sensorCount
+   */
+static void processDataFrame(const uint8_t *raw, uint16_t total){
+    uint8_t payloadLen = (uint8_t)(total - PREFIX_SIZE - HEADER_SIZE - CRC_SIZE);
+    const uint8_t *p = &raw[8];
+    uint8_t pos = 0;
+
+    while (pos + 2 <= payloadLen) {
+        uint8_t slaveAddr = p[pos++];
+        uint8_t sensorCount = p[pos++];
+
+        for (uint8_t s = 0; s < sensorCount; s++) {
+            if (pos + 3 > payloadLen) return;
+            uint8_t sensorId = p[pos++];
+            uint8_t sensorType = p[pos++];
+            uint8_t dataType = p[pos++];
+            uint8_t sz = dataTypeSize(dataType);
+            if (pos + sz > payloadLen) return;
+
+            char topic[64], value[24];
+            snprintf(topic, sizeof(topic), "%s/%02X/%s/%s/%u", TOPIC_PREFIX, slaveAddr, sensorTypeName(sensorType), sentorTypeData(dataType), sensorId);
+            valueToStr(value, sizeof(value), dataType, &p[pos]);
+            
+            Serial.println("==== DATA FRAME ====");
+            
+            Serial.print("Topic: ");
+            Serial.println(topic);
+            
+            Serial.print("Value: ");
+            Serial.println(value);
+            
+            Serial.println("====================");
+            
+            pos += sz;
+        }
+    }
+}
+
+/*
+ * Payload: [slaveAddr:1][sensorId:1][sensorType:1][alarmLevel:1][dataType:1][data:4or8]
+ */
+static void processAlarmFrame(const uint8_t *raw, uint8_t total){
+    uint8_t payloadLen = (uint8_t)(total - PREFIX_SIZE - HEADER_SIZE - CRC_SIZE);
+    if (payloadLen < 6) return;
+    
+    const uint8_t *p = &raw[8];
+    uint8_t slaveAddr = p[0];
+    uint8_t sensorId = p[1];
+    uint8_t sensorType = p[2];
+    uint8_t alarmLevel = p[3];
+    uint8_t dataType = p[4];
+    uint8_t sz = dataTypeSize(dataType);
+
+    if (5 + sz > payloadLen) return;
+
+    char value[24], topic[64], payload[128];
+    valueToStr(value, sizeof(value), dataType, &p[5]);
+
+    snprintf(topic, sizeof(topic), "%s/%02X/%s/alarm", TOPIC_PREFIX, slaveAddr, sensorTypeName(sensorType));
+    snprintf(payload, sizeof(payload), "{\"level\":\"%s\",\"sensor_id\":%u,\"value\":%s}", alarmLevelStr(alarmLevel), sensorId, value);
+
+    Serial.println("==== ALARM FRAME ====");
+    
+    Serial.print("Topic: ");
+    Serial.println(topic);
+    
+    Serial.print("Payload: ");
+    Serial.println(payload);
+    
+    Serial.println("=====================");
+}
+
+static void dispatchFrame(void){
+    if (!validateCRC(g_rxFrame, g_rxPos)) return;
+    switch (g_rxFrame[5]) {
+    case CMD_UPSTREAM_PUSH: processDataFrame(g_rxFrame, g_rxPos); break;
+    case CMD_UPSTREAM_ALARM: processAlarmFrame(g_rxFrame, g_rxPos); break;
+    default: break;
+    }
 }
 
 bool ledState = false;
@@ -119,6 +288,7 @@ static void rxByte(uint8_t b)
             g_rxFrame[g_rxPos++] = b;
         if (g_rxPos >= g_rxExpected) {
             Serial.printf("[SM] frame complete, CRC %s\n", validateCRC(g_rxFrame, g_rxPos) ? "OK" : "FAIL");
+            dispatchFrame();
 
             ledState = !ledState;
             digitalWrite(LED_PIN, ledState);

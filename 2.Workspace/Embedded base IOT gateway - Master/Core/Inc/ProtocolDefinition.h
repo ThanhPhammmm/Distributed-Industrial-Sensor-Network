@@ -45,6 +45,8 @@ typedef enum {
     CMD_NACK             = 0x07,
     CMD_RESET            = 0x08,
     CMD_UPSTREAM_PUSH    = 0x09,   /* STM32 → ESP32 */
+    CMD_UPSTREAM_ALARM   = 0x0A,   /* STM32 → ESP32 */
+    CMD_SET_ACTUATOR     = 0x0B,   /* Master → Slave */
 } eCmd;
 
 typedef enum {
@@ -93,9 +95,9 @@ static inline uint16_t CRC16_Calc(const uint8_t *buf, uint16_t len){
     return crc;
 }
 
-static inline uint8_t Frame_Build(uint8_t       *out,
-                                   uint8_t        addr,  uint8_t seq,
-                                   uint8_t        cmd,   uint8_t status, uint8_t ver,
+static inline uint8_t Frame_Build(uint8_t *out,
+                                   uint8_t addr, uint8_t seq,
+                                   uint8_t cmd, uint8_t status, uint8_t ver,
                                    const uint8_t *payload, uint8_t payloadLen)
 {
     out[0] = PROTO_SOF_0;
@@ -108,7 +110,7 @@ static inline uint8_t Frame_Build(uint8_t       *out,
     out[7] = ver;
     if (payloadLen && payload)
         memcpy(&out[8], payload, payloadLen);
-    uint8_t  ce  = (uint8_t)(PROTO_HEADER_SIZE + payloadLen);
+    uint8_t ce = (uint8_t)(PROTO_HEADER_SIZE + payloadLen);
     uint16_t crc = CRC16_Calc(&out[3], ce);
     out[ce + PROTO_PREFIX_SIZE] = (uint8_t)(crc >> 8);
     out[ce + PROTO_PREFIX_SIZE + 1] = (uint8_t)(crc & 0xFFU);
@@ -124,7 +126,7 @@ static inline bool Frame_ValidCRC(const uint8_t *raw, uint8_t total){
 
 static inline void Frame_Parse(const uint8_t *raw, uint8_t total, Frame_t *f){
     f->addr = raw[3];
-    f->seq  = raw[4];
+    f->seq = raw[4];
     f->cmd = raw[5];
     f->status = raw[6];
     f->version = raw[7];
@@ -136,13 +138,13 @@ static inline void Frame_Parse(const uint8_t *raw, uint8_t total, Frame_t *f){
     }
 }
 
-static inline uint8_t Payload_PackTable(uint8_t            *buf,    uint8_t bufMax,
-                                         const SensorDesc_t *descs,  uint8_t count)
+static inline uint8_t Payload_PackTable(uint8_t *buf, uint8_t bufMax,
+                                         const SensorDesc_t *descs, uint8_t count)
 {
     if ((uint8_t)(1U + count * 3U) > bufMax) return 0U;
     buf[0] = count;
     for (uint8_t i = 0; i < count; i++) {
-        buf[1U + i * 3U]      = descs[i].sensorId;
+        buf[1U + i * 3U] = descs[i].sensorId;
         buf[1U + i * 3U + 1U] = descs[i].sensorType;
         buf[1U + i * 3U + 2U] = descs[i].dataType;
     }
@@ -150,22 +152,22 @@ static inline uint8_t Payload_PackTable(uint8_t            *buf,    uint8_t bufM
 }
 
 static inline uint8_t Payload_UnpackTable(const uint8_t *payload, uint8_t payloadLen,
-                                           SensorDesc_t  *descs,   uint8_t descMax)
+                                           SensorDesc_t *descs, uint8_t descMax)
 {
     if (payloadLen < 1U) return 0U;
     uint8_t count = payload[0];
     if (count > descMax) count = descMax;
     for (uint8_t i = 0; i < count; i++) {
         if ((uint8_t)(1U + i * 3U + 2U) >= payloadLen) break;
-        descs[i].sensorId   = payload[1U + i * 3U];
+        descs[i].sensorId = payload[1U + i * 3U];
         descs[i].sensorType = payload[1U + i * 3U + 1U];
-        descs[i].dataType   = payload[1U + i * 3U + 2U];
+        descs[i].dataType = payload[1U + i * 3U + 2U];
     }
     return count;
 }
 
-static inline bool Payload_PackReading(uint8_t *buf,    uint8_t *pos, uint8_t bufMax,
-                                        uint8_t  sensorId, eDataType dt,
+static inline bool Payload_PackReading(uint8_t *buf, uint8_t *pos, uint8_t bufMax,
+                                        uint8_t sensorId, eDataType dt,
                                         SensorReading_t val)
 {
     uint8_t sz = DataType_Size(dt);
@@ -178,8 +180,8 @@ static inline bool Payload_PackReading(uint8_t *buf,    uint8_t *pos, uint8_t bu
 }
 
 static inline bool Payload_UnpackReading(const uint8_t *payload, uint8_t payloadLen,
-                                          uint8_t       *pos,
-                                          uint8_t       *outId,  eDataType *outDt,
+                                          uint8_t *pos,
+                                          uint8_t *outId, eDataType *outDt,
                                           SensorReading_t *outVal)
 {
     if ((uint8_t)(*pos + 2U) > payloadLen) return false;
@@ -201,10 +203,10 @@ static inline bool Payload_UnpackReading(const uint8_t *payload, uint8_t payload
  * Upstream alarm payload format:
  *   [slaveAddr:1][sensorId:1][sensorType:1][alarmLevel:1][dataType:1][data:4or8]
  */
-static inline uint8_t Payload_PackUpstream(uint8_t           *buf,
-                                            uint8_t            bufMax,
+static inline uint8_t Payload_PackUpstream(uint8_t *buf,
+                                            uint8_t bufMax,
                                             const SlaveSlot_t *slots,
-                                            uint8_t            slotCount)
+                                            uint8_t slotCount)
 {
     uint8_t pos = 0;
     for (uint8_t i = 0; i < slotCount; i++) {
@@ -216,10 +218,10 @@ static inline uint8_t Payload_PackUpstream(uint8_t           *buf,
         buf[pos++] = s->sensorCount;
 
         for (uint8_t j = 0; j < s->sensorCount; j++) {
-            uint8_t id  = s->sensors[j].sensorId;
-            uint8_t st  = s->sensors[j].sensorType;
-            uint8_t dt  = s->sensors[j].dataType;
-            uint8_t sz  = DataType_Size((eDataType)dt);
+            uint8_t id = s->sensors[j].sensorId;
+            uint8_t st = s->sensors[j].sensorType;
+            uint8_t dt = s->sensors[j].dataType;
+            uint8_t sz = DataType_Size((eDataType)dt);
 
             if (pos + 3U + sz > bufMax) goto done;
 

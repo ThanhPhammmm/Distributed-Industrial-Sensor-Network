@@ -10,6 +10,7 @@
 #include "watchdog.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "alarm.h"
 
 extern UART_HandleTypeDef huart3;
 
@@ -64,6 +65,29 @@ static void _PushDataIfChanged(void){
     g_firstPush = false;
 }
 
+static void _SendAlarm(const AlarmEvent_t *ev){
+    uint8_t payload[12];
+    uint8_t pos = 0;
+
+    payload[pos++] = ev->slaveAddr;
+    payload[pos++] = ev->sensorId;
+    payload[pos++] = ev->sensorType;
+    payload[pos++] = (uint8_t)ev->level;
+    payload[pos++] = (uint8_t)ev->dataType;
+
+    uint8_t sz = DataType_Size(ev->dataType);
+    memcpy(&payload[pos], ev->readingData.bytes, sz);
+    pos = (uint8_t)(pos + sz);
+
+    uint8_t flen = Frame_Build(g_txBuf,
+                               UPSTREAM_ESP32_ADDR, g_seq++,
+                               CMD_UPSTREAM_ALARM, STATUS_OK, 0x01,
+                               payload, pos);
+    HAL_StatusTypeDef ret = HAL_UART_Transmit_DMA(&huart3, g_txBuf, flen);
+    if (ret != HAL_OK) {
+    	//
+    }}
+
 void Upstream_Init(void){}
 
 void Upstream_Task(void *pvParams)
@@ -72,6 +96,10 @@ void Upstream_Task(void *pvParams)
     TickType_t lastPushTick = 0;
 
     while(1) {
+        AlarmEvent_t ev;
+        while (xQueueReceive(xQueue_AlarmEvent, &ev, 0) == pdTRUE)
+            _SendAlarm(&ev);
+
     	if ((xTaskGetTickCount() - lastPushTick) >= pdMS_TO_TICKS(UPSTREAM_PUSH_INTERVAL_MS)) {
             if (SysState_Get() == SYS_RUN)
             	_PushDataIfChanged();

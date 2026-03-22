@@ -51,7 +51,7 @@ Core/Src/DeviceManager.o: ../Core/Src/DeviceManager.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/system_state.h ../Core/Inc/watchdog.h
+ ../Core/Inc/system_state.h ../Core/Inc/watchdog.h ../Core/Inc/alarm.h
 ../Core/Inc/DeviceManager.h:
 ../Core/Inc/ProtocolDefinition.h:
 ../Core/Inc/slave_config.h:
@@ -110,3 +110,4 @@ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 ../Core/Inc/system_state.h:
 ../Core/Inc/watchdog.h:
+../Core/Inc/alarm.h:

@@ -20,8 +20,8 @@ typedef struct {
 } RS485TxReq_t;
 
 void RS485_Driver_Init(void);
-bool RS485_Send(uint8_t addr,   uint8_t seq,
-                uint8_t cmd,    uint8_t status, uint8_t ver,
+bool RS485_Send(uint8_t addr, uint8_t seq,
+                uint8_t cmd, uint8_t status, uint8_t ver,
                 const uint8_t *payload, uint8_t payloadLen);
 void RS485_OnTimeout(void);
 void RS485_OnRxDmaComplete(void);   /* DMA1_Stream5 */

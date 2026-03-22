@@ -18,7 +18,7 @@ typedef enum {
 } eBtnType;
 
 typedef struct {
-    eBtn    btn;
+    eBtn btn;
     eBtnType type;
 } BtnEvent_t;
 

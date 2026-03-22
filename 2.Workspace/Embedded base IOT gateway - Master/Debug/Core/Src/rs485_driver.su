@@ -1,7 +1,7 @@
-../Core/Inc/ProtocolDefinition.h:84:24:CRC16_Calc	24	static
-../Core/Inc/ProtocolDefinition.h:96:23:Frame_Build	24	static
-../Core/Inc/ProtocolDefinition.h:118:20:Frame_ValidCRC	24	static
-../Core/Inc/ProtocolDefinition.h:125:20:Frame_Parse	32	static
+../Core/Inc/ProtocolDefinition.h:86:24:CRC16_Calc	24	static
+../Core/Inc/ProtocolDefinition.h:98:23:Frame_Build	24	static
+../Core/Inc/ProtocolDefinition.h:120:20:Frame_ValidCRC	24	static
+../Core/Inc/ProtocolDefinition.h:127:20:Frame_Parse	32	static
 ../Core/Src/rs485_driver.c:15:6:RS485_OnTimeout	120	static,ignoring_inline_asm
 ../Core/Src/rs485_driver.c:24:13:_RxStartPrefix	8	static
 ../Core/Src/rs485_driver.c:29:13:_RxStartRest	16	static

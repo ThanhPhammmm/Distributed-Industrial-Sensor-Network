@@ -1,0 +1,4 @@
+../Core/Src/alarm.c:50:13:_TriggerActuator	1
+../Core/Src/alarm.c:67:20:_Evaluate	5
+../Core/Src/alarm.c:73:6:Alarm_Init	1
+../Core/Src/alarm.c:78:6:Alarm_Check	14

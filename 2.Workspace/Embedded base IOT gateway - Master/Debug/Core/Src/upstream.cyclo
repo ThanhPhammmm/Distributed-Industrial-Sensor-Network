@@ -1,8 +1,9 @@
-../Core/Inc/ProtocolDefinition.h:66:23:DataType_Size	6
-../Core/Inc/ProtocolDefinition.h:84:24:CRC16_Calc	4
-../Core/Inc/ProtocolDefinition.h:96:23:Frame_Build	3
-../Core/Inc/ProtocolDefinition.h:204:23:Payload_PackUpstream	8
-../Core/Src/upstream.c:22:13:_SlotChanged	7
-../Core/Src/upstream.c:36:13:_PushDataIfChanged	7
-../Core/Src/upstream.c:67:6:Upstream_Init	1
-../Core/Src/upstream.c:69:6:Upstream_Task	3
+../Core/Inc/ProtocolDefinition.h:68:23:DataType_Size	6
+../Core/Inc/ProtocolDefinition.h:86:24:CRC16_Calc	4
+../Core/Inc/ProtocolDefinition.h:98:23:Frame_Build	3
+../Core/Inc/ProtocolDefinition.h:206:23:Payload_PackUpstream	8
+../Core/Src/upstream.c:23:13:_SlotChanged	7
+../Core/Src/upstream.c:37:13:_PushDataIfChanged	7
+../Core/Src/upstream.c:68:13:_SendAlarm	1
+../Core/Src/upstream.c:91:6:Upstream_Init	1
+../Core/Src/upstream.c:93:6:Upstream_Task	4
