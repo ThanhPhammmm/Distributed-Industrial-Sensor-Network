@@ -11,7 +11,7 @@
 #include <string.h>
 #include "Configuration.h"
 
-extern TaskHandle_t   g_protocolTaskHandle;
+extern TaskHandle_t g_protocolTaskHandle;
 extern QueueHandle_t xQueue_RS485_RxFrame;
 
 typedef struct {

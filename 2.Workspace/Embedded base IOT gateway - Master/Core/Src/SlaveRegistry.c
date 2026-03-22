@@ -1,7 +1,14 @@
 #include "SlaveRegistry.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <FreeRTOS.h>
+#include <semphr.h>
+#include "Configuration.h"
+#include "slave_config.h"
+#include <string.h>
 
-static const uint8_t     k_addrs[MAX_SLAVE_SLOTS] = SLAVE_SLOT_ADDRS;
-static SlaveSlot_t       g_slots[MAX_SLAVE_SLOTS];
+static const uint8_t k_addrs[MAX_SLAVE_SLOTS] = SLAVE_SLOT_ADDRS;
+static SlaveSlot_t g_slots[MAX_SLAVE_SLOTS];
 static SemaphoreHandle_t g_mtx;
 
 void Registry_Init(void){
@@ -9,7 +16,7 @@ void Registry_Init(void){
     configASSERT(g_mtx);
     for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
         memset(&g_slots[i], 0, sizeof(SlaveSlot_t));
-        g_slots[i].addr  = k_addrs[i];
+        g_slots[i].addr = k_addrs[i];
         g_slots[i].state = SREG_UNREGISTERED;
     }
 }
@@ -160,7 +167,7 @@ void Registry_ResetForRun(void){
         }
         g_slots[i].state = SREG_DECLARED;
         g_slots[i].missedPolls = 0;
-        g_slots[i].lastSeenMs  = 0;
+        g_slots[i].lastSeenMs = 0;
         memset(&g_slots[i].stats, 0, sizeof(SlaveStats_t));
         memset(g_slots[i].lastReading, 0, sizeof(g_slots[i].lastReading));
     }

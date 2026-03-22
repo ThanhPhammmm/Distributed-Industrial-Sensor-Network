@@ -26,7 +26,7 @@ const char *SysState_Name(eSysState s){
     switch (s) {
     case SYS_IDLE: return "IDLE";
     case SYS_STOP: return "STOP";
-    case SYS_RUN:  return "RUN ";
-    default:       return "????";
+    case SYS_RUN: return "RUN ";
+    default: return "????";
     }
 }

@@ -32,6 +32,8 @@
 #include "button.h"
 #include "lcd_driver.h"
 #include "watchdog.h"
+#include "upstream.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,8 +57,11 @@ I2C_HandleTypeDef hi2c1;
 TIM_HandleTypeDef htim7;
 
 UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
+DMA_HandleTypeDef hdma_usart3_rx;
+DMA_HandleTypeDef hdma_usart3_tx;
 
 /* USER CODE BEGIN PV */
 #define DWT_CTRL    (*(volatile uint32_t*)0xE0001000)
@@ -70,6 +75,7 @@ static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 void ITM_SendString(const char *s);
@@ -84,7 +90,7 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
     // pcTaskName = tên task bị overflow
     volatile char *name = pcTaskName;
     (void)name;
-    while (1) {}   // đặt breakpoint ở đây → xem pcTaskName
+    while (1) {}// đặt breakpoint ở đây → xem pcTaskName
 }
 
 void vApplicationMallocFailedHook(void)
@@ -128,6 +134,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM7_Init();
   MX_I2C1_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   DWT_CTRL |= ( 1 << 0);
   SEGGER_SYSVIEW_Conf();
@@ -141,6 +148,7 @@ int main(void)
   Watchdog_Init();
   Button_Init();
   LCD_UI_Init();
+  Upstream_Init();
 
   BaseType_t ret;
 
@@ -154,6 +162,9 @@ int main(void)
   configASSERT(ret == pdPASS);
 
   ret = xTaskCreate(Button_Task, "Btn", STACK_BUTTON, NULL, PRIO_BUTTON, NULL);
+  configASSERT(ret == pdPASS);
+
+  xTaskCreate(Upstream_Task, "Upstream", STACK_UPSTREAM, NULL, PRIO_UPSTREAM, NULL);
   configASSERT(ret == pdPASS);
 
   ret = xTaskCreate(Watchdog_Task, "WDG", STACK_WATCHDOG, NULL, PRIO_WATCHDOG, NULL);
@@ -327,6 +338,39 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -336,6 +380,12 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Stream1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 7, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
+  /* DMA1_Stream3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 7, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
   /* DMA1_Stream5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
@@ -425,13 +475,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
   if (htim->Instance == TIM7){
-		  RS485_OnTimeout();
+	  RS485_OnTimeout();
   }
 
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM6)
   {
-    HAL_IncTick();
+	  HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
 

@@ -9,9 +9,9 @@
 #define TIM7_PRESCALER      (8399U)
 #define TIM7_PERIOD_MS(ms)  ((uint16_t)((TIM7_CLOCK_HZ / (TIM7_PRESCALER+1)) * (ms) / 1000U - 1U))
 
-#define RS485_BAUDRATE        115200U
-#define RS485_DE_PORT         GPIOA
-#define RS485_DE_PIN          GPIO_PIN_4
+#define RS485_BAUDRATE              115200U
+#define RS485_DE_PORT               GPIOA
+#define RS485_DE_PIN                GPIO_PIN_4
 #define RS485_RX_FRAME_QUEUE_SIZE   8U
 #define RS485_TX_FRAME_QUEUE_SIZE   4U
 
@@ -27,17 +27,19 @@
 #define DEVMGR_TIMOUT_MS		  		(PROTO_TIMEOUT_MS * (PROTO_RETRY_MAX + 2))
 #define DEVMGR_RECOVERY_INTERVAL_MS		3000U
 
-#define PRIO_PROTOCOL   6
-#define PRIO_DEVMGR     5
-#define PRIO_LCD        4
+#define PRIO_WATCHDOG   8
+#define PRIO_PROTOCOL   7
+#define PRIO_DEVMGR     6
+#define PRIO_LCD        5
+#define PRIO_UPSTREAM   4
 #define PRIO_BUTTON     3
-#define PRIO_WATCHDOG   7
 
-#define STACK_PROTOCOL  1024U
-#define STACK_DEVMGR    768U
-#define STACK_LCD       768U
-#define STACK_BUTTON    256U
-#define STACK_WATCHDOG  256U
+#define STACK_PROTOCOL  	1024U
+#define STACK_DEVMGR    	1024U
+#define STACK_LCD       	768U
+#define STACK_BUTTON    	256U
+#define STACK_WATCHDOG  	192U
+#define STACK_UPSTREAM   	512U
 
 #define LCD_I2C_ADDR     0x27U
 #define LCD_COLS         16U
@@ -54,5 +56,9 @@
 #define WDG_DEADLINE_DEVMGR_MS     	100000U
 #define WDG_DEADLINE_LCD_MS        	100000U
 #define WDG_DEADLINE_BUTTON_MS     	100000U
+#define WDG_DEADLINE_UPSTREAM_MS   (UPSTREAM_PUSH_INTERVAL_MS + 100000U)
+
+#define UPSTREAM_PUSH_INTERVAL_MS   2000U
+#define UPSTREAM_ESP32_ADDR         0xE0U
 
 #endif /* INC_CONFIGURATION_H_ */

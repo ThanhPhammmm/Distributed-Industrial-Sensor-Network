@@ -3,7 +3,7 @@
 #include "watchdog.h"
 
 QueueHandle_t xQueue_ValidFrame = NULL;
-QueueHandle_t xQueue_TxCmd      = NULL;
+QueueHandle_t xQueue_TxCmd = NULL;
 
 extern QueueHandle_t xQueue_RS485_RxFrame;
 
@@ -26,7 +26,7 @@ static void _TimerStart(void){
 static void _TimerStop(void) { HAL_TIM_Base_Stop_IT(&htim7); }
 
 void Protocol_Init(void){
-    xQueue_TxCmd      = xQueueCreate(PROTO_TXCMD_QUEUE_SIZE, sizeof(TxCmd_t));
+    xQueue_TxCmd = xQueueCreate(PROTO_TXCMD_QUEUE_SIZE, sizeof(TxCmd_t));
     xQueue_ValidFrame = xQueueCreate(PROTO_VALID_FRAME_QUEUE_SIZE, sizeof(Frame_t));
     configASSERT(xQueue_TxCmd && xQueue_ValidFrame);
     memset(g_state, 0, sizeof(g_state));
@@ -53,9 +53,9 @@ void Protocol_Task(void *pvParams){
     TxCmd_t c;
 
 	while(1){
-		volatile size_t  freeHeap    = xPortGetFreeHeapSize();
-		volatile UBaseType_t rxQLen  = uxQueueMessagesWaiting(xQueue_RS485_RxFrame);
-		volatile uint32_t    notifyCnt = ulTaskNotifyValueClear(NULL, 0);
+		volatile size_t freeHeap = xPortGetFreeHeapSize();
+		volatile UBaseType_t rxQLen = uxQueueMessagesWaiting(xQueue_RS485_RxFrame);
+		volatile uint32_t notifyCnt = ulTaskNotifyValueClear(NULL, 0);
 
 		ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(DEVMGR_LOOP_MS));
 		Watchdog_Kick(WDG_TASK_PROTOCOL);
@@ -70,10 +70,10 @@ void Protocol_Task(void *pvParams){
                         _DoSend(s);
                     }
                     else {
-                        s->waiting   = false;
-                        s->retryCnt  = 0;
-                        Frame_t ol   = { .addr   = s->pending.addr,
-                                         .cmd    = 0xFFU,
+                        s->waiting = false;
+                        s->retryCnt = 0;
+                        Frame_t ol = { .addr = s->pending.addr,
+                                         .cmd = 0xFFU,
                                          .status = STATUS_ERROR };
                         xQueueSend(xQueue_ValidFrame, &ol, 0);
                     }

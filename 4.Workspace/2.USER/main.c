@@ -148,7 +148,7 @@ static void GPIO_Config(void)
 
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC, ENABLE);
 	
-    /* PA8 – RS485 DE  Out_PP  LOW */
+    /* PA8 ï¿½ RS485 DE  Out_PP  LOW */
     g.GPIO_Pin   = RS485_DE_PIN;        /* GPIO_Pin_8 */
     g.GPIO_Mode  = GPIO_Mode_Out_PP;
     g.GPIO_Speed = GPIO_Speed_50MHz;

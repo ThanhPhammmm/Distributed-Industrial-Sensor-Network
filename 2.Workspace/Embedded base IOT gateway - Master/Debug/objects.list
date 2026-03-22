@@ -12,6 +12,7 @@
 "./Core/Src/syscalls.o"
 "./Core/Src/system_state.o"
 "./Core/Src/system_stm32f4xx.o"
+"./Core/Src/upstream.o"
 "./Core/Src/watchdog.o"
 "./Core/Startup/startup_stm32f407vgtx.o"
 "./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o"

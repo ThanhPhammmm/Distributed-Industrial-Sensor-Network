@@ -1,4 +1,4 @@
-15:34:43 **** Build of configuration Debug for project Embedded base IOT gateway - Slave ****
+16:12:04 **** Incremental Build of configuration Debug for project Embedded base IOT gateway - Slave ****
 make -j16 all 
 arm-none-eabi-size  Embedded\ base\ IOT\ gateway\ -\ Slave.elf 
    text	   data	    bss	    dec	    hex	filename
@@ -6,5 +6,5 @@ arm-none-eabi-size  Embedded\ base\ IOT\ gateway\ -\ Slave.elf
 Finished building: default.size.stdout
  
 
-15:34:44 Build Finished. 0 errors, 0 warnings. (took 1s.397ms)
+16:12:04 Build Finished. 0 errors, 0 warnings. (took 253ms)
 

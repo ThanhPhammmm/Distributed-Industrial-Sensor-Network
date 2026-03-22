@@ -12,10 +12,11 @@ typedef struct {
 } WdgSlot_t;
 
 static WdgSlot_t g_slots[WDG_TASK_COUNT] = {
-    [WDG_TASK_PROTOCOL] = { "Protocol", WDG_DEADLINE_PROTOCOL_MS, 0, false },
-    [WDG_TASK_DEVMGR]   = { "DevMgr",   WDG_DEADLINE_DEVMGR_MS,  0, false },
-    [WDG_TASK_LCD]      = { "LCD",       WDG_DEADLINE_LCD_MS,     0, false },
-    [WDG_TASK_BUTTON]   = { "Button",    WDG_DEADLINE_BUTTON_MS,  0, false },
+    [WDG_TASK_PROTOCOL] = { "Protocol", WDG_DEADLINE_PROTOCOL_MS, 0, false},
+    [WDG_TASK_DEVMGR] = { "DevMgr", WDG_DEADLINE_DEVMGR_MS, 0, false},
+    [WDG_TASK_LCD] = { "LCD", WDG_DEADLINE_LCD_MS, 0, false},
+    [WDG_TASK_BUTTON] = { "Button", WDG_DEADLINE_BUTTON_MS, 0, false},
+    [WDG_TASK_UPSTREAM] = { "Upstream", WDG_DEADLINE_UPSTREAM_MS, 0, false},
 };
 
 
@@ -23,7 +24,7 @@ void Watchdog_Init(void){
     uint32_t now = xTaskGetTickCount();
     for (uint8_t i = 0; i < WDG_TASK_COUNT; i++) {
         g_slots[i].lastKickMs = now;
-        g_slots[i].enabled    = true;
+        g_slots[i].enabled = true;
     }
 }
 

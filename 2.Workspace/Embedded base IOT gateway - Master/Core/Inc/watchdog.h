@@ -10,7 +10,8 @@ typedef enum {
     WDG_TASK_DEVMGR,
     WDG_TASK_LCD,
     WDG_TASK_BUTTON,
-    WDG_TASK_COUNT
+	WDG_TASK_UPSTREAM,
+    WDG_TASK_COUNT,
 } eWdgTask;
 
 void Watchdog_Init(void);
