@@ -10,6 +10,7 @@
 #include "slave_actuator.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "slave_config_store.h"
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName){
     volatile char *name = pcTaskName;
@@ -76,6 +77,7 @@ int main(void)
     NVIC_Config();
 	
     Slave_Sensors_Init();
+		SlaveConfig_Load();
     Actuator_Init();
     Protocol_Init(SLAVE_ADDRESS);
  

@@ -21,3 +21,13 @@
 .\objects\slave_config_store.o: ..\2.USER\protocol_definition.h
 .\objects\slave_config_store.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\slave_config_store.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\slave_config_store.o: ..\3.FreeRTOS\include\FreeRTOS.h
+.\objects\slave_config_store.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\slave_config_store.o: ..\3.FreeRTOS\FreeRTOSConfig.h
+.\objects\slave_config_store.o: ..\3.FreeRTOS\include\projdefs.h
+.\objects\slave_config_store.o: ..\3.FreeRTOS\include\portable.h
+.\objects\slave_config_store.o: ..\3.FreeRTOS\include\deprecated_definitions.h
+.\objects\slave_config_store.o: ..\3.FreeRTOS\portable\RVDS\ARM_CM3\portmacro.h
+.\objects\slave_config_store.o: ..\3.FreeRTOS\include\mpu_wrappers.h
+.\objects\slave_config_store.o: ..\3.FreeRTOS\include\task.h
+.\objects\slave_config_store.o: ..\3.FreeRTOS\include\list.h

@@ -93,10 +93,10 @@ static void _ProcessFrame(const Frame_t *f)
         uint8_t buf[PROTO_MAX_PAYLOAD];
         uint8_t len = Slave_Sensors_PackTable(buf, PROTO_MAX_PAYLOAD);
         if (len == 0U) {
-            _Send(f->seq, CMD_NACK, STATUS_ERROR, 0U, NULL, 0U);
+            _Send(f->seq, CMD_NACK, STATUS_ERROR, SlaveConfig_GetVersion(), NULL, 0U);
         } 
 				else {
-            _Send(f->seq, CMD_SENSOR_TABLE, STATUS_OK, 0U, buf, len);
+            _Send(f->seq, CMD_SENSOR_TABLE, STATUS_OK, SlaveConfig_GetVersion(), buf, len);
         }
 				
 				GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
@@ -111,11 +111,11 @@ static void _ProcessFrame(const Frame_t *f)
         uint8_t buf[PROTO_MAX_PAYLOAD];
         uint8_t len = Slave_Sensors_PackAllData(buf, PROTO_MAX_PAYLOAD);
         if (len == 0U) {
-            _Send(f->seq, CMD_NACK, STATUS_ERROR, 0U, NULL, 0U);
+            _Send(f->seq, CMD_NACK, STATUS_ERROR, SlaveConfig_GetVersion(), NULL, 0U);
         } 
 				else {
             vTaskDelay(pdMS_TO_TICKS(INTER_FRAME_GAP_MS));
-            _Send(f->seq, CMD_ALL_DATA, STATUS_OK, 0U, buf, len);
+            _Send(f->seq, CMD_ALL_DATA, STATUS_OK, SlaveConfig_GetVersion(), buf, len);
         }
 				
 				GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON

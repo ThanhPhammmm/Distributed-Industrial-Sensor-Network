@@ -49,15 +49,8 @@ static const SensorDriverMap_t g_driver_map[] = {
 
 static const uint8_t k_driver_cnt = sizeof(g_driver_map) / sizeof(g_driver_map[0]);
 
-typedef struct {
-    uint8_t id;
-    uint8_t sensorType;
-    uint8_t dataType;
-    SensorReading_t reading;
-} SensorEntry_t;
-
 #if SLAVE_ADDRESS == 0x01
-static SensorEntry_t g_sensors[] = {
+SensorEntry_t g_sensors[] = {
     { 1, SENSOR_DIGITAL_IN, DTYPE_FLOAT},
     { 2, SENSOR_ADC_RAW, DTYPE_INT32},
 		{ 3, SENSOR_PRESSURE, DTYPE_DOUBLE},
@@ -66,7 +59,7 @@ static SensorEntry_t g_sensors[] = {
 };
 
 #elif SLAVE_ADDRESS == 0x02
-static SensorEntry_t g_sensors[] = {
+SensorEntry_t g_sensors[] = {
     { 1, SENSOR_TEMPERATURE, DTYPE_FLOAT},
     { 2, SENSOR_HUMIDITY, DTYPE_INT32},
     { 3, SENSOR_PRESSURE, DTYPE_DOUBLE },
@@ -75,7 +68,7 @@ static SensorEntry_t g_sensors[] = {
 };
 
 #elif SLAVE_ADDRESS == 0x03
-static SensorEntry_t g_sensors[] = {
+SensorEntry_t g_sensors[] = {
     { 1, SENSOR_TEMPERATURE, DTYPE_FLOAT},
     { 2, SENSOR_HUMIDITY, DTYPE_FLOAT},
     { 3, SENSOR_PRESSURE, DTYPE_DOUBLE },
@@ -87,7 +80,7 @@ static SensorEntry_t g_sensors[] = {
 #error "SLAVE_ADDRESS khong hop le"
 #endif
 
-static const uint8_t k_cnt = (uint8_t)(sizeof(g_sensors) / sizeof(g_sensors[0]));
+const uint8_t k_cnt = (uint8_t)(sizeof(g_sensors) / sizeof(g_sensors[0]));
 
 void Slave_Sensors_Init(void){
     uint8_t i;

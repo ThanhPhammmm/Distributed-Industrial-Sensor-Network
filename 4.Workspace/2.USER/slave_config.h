@@ -3,7 +3,7 @@
 
 #include "stm32f10x.h"
 
-#define SLAVE_ADDRESS           0x02U
+#define SLAVE_ADDRESS           0x01U
 #define SLAVE_SENSOR_READ_MS    500
 #define SLAVE_SENSOR_TABLE_HASH 0x01U
 
