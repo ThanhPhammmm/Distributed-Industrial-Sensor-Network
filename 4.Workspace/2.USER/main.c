@@ -7,6 +7,19 @@
 #include "slave_config.h"
 #include "slave_sensor.h"
 #include "slave_protocol.h"
+#include "slave_actuator.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName){
+    volatile char *name = pcTaskName;
+    (void)name;
+    while (1) {}
+}
+
+void vApplicationMallocFailedHook(void){
+    while (1) {}
+}
 
 void DMA1_Channel6_IRQHandler(void)
 {
@@ -36,8 +49,6 @@ void USART2_IRQHandler(void)
 
 static volatile uint32_t g_tick = 0U;
 
-void SysTick_Handler(void) { g_tick++; }
-
 uint32_t millis(void) { 
 	return g_tick; 
 }
@@ -56,28 +67,29 @@ static void NVIC_Config(void);
 
 int main(void)
 {
+		NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
     Clock_Init();
-
     SysTick_Config(SystemCoreClock / 1000U);
-
     GPIO_Config();
     DMA_Config();
     USART2_Config();
     NVIC_Config();
-
+	
     Slave_Sensors_Init();
-    Slave_Protocol_Init(SLAVE_ADDRESS);
-
-    uint32_t lastReadMs = 0U;
-
-    while (1) {
-        uint32_t now = millis();
-        if ((now - lastReadMs) >= SLAVE_SENSOR_READ_MS) {
-            Slave_Sensors_Read();
-            lastReadMs = now;
-        }
-        Slave_Protocol_Process();
-    }
+    Actuator_Init();
+    Protocol_Init(SLAVE_ADDRESS);
+ 
+    BaseType_t r;
+ 
+    r = xTaskCreate(Task_Protocol, "Proto", TASK_PROTO_STACK, NULL, TASK_PROTO_PRIO, NULL);
+    configASSERT(r == pdPASS);
+ 
+    r = xTaskCreate(Task_Actuator, "Act", TASK_ACT_STACK, NULL, TASK_ACT_PRIO, NULL);
+    configASSERT(r == pdPASS);
+ 
+    vTaskStartScheduler();
+ 
+    __disable_irq();
 }
 
 static void DMA_Config(void)
@@ -176,18 +188,18 @@ static void NVIC_Config(void)
     NVIC_InitTypeDef n;
 
     n.NVIC_IRQChannel                   = DMA1_Channel6_IRQn;
-    n.NVIC_IRQChannelPreemptionPriority = 1U;
+    n.NVIC_IRQChannelPreemptionPriority = 6U;
     n.NVIC_IRQChannelSubPriority        = 0U;
     n.NVIC_IRQChannelCmd                = ENABLE;
     NVIC_Init(&n);
 
     n.NVIC_IRQChannel                   = DMA1_Channel7_IRQn;
-    n.NVIC_IRQChannelPreemptionPriority = 1U;
-    n.NVIC_IRQChannelSubPriority        = 1U;
+    n.NVIC_IRQChannelPreemptionPriority = 6U;
+    n.NVIC_IRQChannelSubPriority        = 0U;
     NVIC_Init(&n);
 
     n.NVIC_IRQChannel                   = USART2_IRQn;
-    n.NVIC_IRQChannelPreemptionPriority = 0U;
+    n.NVIC_IRQChannelPreemptionPriority = 6U;
     n.NVIC_IRQChannelSubPriority        = 0U;
     NVIC_Init(&n);
 }

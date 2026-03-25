@@ -20,3 +20,4 @@
 .\objects\slave_sensor.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_rcc.h
 .\objects\slave_sensor.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 .\objects\slave_sensor.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\misc.h
+.\objects\slave_sensor.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

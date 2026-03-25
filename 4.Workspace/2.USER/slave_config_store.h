@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-void    SlaveConfig_Load(void);
+void SlaveConfig_Load(void);
 uint8_t SlaveConfig_GetVersion(void);
 
 #endif

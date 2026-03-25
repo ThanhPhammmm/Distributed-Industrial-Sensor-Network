@@ -8,15 +8,16 @@
 #include "queue.h"
 
 typedef enum {
-    ALARM_NONE = 0,
-    ALARM_WARN = 1,
-    ALARM_CRITICAL = 2,
+    ALARM_NONE 		= 0,
+    ALARM_WARN 		= 1,
+    ALARM_CRITICAL 	= 2,
 } eAlarmLevel;
 
 typedef struct {
     uint8_t slaveAddr;
     uint8_t sensorId;
     uint8_t sensorType;
+    uint8_t dataType;
 
     float warnLow;
     float warnHigh;

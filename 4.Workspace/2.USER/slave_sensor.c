@@ -2,6 +2,52 @@
 #include "slave_config.h"
 #include "protocol_definition.h"
 #include <string.h>
+#include <stdlib.h>
+
+double Read_Temp_Float(void)   { return 25.5 + (rand() % 100) / 10.0; }
+double Read_Temp_Char(void)    { return (double)(20 + (rand() % 5)); }
+
+double Read_Humid_Int(void)    { return (double)(50 + (rand() % 20)); }
+double Read_Humid_Int32(void)  { return (double)(5000 + (rand() % 1000)); }
+
+double Read_Press_Double(void) { return 1013.25 + (rand() % 10); }
+
+double Read_ADC_Int32(void)    { return (double)(rand() % 4096); }
+double Read_ADC_Int(void)      { return (double)(rand() % 1024); }
+
+double Read_DI_Float(void)     { return (rand() % 2) ? 1.0f : 0.0f; }
+double Read_DI_Char(void)      { return (double)(rand() % 2); }
+
+typedef double (*SensorReadFn)(void);
+
+typedef struct {
+    eSensorType sensorType;
+    eDataType dataType;
+    SensorReadFn read_ptr;
+} SensorDriverMap_t;
+
+static const SensorDriverMap_t g_driver_map[] = {
+    // TEMPERATURE
+    { SENSOR_TEMPERATURE, DTYPE_FLOAT,  Read_Temp_Float },
+    { SENSOR_TEMPERATURE, DTYPE_CHAR,   Read_Temp_Char },
+
+    // HUMIDITY
+    { SENSOR_HUMIDITY,    DTYPE_INT,    Read_Humid_Int },
+    { SENSOR_HUMIDITY,    DTYPE_INT32,  Read_Humid_Int32 },
+
+    // PRESSURE
+    { SENSOR_PRESSURE,    DTYPE_DOUBLE, Read_Press_Double },
+
+    // ADC
+    { SENSOR_ADC_RAW,     DTYPE_INT32,  Read_ADC_Int32 },
+    { SENSOR_ADC_RAW,     DTYPE_INT,    Read_ADC_Int },
+
+    // DIGITAL IN
+    { SENSOR_DIGITAL_IN,  DTYPE_FLOAT,  Read_DI_Float },
+    { SENSOR_DIGITAL_IN,  DTYPE_CHAR,   Read_DI_Char },
+};
+
+static const uint8_t k_driver_cnt = sizeof(g_driver_map) / sizeof(g_driver_map[0]);
 
 typedef struct {
     uint8_t id;
@@ -43,138 +89,40 @@ static SensorEntry_t g_sensors[] = {
 
 static const uint8_t k_cnt = (uint8_t)(sizeof(g_sensors) / sizeof(g_sensors[0]));
 
-/* -- Init ---------------------------------------------------------- */
 void Slave_Sensors_Init(void){
     uint8_t i;
     for (i = 0; i < k_cnt; i++)
         memset(g_sensors[i].reading.bytes, 0, 8);
 }
 
-float temp1 = 1.0f;
-int32_t temp2 = 2;
-
-void Slave_Sensors_Read(void){
-    uint8_t i;
-    for (i = 0; i < k_cnt; i++) {
+void Slave_Sensors_Read(void) {
+    for (uint8_t i = 0; i < k_cnt; i++) {
         SensorEntry_t *s = &g_sensors[i];
-				memset(&s->reading, 0, sizeof(SensorReading_t));
-			
-        switch ((eDataType)s->dataType) {
-        case DTYPE_FLOAT:
-            switch ((eSensorType)s->sensorType) {
-							case SENSOR_TEMPERATURE: 
-								s->reading.f = 25.11f; 
-							break;
-							case SENSOR_HUMIDITY:
-								s->reading.f = 62.22f; 
-							break;
-							case SENSOR_PRESSURE:
-								s->reading.f = 98.33f;
-							break;
-							case SENSOR_ADC_RAW:
-								s->reading.f = 101.44f;
-							break;
-							case SENSOR_DIGITAL_IN:
-								s->reading.f = 1.55f;
-							break;
-							
-							default:
-								s->reading.f = 8.8f;
-							break;
+        double raw_value = 0.0;
+        uint8_t found = 0;
+
+        for (uint8_t j = 0; j < k_driver_cnt; j++) {
+            if (g_driver_map[j].sensorType == (eSensorType)s->sensorType && 
+                g_driver_map[j].dataType == (eDataType)s->dataType) {
+                
+                raw_value = g_driver_map[j].read_ptr();
+                found = 1;
+                break;
             }
-            break;
-        case DTYPE_DOUBLE:
-            switch ((eSensorType)s->sensorType) {
-							case SENSOR_TEMPERATURE: 
-								s->reading.d = 11.25f; 
-							break;
-							case SENSOR_HUMIDITY:
-								s->reading.d = 22.62f; 
-							break;
-							case SENSOR_PRESSURE:
-								s->reading.d = 33.98f;
-							break;
-							case SENSOR_ADC_RAW:
-								s->reading.d = 44.101f;
-							break;
-							case SENSOR_DIGITAL_IN:
-								s->reading.d = 2.78f;
-							break;
-							
-							default: 
-								s->reading.d = 8.8f;
-							break;
+        }
+
+        if (found) {
+            switch ((eDataType)s->dataType) {
+                case DTYPE_FLOAT: s->reading.f = (float)raw_value;  break;
+                case DTYPE_DOUBLE: s->reading.d = (double)raw_value; break;
+                case DTYPE_INT32:s->reading.i = (int32_t)raw_value;break;
+                case DTYPE_INT: s->reading.i2 = (int)raw_value;    break;
+                case DTYPE_CHAR: s->reading.c = (char)raw_value;   break;
+                default: break;
             }
-            break;
-        case DTYPE_INT32:
-            switch ((eSensorType)s->sensorType) {
-							case SENSOR_TEMPERATURE: 
-								s->reading.i = 11; 
-							break;
-							case SENSOR_HUMIDITY:
-								s->reading.i = 22; 
-							break;
-							case SENSOR_PRESSURE:
-								s->reading.i = 33;
-							break;
-							case SENSOR_ADC_RAW:
-								s->reading.i = 44;
-							break;
-							case SENSOR_DIGITAL_IN:
-								s->reading.i = 2;
-							break;
-							
-							default: 
-								s->reading.i = 8;
-							break;
-            }
-            break;
-				case DTYPE_INT:
-            switch ((eSensorType)s->sensorType) {
-							case SENSOR_TEMPERATURE: 
-								s->reading.i2 = 11; 
-							break;
-							case SENSOR_HUMIDITY:
-								s->reading.i2 = 22; 
-							break;
-							case SENSOR_PRESSURE:
-								s->reading.i2 = 33;
-							break;
-							case SENSOR_ADC_RAW:
-								s->reading.i2 = 44;
-							break;
-							case SENSOR_DIGITAL_IN:
-								s->reading.i2 = 2;
-							break;
-							
-							default: 
-								s->reading.i2 = 8;
-							break;
-            }
-            break;
-				case DTYPE_CHAR:
-            switch ((eSensorType)s->sensorType) {
-							case SENSOR_TEMPERATURE: 
-								s->reading.c = 55; 
-							break;
-							case SENSOR_HUMIDITY:
-								s->reading.c = 66; 
-							break;
-							case SENSOR_PRESSURE:
-								s->reading.c = 77;
-							break;
-							case SENSOR_ADC_RAW:
-								s->reading.c = 88;
-							break;
-							case SENSOR_DIGITAL_IN:
-								s->reading.c = 99;
-							break;
-							
-							default: 
-								s->reading.c = 8;
-							break;
-            }
-            break;
+        } 
+				else {
+            memset(&s->reading, 0, sizeof(SensorReading_t));
         }
     }
 }

@@ -20,6 +20,7 @@
 #define PROTO_TASK_IDLE_MS				10U
 #define PROTO_TXCMD_QUEUE_SIZE			8U
 #define PROTO_VALID_FRAME_QUEUE_SIZE	8U
+#define PROTO_LOOP_MS					5U
 
 #define DEVMGR_POLL_INTERVAL_MS   		500U
 #define DEVMGR_OFFLINE_THRESHOLD 		5U
@@ -31,8 +32,8 @@
 #define PRIO_PROTOCOL   7
 #define PRIO_DEVMGR     6
 #define PRIO_LCD        5
-#define PRIO_UPSTREAM   4
-#define PRIO_BUTTON     3
+#define PRIO_UPSTREAM   5
+#define PRIO_BUTTON     4
 
 #define STACK_PROTOCOL  	1024U
 #define STACK_DEVMGR    	1024U
@@ -60,5 +61,6 @@
 
 #define UPSTREAM_PUSH_INTERVAL_MS   2000U
 #define UPSTREAM_ESP32_ADDR         0xE0U
+#define UPSTREAM_PUSH_QUEUE_SIZE	8
 
 #endif /* INC_CONFIGURATION_H_ */

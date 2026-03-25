@@ -7,13 +7,13 @@
 #include "slave_config.h"
 
 typedef enum {
-    SREG_UNREGISTERED = 0,  /* slot inactive                       */
-    SREG_DECLARED = 1,  /* registered, waiting for RUN fetch   */
-    SREG_FETCHING = 2,  /* ping / table fetch in progress      */
-    SREG_READY = 3,  /* table valid, ready to poll          */
-    SREG_ONLINE = 4,  /* polling, data arriving              */
-    SREG_OFFLINE = 5,  /* too many consecutive missed polls   */
-    SREG_ERROR = 6,  /* ping / fetch failed                 */
+    SREG_UNREGISTERED 	= 0,  /* slot inactive                       */
+    SREG_DECLARED 		= 1,  /* registered, waiting for RUN fetch   */
+    SREG_FETCHING 		= 2,  /* ping / table fetch in progress      */
+    SREG_READY 			= 3,  /* table valid, ready to poll          */
+    SREG_ONLINE 		= 4,  /* polling, data arriving              */
+    SREG_OFFLINE 		= 5,  /* too many consecutive missed polls   */
+    SREG_ERROR 			= 6,  /* ping / fetch failed                 */
 } eSlaveRegState;
 
 typedef struct {

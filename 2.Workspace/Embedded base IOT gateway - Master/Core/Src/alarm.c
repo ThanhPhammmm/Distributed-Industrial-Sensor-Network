@@ -10,36 +10,38 @@ QueueHandle_t xQueue_AlarmEvent = NULL;
 
 static const AlarmRule_t k_rules[] = {
     {
-        .slaveAddr = 0x01,
-        .sensorId = 1,
-        .sensorType = SENSOR_TEMPERATURE,
-        .warnLow = 0.0f,
-		.warnHigh  = 60.0f,
-        .critLow = 0.0f,
-		.critHigh  = 80.0f,
+        .slaveAddr 		= 0x01,
+        .sensorId 		= 1,
+        .sensorType 	= SENSOR_TEMPERATURE,
+		.dataType 		= DTYPE_FLOAT,
+        .warnLow 		= 0.0f,
+		.warnHigh 		= 60.0f,
+        .critLow 		= 0.0f,
+		.critHigh 		= 80.0f,
 
-        .actuatorSlaveAddr = 0x01,
-        .actuatorId        = 1,
-        .actuatorOnWarn    = 1,
-        .actuatorOnCrit    = 0,
-        .actuatorOnNormal  = 1,
+        .actuatorSlaveAddr 	= 0x01,
+        .actuatorId 		= 1,
+        .actuatorOnWarn 	= 1,
+        .actuatorOnCrit 	= 0,
+        .actuatorOnNormal 	= 1,
 
     },
 
     {
-        .slaveAddr = 0x01,
-        .sensorId = 2,
-        .sensorType = SENSOR_HUMIDITY,
-        .warnLow = 30.0f,
-		.warnHigh = 80.0f,
-        .critLow = 20.0f,
-		.critHigh  = 95.0f,
+        .slaveAddr 		= 0x01,
+        .sensorId 		= 2,
+        .sensorType 	= SENSOR_HUMIDITY,
+		.dataType 		= DTYPE_INT,
+        .warnLow 		= 30.0f,
+		.warnHigh 		= 80.0f,
+        .critLow 		= 20.0f,
+		.critHigh 		= 95.0f,
 
-        .actuatorSlaveAddr = 0x02,
-        .actuatorId        = 1,
-        .actuatorOnWarn    = 1,
-        .actuatorOnCrit    = 0,
-        .actuatorOnNormal  = 1,
+        .actuatorSlaveAddr 	= 0x02,
+        .actuatorId 		= 1,
+        .actuatorOnWarn 	= 1,
+        .actuatorOnCrit 	= 0,
+        .actuatorOnNormal 	= 1,
     },
 };
 
@@ -47,22 +49,22 @@ static const AlarmRule_t k_rules[] = {
 
 static eAlarmLevel g_currentLevel[RULE_COUNT];
 
-static void _TriggerActuator(const AlarmRule_t *r, uint8_t value){
-    extern QueueHandle_t xQueue_TxCmd;
-    extern TaskHandle_t  g_protocolTaskHandle;
-
-    TxCmd_t tx;
-    memset(&tx, 0, sizeof(tx));
-    tx.addr = r->actuatorSlaveAddr;
-    tx.cmd = CMD_SET_ACTUATOR;
-    tx.payloadLen = 3U;
-    tx.payload[0] = r->actuatorId;
-    tx.payload[1] = 0x01;   /* valueType: ON/OFF */
-    tx.payload[2] = value;
-
-    xQueueSend(xQueue_TxCmd, &tx, pdMS_TO_TICKS(10));
-    xTaskNotifyGive(g_protocolTaskHandle);
-}
+//static void _TriggerActuator(const AlarmRule_t *r, uint8_t value, eAlarmLevel level){
+//    extern QueueHandle_t xQueue_TxCmd;
+//    extern TaskHandle_t g_protocolTaskHandle;
+//
+//    TxCmd_t tx;
+//    memset(&tx, 0, sizeof(tx));
+//    tx.addr 		= r->actuatorSlaveAddr;
+//    tx.cmd 			= CMD_SET_ACTUATOR;
+//    tx.payloadLen 	= 3U;
+//    tx.payload[0] 	= r->actuatorId;
+//    tx.payload[1] 	= value;   /* valueType: ON/OFF */
+//    tx.payload[2] 	= level;
+//
+//    xQueueSend(xQueue_TxCmd, &tx, pdMS_TO_TICKS(10));
+//    xTaskNotifyGive(g_protocolTaskHandle);
+//}
 
 static eAlarmLevel _Evaluate(const AlarmRule_t *r, float v){
     if (v <= r->critLow || v >= r->critHigh) return ALARM_CRITICAL;
@@ -78,28 +80,30 @@ void Alarm_Init(void){
 void Alarm_Check(uint8_t slaveAddr, uint8_t sensorId, uint8_t sensorType, eDataType dt, SensorReading_t readingData){
     float v = 0.0f;
     switch (dt) {
-    case DTYPE_FLOAT:
-    	v = readingData.f;
-    break;
-    case DTYPE_INT32:
-    	v = (float)readingData.i;
-    break;
-    case DTYPE_DOUBLE:
-    	v = (float)readingData.d;
-    break;
-    case DTYPE_INT:
-    	v = (float)readingData.i2;
-    break;
-    case DTYPE_CHAR:
-    	v = (float)readingData.c;
-    break;
-    default: return;
+		case DTYPE_FLOAT:
+			v = readingData.f;
+			break;
+		case DTYPE_INT32:
+			v = (float)readingData.i;
+			break;
+		case DTYPE_DOUBLE:
+			v = (float)readingData.d;
+			break;
+		case DTYPE_INT:
+			v = (float)readingData.i2;
+			break;
+		case DTYPE_CHAR:
+			v = (float)readingData.c;
+			break;
+		default: return;
     }
 
     for (uint8_t i = 0; i < RULE_COUNT; i++) {
         const AlarmRule_t *r = &k_rules[i];
         if (r->slaveAddr != slaveAddr) continue;
-        if (r->sensorId  != sensorId)  continue;
+        if (r->sensorId != sensorId) continue;
+        if (r->sensorType != sensorType) continue;
+        if (r->dataType != DataType_Size(dt)) continue;
 
         eAlarmLevel newLevel = _Evaluate(r, v);
         eAlarmLevel oldLevel = g_currentLevel[i];
@@ -107,12 +111,12 @@ void Alarm_Check(uint8_t slaveAddr, uint8_t sensorId, uint8_t sensorType, eDataT
 
         g_currentLevel[i] = newLevel;
 
-        switch (newLevel) {
-        case ALARM_CRITICAL: _TriggerActuator(r, r->actuatorOnCrit); break;
-        case ALARM_WARN: _TriggerActuator(r, r->actuatorOnWarn); break;
-        case ALARM_NONE: _TriggerActuator(r, r->actuatorOnNormal); break;
-        default: break;
-        }
+//        switch (newLevel) {
+//        case ALARM_CRITICAL: _TriggerActuator(r, r->actuatorOnCrit, ALARM_CRITICAL); break;
+//        case ALARM_WARN: _TriggerActuator(r, r->actuatorOnWarn, ALARM_WARN); break;
+//        case ALARM_NONE: _TriggerActuator(r, r->actuatorOnNormal, ALARM_NONE); break;
+//        default: break;
+//        }
 
         AlarmEvent_t ev = {
             .slaveAddr = slaveAddr,

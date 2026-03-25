@@ -1,6 +1,6 @@
 ../Core/Inc/ProtocolDefinition.h:68:23:DataType_Size	6
-../Core/Inc/ProtocolDefinition.h:154:23:Payload_UnpackTable	5
-../Core/Inc/ProtocolDefinition.h:182:20:Payload_UnpackReading	3
+../Core/Inc/ProtocolDefinition.h:162:23:Payload_UnpackTable	5
+../Core/Inc/ProtocolDefinition.h:193:20:Payload_UnpackReading	3
 ../Core/Src/DeviceManager.c:35:13:_TimedOut	3
 ../Core/Src/DeviceManager.c:39:13:_Send	1
 ../Core/Src/DeviceManager.c:48:13:_SetPend	1

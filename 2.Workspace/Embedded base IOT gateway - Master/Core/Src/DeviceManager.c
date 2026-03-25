@@ -246,21 +246,21 @@ eDmPhase DeviceManager_GetState(void){ return g_state; }
 
 static void _HandleTimeout(void){
     switch (g_pending.op) {
-    case OP_PING:
-    	return;
-    case OP_GET_TABLE:
-        Registry_SetState(g_pending.slotIdx, SREG_ERROR);
-        g_fetchSlot++;
-        break;
-    case OP_GET_ALL_DATA:
-        Registry_IncrementTimeout(g_pending.slotIdx);
-        {
-            SlaveSlot_t s = Registry_GetSlot(g_pending.slotIdx);
-            if (s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD)
-                _GoOffline(g_pending.slotIdx);
-        }
-        break;
-    default: break;
+		case OP_PING:
+			return;
+		case OP_GET_TABLE:
+			Registry_SetState(g_pending.slotIdx, SREG_ERROR);
+			g_fetchSlot++;
+			break;
+		case OP_GET_ALL_DATA:
+			Registry_IncrementTimeout(g_pending.slotIdx);
+			{
+				SlaveSlot_t s = Registry_GetSlot(g_pending.slotIdx);
+				if (s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD)
+					_GoOffline(g_pending.slotIdx);
+			}
+			break;
+		default: break;
     }
     g_pending.op = OP_NONE;
 }

@@ -28,7 +28,18 @@ typedef enum {
     CMD_ACK              = 0x06,
     CMD_NACK             = 0x07,
     CMD_RESET            = 0x08,
+	  CMD_UPSTREAM_PUSH    = 0x09,   /* STM32 Master -> ESP32 */
+    CMD_UPSTREAM_ALARM   = 0x0A,   /* STM32 Master -> ESP32 */
+    CMD_SET_ACTUATOR     = 0x0B,   /* Master -> Slave       */
 } eCmd;
+
+/*
+ * CMD_SET_ACTUATOR payload:
+ *   [actuatorId : 1]  actuator index on this slave
+ *   [valueType  : 1]  0x01 = ON/OFF boolean
+ *   [value      : 1]  0 = CRITICAL alarm (actuatorOnCrit from master)
+ *                     1 = WARN or NORMAL
+ */
 
 typedef enum {
     STATUS_OK          = 0x00,
@@ -45,16 +56,28 @@ typedef enum {
 } eSensorType;
 
 typedef enum {
-		DTYPE_FLOAT  	= 0x01,
-		DTYPE_INT32  	= 0x02,
-		DTYPE_DOUBLE 	= 0x03,
-		DTYPE_INT			= 0x04,
-		DTYPE_CHAR		= 0x05,
+    DTYPE_FLOAT  	= 0x01,
+    DTYPE_INT32  	= 0x02,
+    DTYPE_DOUBLE 	= 0x03,
+    DTYPE_INT		= 0x04,
+    DTYPE_CHAR		= 0x05,
 } eDataType;
 
-static inline uint8_t DataType_Size(eDataType dt)
-{
-    return (dt == DTYPE_DOUBLE) ? 8U : 4U;
+static inline uint8_t DataType_Size(eDataType dt){
+    switch(dt){
+      case DTYPE_FLOAT:
+        return 4U;
+      case DTYPE_INT32:
+        return 4U;
+      case DTYPE_DOUBLE:
+        return 8U;
+      case DTYPE_INT:
+        return 4U;
+      case DTYPE_CHAR:
+        return 1U;
+      default:
+        return 0U;
+    }
 }
 
 typedef struct {
@@ -64,12 +87,12 @@ typedef struct {
 } SensorDesc_t;
 
 typedef union {
-    float    f;
-    int32_t  i;
-    double   d;
-		int			 i2;
-		char		 c;
-    uint8_t  bytes[8];
+    float f;
+    int32_t i;
+    double d;
+	int	i2;
+	char c;
+    uint8_t bytes[8];
 } SensorReading_t;
 
 typedef struct {

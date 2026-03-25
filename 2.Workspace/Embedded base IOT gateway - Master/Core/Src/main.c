@@ -33,6 +33,7 @@
 #include "lcd_driver.h"
 #include "watchdog.h"
 #include "upstream.h"
+#include "alarm.h"
 
 /* USER CODE END Includes */
 
@@ -144,6 +145,7 @@ int main(void)
   Watchdog_Init();
   Button_Init();
   LCD_UI_Init();
+  Alarm_Init();
   Upstream_Init();
 
   BaseType_t ret;

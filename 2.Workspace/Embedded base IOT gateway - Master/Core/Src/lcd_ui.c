@@ -11,10 +11,10 @@
 #include "watchdog.h"
 
 typedef enum {
-    SCREEN_IDLE = 0,
-    SCREEN_STOP_MENU = 1,
-    SCREEN_SLAVE_LIST = 2,
-    SCREEN_RUN = 3,
+    SCREEN_IDLE 		= 0,
+    SCREEN_STOP_MENU 	= 1,
+    SCREEN_SLAVE_LIST 	= 2,
+    SCREEN_RUN 			= 3,
 } eScreen;
 
 static eScreen g_screen = SCREEN_IDLE;
@@ -27,10 +27,10 @@ static inline void _Dirty(void) { g_redraw = true; }
 
 static char _TypeChar(uint8_t t){
     switch ((eSensorType)t) {
-    case SENSOR_TEMPERATURE: return 'T';
-    case SENSOR_HUMIDITY: return 'H';
-    case SENSOR_PRESSURE: return 'P';
-    case SENSOR_ADC_RAW: return 'A';
+    case SENSOR_TEMPERATURE:return 'T';
+    case SENSOR_HUMIDITY: 	return 'H';
+    case SENSOR_PRESSURE: 	return 'P';
+    case SENSOR_ADC_RAW: 	return 'A';
     case SENSOR_DIGITAL_IN: return 'D';
     default: return '?';
     }
@@ -38,11 +38,11 @@ static char _TypeChar(uint8_t t){
 
 static void _FmtVal(char *buf, uint8_t sz, const SensorReading_t *r, uint8_t dt){
     switch ((eDataType)dt) {
-    case DTYPE_FLOAT: snprintf(buf, sz, "%.2f", r->f); 	break;
-    case DTYPE_DOUBLE: snprintf(buf, sz, "%.4f", r->d);	break;
-    case DTYPE_INT32: snprintf(buf, sz, "%ld", r->i); 	break;
-    case DTYPE_INT:	 snprintf(buf, sz, "%d", r->i2);		break;
-    case DTYPE_CHAR: snprintf(buf, sz, "%d", r->c);		break;
+    case DTYPE_FLOAT: 	snprintf(buf, sz, "%.2f", r->f);break;
+    case DTYPE_DOUBLE: 	snprintf(buf, sz, "%.4f", r->d);break;
+    case DTYPE_INT32: 	snprintf(buf, sz, "%ld", r->i);	break;
+    case DTYPE_INT:	 	snprintf(buf, sz, "%d", r->i2);	break;
+    case DTYPE_CHAR: 	snprintf(buf, sz, "%d", r->c);	break;
     default: snprintf(buf, sz, "?"); break;
     }
 }
@@ -50,12 +50,12 @@ static void _FmtVal(char *buf, uint8_t sz, const SensorReading_t *r, uint8_t dt)
 static const char *_StateStr(eSlaveRegState s){
     switch (s) {
     case SREG_UNREGISTERED: return "UNREG";
-    case SREG_DECLARED: return "DECLARED";
-    case SREG_FETCHING: return "FETCHING";
-    case SREG_READY: return "READY";
-    case SREG_ONLINE: return "ONLINE";
-    case SREG_OFFLINE: return "OFFLINE";
-    case SREG_ERROR: return "ERROR";
+    case SREG_DECLARED: 	return "DECLARED";
+    case SREG_FETCHING: 	return "FETCHING";
+    case SREG_READY: 		return "READY";
+    case SREG_ONLINE: 		return "ONLINE";
+    case SREG_OFFLINE: 		return "OFFLINE";
+    case SREG_ERROR: 		return "ERROR";
     default: return "???";
     }
 }

@@ -21,3 +21,15 @@
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\main.o: ..\2.USER\slave_protocol.h
+.\objects\main.o: ..\2.USER\slave_actuator.h
+.\objects\main.o: ..\3.FreeRTOS\include\FreeRTOS.h
+.\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\main.o: ..\3.FreeRTOS\FreeRTOSConfig.h
+.\objects\main.o: ..\3.FreeRTOS\include\projdefs.h
+.\objects\main.o: ..\3.FreeRTOS\include\portable.h
+.\objects\main.o: ..\3.FreeRTOS\include\deprecated_definitions.h
+.\objects\main.o: ..\3.FreeRTOS\portable\RVDS\ARM_CM3\portmacro.h
+.\objects\main.o: ..\3.FreeRTOS\include\mpu_wrappers.h
+.\objects\main.o: ..\3.FreeRTOS\include\queue.h
+.\objects\main.o: ..\3.FreeRTOS\include\task.h
+.\objects\main.o: ..\3.FreeRTOS\include\list.h

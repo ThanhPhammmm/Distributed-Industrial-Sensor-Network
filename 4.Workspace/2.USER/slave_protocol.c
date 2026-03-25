@@ -3,27 +3,27 @@
 #include "stm32f10x_usart.h"
 #include "stm32f10x_dma.h"
 #include "stm32f10x_gpio.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 #include "slave_config.h"
-#include <string.h>
 #include "protocol_definition.h"
 #include "slave_sensor.h"
 #include "slave_config_store.h"
+#include "slave_actuator.h"
+#include <string.h>
 
-#define INTER_FRAME_GAP_MS   2U
 
 typedef enum { RX_STAGE_PREFIX = 0, RX_STAGE_REST } eRxStage;
-
 static eRxStage g_rxStage;
-static uint8_t  g_pfx[PROTO_PREFIX_SIZE];
-static uint8_t  g_rest[PROTO_LEN_MAX + PROTO_CRC_SIZE];
+static uint8_t g_pfx[PROTO_PREFIX_SIZE];
+static uint8_t g_rest[PROTO_LEN_MAX + PROTO_CRC_SIZE];
 
-static uint8_t  g_txBuf[PROTO_FRAME_MAX];
+static uint8_t g_txBuf[PROTO_FRAME_MAX];
 
-static volatile uint8_t g_frameReady = 0U;
-static Frame_t g_frame;
 static uint8_t g_myAddr;
 
-extern void delay_ms(uint32_t ms);
+static QueueHandle_t xQueue_RxFrame = NULL;
 
 static void _AbortRxDma(void){
     USART_DMACmd(USART2, USART_DMAReq_Rx, DISABLE);
@@ -34,117 +34,153 @@ static void _AbortRxDma(void){
 
 static void _ArmPrefix(void){
     _AbortRxDma();
-		
     DMA1_Channel6->CMAR = (uint32_t)g_pfx;
     DMA1_Channel6->CNDTR = PROTO_PREFIX_SIZE;
     g_rxStage = RX_STAGE_PREFIX;
-		DMA_ClearFlag(DMA1_FLAG_GL6);
-		DMA_Cmd(DMA1_Channel6, ENABLE);
-		USART_DMACmd(USART2, USART_DMAReq_Rx, ENABLE);
+    DMA_ClearFlag(DMA1_FLAG_GL6);
+    DMA_Cmd(DMA1_Channel6, ENABLE);
+    USART_DMACmd(USART2, USART_DMAReq_Rx, ENABLE);
 }
 
 static void _ArmRest(uint8_t len){
     _AbortRxDma();
-		
     DMA1_Channel6->CMAR = (uint32_t)g_rest;
     DMA1_Channel6->CNDTR = (uint16_t)(len + PROTO_CRC_SIZE);
     g_rxStage = RX_STAGE_REST;
-		DMA_ClearFlag(DMA1_FLAG_GL6);
-		DMA_Cmd(DMA1_Channel6, ENABLE);
-		USART_DMACmd(USART2, USART_DMAReq_Rx, ENABLE);
-}
-
-void Slave_Protocol_Init(uint8_t myAddr){
-    g_myAddr = myAddr;
-    g_frameReady = 0U;
-    _ArmPrefix();
+    DMA_ClearFlag(DMA1_FLAG_GL6);
+    DMA_Cmd(DMA1_Channel6, ENABLE);
+    USART_DMACmd(USART2, USART_DMAReq_Rx, ENABLE);
 }
 
 static void _StartTxDma(const uint8_t *buf, uint8_t n){
     DMA_Cmd(DMA1_Channel7, DISABLE);
     while (DMA1_Channel7->CCR & DMA_CCR1_EN) {}
-    DMA_ClearFlag(DMA1_FLAG_GL7 | DMA1_FLAG_TC7 |
-                  DMA1_FLAG_HT7 | DMA1_FLAG_TE7);
-
+    DMA_ClearFlag(DMA1_FLAG_GL7 | DMA1_FLAG_TC7 | DMA1_FLAG_HT7 | DMA1_FLAG_TE7);
     DMA1_Channel7->CMAR = (uint32_t)buf;
     DMA1_Channel7->CNDTR = n;
-			
-		USART_ClearFlag(USART2, USART_FLAG_TC);
+    USART_ClearFlag(USART2, USART_FLAG_TC);
     USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
     DMA_Cmd(DMA1_Channel7, ENABLE);
 }
 
-static void _Send(uint8_t cmd, uint8_t status, uint8_t ver, const uint8_t *payload, uint8_t payloadLen){
-    uint8_t n = Frame_Build(g_txBuf, g_myAddr, g_frame.seq, cmd, status, ver, payload, payloadLen);
-
+static void _Send(uint8_t seq, uint8_t cmd, uint8_t status, uint8_t ver,
+                  const uint8_t *payload, uint8_t payloadLen)
+{
+    uint8_t n = Frame_Build(g_txBuf, g_myAddr, seq, cmd, status, ver, payload, payloadLen);
     _AbortRxDma();
-
     GPIO_WriteBit(RS485_DE_PORT, RS485_DE_PIN, Bit_SET);
     _StartTxDma(g_txBuf, n);
 }
 
-static void _OnPing(void){
-    uint8_t cnt = Slave_Sensors_GetCount();
-    _Send(CMD_ACK, STATUS_OK, SlaveConfig_GetVersion(), &cnt, 1U);
-	
-		GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
-		delay_ms(1);
-		GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
-		delay_ms(1);
-}
 
-static void _OnGetSensorTable(void){
-    uint8_t buf[PROTO_MAX_PAYLOAD];
-    uint8_t len = Slave_Sensors_PackTable(buf, PROTO_MAX_PAYLOAD);
-    if (len == 0) { 
-			_Send(CMD_NACK, STATUS_ERROR, 0, NULL, 0); 
-			return; 
-		}
-    _Send(CMD_SENSOR_TABLE, STATUS_OK, 0, buf, len);
-		
-		GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
-		delay_ms(1);
-		GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
-		delay_ms(1);
-}
+static void _ProcessFrame(const Frame_t *f)
+{
+    switch (f->cmd) {
 
-static void _OnGetAllData(void){
-    uint8_t buf[PROTO_MAX_PAYLOAD];
-    uint8_t len = Slave_Sensors_PackAllData(buf, PROTO_MAX_PAYLOAD);
-    if (len == 0) { 
-			_Send(CMD_NACK, STATUS_ERROR, 0, NULL, 0); 
-			return; 
-		}
-		
-    delay_ms(INTER_FRAME_GAP_MS);
-    _Send(CMD_ALL_DATA, STATUS_OK, 0U, buf, len);
-
-		GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
-		delay_ms(1);
-		GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
-		delay_ms(1);
-}
-
-void Slave_Protocol_Process(void){
-    if (!g_frameReady) return;
-    g_frameReady = 0U;
-
-    if (g_frame.cmd == CMD_ACK || g_frame.cmd == CMD_NACK) {
-        _ArmPrefix(); return;
+    case CMD_PING: {
+        uint8_t cnt = Slave_Sensors_GetCount();
+        _Send(f->seq, CMD_ACK, STATUS_OK, SlaveConfig_GetVersion(), &cnt, 1U);
+			
+				GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
+				vTaskDelay(1);
+				GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
+				vTaskDelay(1);
+			
+        break;
     }
 
-    switch (g_frame.cmd) {
-			case CMD_PING: _OnPing(); break;
-			case CMD_GET_SENSOR_TABLE: _OnGetSensorTable(); break;
-			case CMD_GET_ALL_DATA: _OnGetAllData(); break;
-			case CMD_RESET:
-					_Send(CMD_ACK, STATUS_OK, 0U, NULL, 0U);
-					delay_ms(10U);
-					NVIC_SystemReset();
-					break;
-			default:
-					_Send(CMD_NACK, STATUS_INVALID_CMD, 0U, NULL, 0U);
-					break;
+    case CMD_GET_SENSOR_TABLE: {
+        uint8_t buf[PROTO_MAX_PAYLOAD];
+        uint8_t len = Slave_Sensors_PackTable(buf, PROTO_MAX_PAYLOAD);
+        if (len == 0U) {
+            _Send(f->seq, CMD_NACK, STATUS_ERROR, 0U, NULL, 0U);
+        } 
+				else {
+            _Send(f->seq, CMD_SENSOR_TABLE, STATUS_OK, 0U, buf, len);
+        }
+				
+				GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
+				vTaskDelay(1);
+				GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
+				vTaskDelay(1);
+				
+        break;
+    }
+
+    case CMD_GET_ALL_DATA: {
+        uint8_t buf[PROTO_MAX_PAYLOAD];
+        uint8_t len = Slave_Sensors_PackAllData(buf, PROTO_MAX_PAYLOAD);
+        if (len == 0U) {
+            _Send(f->seq, CMD_NACK, STATUS_ERROR, 0U, NULL, 0U);
+        } 
+				else {
+            vTaskDelay(pdMS_TO_TICKS(INTER_FRAME_GAP_MS));
+            _Send(f->seq, CMD_ALL_DATA, STATUS_OK, 0U, buf, len);
+        }
+				
+				GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
+				vTaskDelay(1);
+				GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
+				vTaskDelay(1);
+				
+        break;
+    }
+
+    case CMD_SET_ACTUATOR: {
+        if (f->payloadLen >= 3U) {
+            ActuatorCmd_t act;
+            act.actuatorId = f->payload[0];
+            act.valueType = f->payload[1];
+            act.level = f->payload[2];
+            xQueueSend(xQueue_ActuatorCmd, &act, 0U);
+        }
+        //_Send(f->seq, CMD_ACK, STATUS_OK, 0U, NULL, 0U);
+        break;
+    }
+
+    case CMD_RESET: {
+        _Send(f->seq, CMD_ACK, STATUS_OK, 0U, NULL, 0U);
+        vTaskDelay(pdMS_TO_TICKS(10U));
+        NVIC_SystemReset();
+        break;
+    }
+
+    default: {
+        _Send(f->seq, CMD_NACK, STATUS_INVALID_CMD, 0U, NULL, 0U);
+        break;
+    }
+    }
+}
+
+void Protocol_Init(uint8_t myAddr){
+    g_myAddr = myAddr;
+    xQueue_RxFrame = xQueueCreate(RX_FRAME_QUEUE_SIZE, sizeof(Frame_t));
+    configASSERT(xQueue_RxFrame != NULL);
+    _ArmPrefix();
+}
+
+void Task_Protocol(void *pvParams)
+{
+    (void)pvParams;
+
+    Frame_t frame;
+    TickType_t lastSensorTick = xTaskGetTickCount();
+
+    while (1) {
+        if (xQueueReceive(xQueue_RxFrame, &frame, pdMS_TO_TICKS(10U)) == pdTRUE) {
+            if (frame.cmd == CMD_ACK || frame.cmd == CMD_NACK) {
+                _ArmPrefix();
+            } 
+			else {
+                _ProcessFrame(&frame);
+            }
+        }
+
+        TickType_t now = xTaskGetTickCount();
+        if ((now - lastSensorTick) >= pdMS_TO_TICKS(SLAVE_SENSOR_READ_MS)) {
+            Slave_Sensors_Read();
+            lastSensorTick = now;
+        }
     }
 }
 
@@ -153,11 +189,13 @@ void Slave_Protocol_OnRxDmaComplete(void){
 
     if (g_rxStage == RX_STAGE_PREFIX) {
         if (g_pfx[0] != PROTO_SOF_0 || g_pfx[1] != PROTO_SOF_1) {
-            _ArmPrefix(); return;
+            _ArmPrefix();
+            return;
         }
         uint8_t len = g_pfx[2];
         if (len < PROTO_LEN_MIN || len > PROTO_LEN_MAX) {
-            _ArmPrefix(); return;
+            _ArmPrefix();
+            return;
         }
         _ArmRest(len);
         return;
@@ -166,38 +204,48 @@ void Slave_Protocol_OnRxDmaComplete(void){
     uint8_t len = g_pfx[2];
     uint8_t total = (uint8_t)(PROTO_PREFIX_SIZE + len + PROTO_CRC_SIZE);
 
-		if(total < PROTO_LEN_MIN || total > PROTO_LEN_MAX){
-        _ArmPrefix();
-        return;
-    }
-				
     static uint8_t raw[PROTO_FRAME_MAX];
     memcpy(raw, g_pfx, PROTO_PREFIX_SIZE);
     memcpy(raw + PROTO_PREFIX_SIZE, g_rest, (size_t)(len + PROTO_CRC_SIZE));
 
-    if (!Frame_ValidCRC(raw, total)) { _ArmPrefix(); return; }
-
-    uint8_t addr = raw[3];
-    if (addr != g_myAddr) {
-        _ArmPrefix(); return;
+    if (!Frame_ValidCRC(raw, total)) {
+        _ArmPrefix();
+        return;
     }
 
-    Frame_Parse(raw, total, &g_frame);
-    g_frameReady = 1U;
-}
+    if (raw[3] != g_myAddr) {
+        _ArmPrefix();
+        return;
+    }
 
-void Slave_Protocol_OnTxDmaComplete(void){
+    Frame_t f;
+    Frame_Parse(raw, total, &f);
+
+    BaseType_t woken = pdFALSE;
+    if (xQueueSendFromISR(xQueue_RxFrame, &f, &woken) != pdTRUE) {
+        _ArmPrefix();
+    }
+    portYIELD_FROM_ISR(woken);
+}
+                           
+void Slave_Protocol_OnTxDmaComplete(void)
+{
     DMA_ClearFlag(DMA1_FLAG_TC7);
     USART_DMACmd(USART2, USART_DMAReq_Tx, DISABLE);
     USART_ITConfig(USART2, USART_IT_TC, ENABLE);
 }
 
-void Slave_Protocol_OnTxComplete(void){
+void Slave_Protocol_OnTxComplete(void)
+{
     USART_ITConfig(USART2, USART_IT_TC, DISABLE);
     USART_ClearFlag(USART2, USART_FLAG_TC);
     GPIO_WriteBit(RS485_DE_PORT, RS485_DE_PIN, Bit_RESET);
-		volatile uint8_t tmp;
-		while (USART_GetFlagStatus(USART2, USART_FLAG_RXNE))
-				tmp = USART_ReceiveData(USART2);
+
+    volatile uint8_t tmp;
+    while (USART_GetFlagStatus(USART2, USART_FLAG_RXNE)) {
+        tmp = (uint8_t)USART_ReceiveData(USART2);
+    }
+    (void)tmp;
+
     _ArmPrefix();
 }
