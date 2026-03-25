@@ -54,7 +54,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/DeviceManager.h ../Core/Inc/ProtocolTask.h \
  ../Core/Inc/rs485_driver.h ../Core/Inc/system_state.h \
  ../Core/Inc/SlaveRegistry.h ../Core/Inc/lcd_ui.h ../Core/Inc/button.h \
- ../Core/Inc/lcd_driver.h ../Core/Inc/watchdog.h ../Core/Inc/upstream.h
+ ../Core/Inc/lcd_driver.h ../Core/Inc/watchdog.h ../Core/Inc/upstream.h \
+ ../Core/Inc/alarm.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -121,3 +122,4 @@ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT
 ../Core/Inc/lcd_driver.h:
 ../Core/Inc/watchdog.h:
 ../Core/Inc/upstream.h:
+../Core/Inc/alarm.h:

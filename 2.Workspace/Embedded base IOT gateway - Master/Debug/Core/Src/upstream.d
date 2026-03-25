@@ -45,10 +45,13 @@ Core/Src/upstream.o: ../Core/Src/upstream.c ../Core/Inc/system_state.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/mpu_wrappers.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h \
  C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/list.h \
- ../Core/Inc/upstream.h ../Core/Inc/Configuration.h \
- ../Core/Inc/ProtocolDefinition.h ../Core/Inc/slave_config.h \
- ../Core/Inc/SlaveRegistry.h ../Core/Inc/Configuration.h \
- ../Core/Inc/SlaveRegistry.h ../Core/Inc/watchdog.h
+ ../Core/Inc/upstream.h ../Core/Inc/SlaveRegistry.h \
+ ../Core/Inc/Configuration.h ../Core/Inc/slave_config.h \
+ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/queue.h \
+ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h \
+ ../Core/Inc/Configuration.h ../Core/Inc/ProtocolDefinition.h \
+ ../Core/Inc/SlaveRegistry.h ../Core/Inc/watchdog.h ../Core/Inc/alarm.h \
+ ../Core/Inc/ProtocolDefinition.h
 ../Core/Inc/system_state.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -97,10 +100,14 @@ C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h:
 C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/list.h:
 ../Core/Inc/upstream.h:
+../Core/Inc/SlaveRegistry.h:
+../Core/Inc/Configuration.h:
+../Core/Inc/slave_config.h:
+C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/queue.h:
+C:/Users/LENOVO/Documents/1.Personal/11.Embedded\ Projects/1.Embedded\ base\ IOT\ gateway/2.Workspace/Embedded\ base\ IOT\ gateway\ -\ Master/ThirdParty/FreeRTOS/include/task.h:
 ../Core/Inc/Configuration.h:
 ../Core/Inc/ProtocolDefinition.h:
-../Core/Inc/slave_config.h:
-../Core/Inc/SlaveRegistry.h:
-../Core/Inc/Configuration.h:
 ../Core/Inc/SlaveRegistry.h:
 ../Core/Inc/watchdog.h:
+../Core/Inc/alarm.h:
+../Core/Inc/ProtocolDefinition.h:

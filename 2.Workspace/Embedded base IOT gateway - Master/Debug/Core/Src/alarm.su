@@ -1,0 +1,4 @@
+../Core/Inc/ProtocolDefinition.h:68:23:DataType_Size	16	static
+../Core/Src/alarm.c:69:20:_Evaluate	16	static
+../Core/Src/alarm.c:75:6:Alarm_Init	8	static
+../Core/Src/alarm.c:80:6:Alarm_Check	56	static

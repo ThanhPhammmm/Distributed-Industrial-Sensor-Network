@@ -7,13 +7,13 @@
 #include "slave_config.h"
 
 typedef enum {
-    SREG_UNREGISTERED = 0,  /* slot inactive                       */
-    SREG_DECLARED     = 1,  /* registered, waiting for RUN fetch   */
-    SREG_FETCHING     = 2,  /* ping / table fetch in progress      */
-    SREG_READY        = 3,  /* table valid, ready to poll          */
-    SREG_ONLINE       = 4,  /* polling, data arriving              */
-    SREG_OFFLINE      = 5,  /* too many consecutive missed polls   */
-    SREG_ERROR        = 6,  /* ping / fetch failed                 */
+    SREG_UNREGISTERED 	= 0,  /* slot inactive                       */
+    SREG_DECLARED 		= 1,  /* registered, waiting for RUN fetch   */
+    SREG_FETCHING 		= 2,  /* ping / table fetch in progress      */
+    SREG_READY 			= 3,  /* table valid, ready to poll          */
+    SREG_ONLINE 		= 4,  /* polling, data arriving              */
+    SREG_OFFLINE 		= 5,  /* too many consecutive missed polls   */
+    SREG_ERROR 			= 6,  /* ping / fetch failed                 */
 } eSlaveRegState;
 
 typedef struct {
@@ -23,16 +23,16 @@ typedef struct {
 } SlaveStats_t;
 
 typedef struct {
-    uint8_t          addr;
-    bool             registered;
-    eSlaveRegState   state;
-    uint8_t          configVersion;
-    uint8_t          sensorCount;
-    SensorDesc_t     sensors[MAX_SENSORS_PER_SLAVE];
-    SensorReading_t  lastReading[MAX_SENSORS_PER_SLAVE]; /* index = sensorId-1 */
-    uint32_t         lastSeenMs;
-    uint8_t          missedPolls;
-    SlaveStats_t     stats;
+    uint8_t addr;
+    bool registered;
+    eSlaveRegState state;
+    uint8_t configVersion;
+    uint8_t sensorCount;
+    SensorDesc_t sensors[MAX_SENSORS_PER_SLAVE];
+    SensorReading_t lastReading[MAX_SENSORS_PER_SLAVE]; /* index = sensorId-1 */
+    uint32_t lastSeenMs;
+    uint8_t missedPolls;
+    SlaveStats_t stats;
 } SlaveSlot_t;
 
 void Registry_Init(void);

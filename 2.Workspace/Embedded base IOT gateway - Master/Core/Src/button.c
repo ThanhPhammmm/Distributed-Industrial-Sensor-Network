@@ -68,10 +68,10 @@ void Button_Task(void *pvParams){
                     BtnEvent_t ev = { .btn = (eBtn)i, .type = BTN_SHORT };
                     xQueueSend(xQueue_BtnEvent, &ev, 0);
                 }
-                s->debounce = 0;
-                s->held = 0;
-                s->active = false;
-                s->longFired = false;
+                s->debounce 	= 0;
+                s->held 		= 0;
+                s->active 		= false;
+                s->longFired 	= false;
             }
         }
     }

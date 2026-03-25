@@ -1,6 +1,7 @@
 "./Core/Src/DeviceManager.o"
 "./Core/Src/ProtocolTask.o"
 "./Core/Src/SlaveRegistry.o"
+"./Core/Src/alarm.o"
 "./Core/Src/button.o"
 "./Core/Src/lcd_driver.o"
 "./Core/Src/lcd_ui.o"

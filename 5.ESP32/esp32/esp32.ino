@@ -4,6 +4,8 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include <string.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
 
 #define LED_PIN 2
 
@@ -25,6 +27,10 @@
 #define FRAME_MAX        (PREFIX_SIZE + PROTO_LEN_MAX + CRC_SIZE)
 
 #define CMD_UPSTREAM_PUSH  0x09
+#define CMD_UPSTREAM_ALARM 0x0A
+
+#define JSON_BUF_SIZE 768
+#define MQTT_BUF_SIZE (JSON_BUF_SIZE + 128)
 
 #define DTYPE_FLOAT  0x01
 #define DTYPE_INT32  0x02
@@ -32,6 +38,21 @@
 #define DTYPE_INT    0x04
 #define DTYPE_CHAR   0x05
 
+#define ALARM_NONE     0
+#define ALARM_WARN     1
+#define ALARM_CRITICAL 2
+
+#define TOPIC_PREFIX "gateway"
+
+#define WIFI_SSID         "xxx"
+#define WIFI_PASSWORD     "xxx"
+
+#define MQTT_HOST         "xxx"
+#define MQTT_PORT         1883
+#define MQTT_CLIENT_ID    "esp32-gateway"
+
+static WiFiClient    g_wifi;
+static PubSubClient  g_mqtt(g_wifi);
 static QueueHandle_t g_uartEventQueue = NULL;
 
 typedef enum {
@@ -64,7 +85,265 @@ static bool validateCRC(const uint8_t *raw, uint16_t total){
 }
 
 static uint8_t dataTypeSize(uint8_t dt){
-    return (dt == DTYPE_DOUBLE) ? 8U : 4U;
+    switch(dt){
+      case DTYPE_FLOAT:
+        return 4U;
+      case DTYPE_INT32:
+        return 4U;
+      case DTYPE_DOUBLE:
+        return 8U;
+      case DTYPE_INT:
+        return 4U;
+      case DTYPE_CHAR:
+        return 1U;
+      default:
+        return 0U;
+    }
+}
+
+static const char* dataTypeName(uint8_t dt){
+    switch (dt) {
+    case 0x01: return "float";
+    case 0x02: return "int32";
+    case 0x03: return "double";
+    case 0x04: return "int";
+    case 0x05: return "char";
+    default: return "unknown";
+    }
+}
+static const char* sensorTypeName(uint8_t st){
+    switch (st) {
+    case 0x01: return "temperature";
+    case 0x02: return "humidity";
+    case 0x03: return "pressure";
+    case 0x04: return "adc_raw";
+    case 0x05: return "digital_in";
+    default: return "unknown";
+    }
+}
+
+static const char* alarmLevelName(uint8_t level){
+    switch (level) {
+    case ALARM_WARN: return "WARN";
+    case ALARM_CRITICAL: return "CRITICAL";
+    default: return "NONE";
+    }
+}
+
+static void rawToValueStr(char *buf, size_t sz, uint8_t dt, const uint8_t *data){
+    switch (dt) {
+    case DTYPE_FLOAT:{ 
+      float f; 
+      memcpy(&f, data, 4); 
+      snprintf(buf, sz, "%.2f", f); 
+      break; 
+      }
+    case DTYPE_INT32: { 
+      int32_t i; 
+      memcpy(&i, data, 4); 
+      snprintf(buf, sz, "%ld", (long)i);
+      break; 
+      }
+    case DTYPE_DOUBLE: { 
+      double d; 
+      memcpy(&d, data, 8); 
+      snprintf(buf, sz, "%.4f", d); 
+      break; 
+      }
+    case DTYPE_INT: {
+      int i2;
+      memcpy(&i2, data, 4);
+      snprintf(buf, sz, "%d", i2); 
+      break; 
+     }
+    case DTYPE_CHAR: {
+      char c;
+      memcpy(&c, data, 1);
+      snprintf(buf, sz, "%d", c); 
+      break; 
+     }
+    default: snprintf(buf, sz, "null"); break;
+    }
+    
+}
+
+/*
+ *  processDataFrame
+ *
+ *  STM32 Payload_PackUpstream format:
+ *    [slaveAddr:1][sensorCount:1]
+ *      [sensorId:1][sensorType:1][dataType:1][data:sz] × sensorCount
+ *
+ *  → 1 while = 1 slave → publish 1
+ *    topic : gateway/{slaveAddr}/data
+ *    retain: true
+ *
+ */
+static void processDataFrame(const uint8_t *raw, uint16_t total){
+    uint8_t payloadLen = (uint8_t)(total - PREFIX_SIZE - HEADER_SIZE - CRC_SIZE);
+    const uint8_t *p = &raw[8];
+    uint8_t pos = 0;
+
+    while (pos + 2 <= payloadLen) {
+        uint8_t slaveAddr = p[pos++];
+        uint8_t sensorCount = p[pos++];
+
+        if (sensorCount == 0 || sensorCount > 8) {
+            Serial.printf("[DATA] bad sensorCount=%u, abort\n", sensorCount);
+            return;
+        }
+
+        char json[JSON_BUF_SIZE];
+        uint16_t jLen = 0;
+
+        jLen += snprintf(json + jLen, sizeof(json) - jLen,
+                 "{\"slaveAddr\":\"%02X\","
+                 "\"timestamp\":%lu,"
+                 "\"sensors\":[",
+                 slaveAddr, (unsigned long)millis());
+                         
+        for (uint8_t s = 0; s < sensorCount; s++) {
+            if (pos + 3 > payloadLen) {
+                Serial.printf("[DATA] truncated at sensor %u\n", s);
+                return;
+            }
+            
+            uint8_t sensorId = p[pos++];
+            uint8_t sensorType = p[pos++];
+            uint8_t dataType = p[pos++];
+            uint8_t sz = dataTypeSize(dataType);
+            
+            if (sz == 0 || pos + sz > payloadLen) {
+                Serial.printf("[DATA] bad dataType=0x%02X sensor %u\n", dataType, s);
+                return;
+            }
+
+            char valueStr[32];
+            rawToValueStr(valueStr, sizeof(valueStr), dataType, &p[pos]);
+            pos += sz;
+
+            jLen += snprintf(json + jLen, sizeof(json) - jLen,
+                             "%s{"
+                             "\"sensorId\":%u,"
+                             "\"sensorType\":\"%s\","
+                             "\"dataType\":\"%s\","
+                             "\"value\":%s"
+                             "}",
+                             s > 0 ? "," : "",
+                             sensorId,
+                             sensorTypeName(sensorType),
+                             dataTypeName(dataType),
+                             valueStr);
+
+        }
+        
+            jLen += snprintf(json + jLen, sizeof(json) - jLen, "]}");
+
+            char topic[48];
+            snprintf(topic, sizeof(topic), "%s/%02X/data", TOPIC_PREFIX, slaveAddr);
+
+
+            if (g_mqtt.publish(topic, (uint8_t*)json, jLen, true))
+                Serial.printf("[MQTT] pub %s ok\n", topic);
+            else
+                Serial.printf("[MQTT] pub %s FAIL\n", topic);
+            
+            Serial.println("==== DATA FRAME ====");
+            
+            Serial.print("Topic: ");
+            Serial.println(topic);
+            
+            Serial.print("Value: ");
+            Serial.println(json);
+            
+            Serial.println("====================");
+    }
+}
+
+/*
+ *  processAlarmFrame
+ *
+ *  STM32 _SendAlarm payload:
+ *    [slaveAddr:1][sensorId:1][sensorType:1][alarmLevel:1][dataType:1][data:sz]
+ *
+ *  → Publish 1
+ *    topic : gateway/{slaveAddr}/alarm
+ *    retain: false
+ *
+ */
+static void processAlarmFrame(const uint8_t *raw, uint8_t total){
+    uint8_t payloadLen = (uint8_t)(total - PREFIX_SIZE - HEADER_SIZE - CRC_SIZE);
+    
+    if (payloadLen < 6) {
+        Serial.printf("[ALARM] payload too short (%u)\n", payloadLen);
+        return;
+    }
+    
+    const uint8_t *p = &raw[8];
+    uint8_t slaveAddr = p[0];
+    uint8_t sensorId = p[1];
+    uint8_t sensorType = p[2];
+    uint8_t alarmLevel = p[3];
+    uint8_t dataType = p[4];
+    uint8_t sz = dataTypeSize(dataType);
+
+    if (sz == 0 || (uint8_t)(5 + sz) > payloadLen) {
+        Serial.printf("[ALARM] bad dataType=0x%02X\n", dataType);
+        return;
+    }
+    
+    char valueStr[32];
+    rawToValueStr(valueStr, sizeof(valueStr), dataType, &p[5]);
+
+    char json[JSON_BUF_SIZE];
+    uint16_t jLen = snprintf(json, sizeof(json),
+                             "{\"slaveAddr\":\"%02X\","
+                             "\"timestamp\":%lu,"
+                             "\"sensorId\":%u,"
+                             "\"sensorType\":\"%s\","
+                             "\"dataType\":\"%s\","
+                             "\"value\":%s,"
+                             "\"alarmLevel\":\"%s\"}",
+                             slaveAddr,
+                             (unsigned long)millis(),
+                             sensorId,
+                             sensorTypeName(sensorType),
+                             dataTypeName(dataType),
+                             valueStr,
+                             alarmLevelName(alarmLevel));
+
+    char topic[48];
+    snprintf(topic, sizeof(topic), "%s/%02X/alarm", TOPIC_PREFIX, slaveAddr);
+
+    if (g_mqtt.publish(topic, (uint8_t*)json, jLen, false))
+        Serial.printf("[MQTT] pub %s %s ok\n", topic, alarmLevelName(alarmLevel));
+    else
+        Serial.printf("[MQTT] pub %s FAIL\n", topic);
+        
+
+    Serial.println("==== ALARM FRAME ====");
+    
+    Serial.print("Topic: ");
+    Serial.println(topic);
+    
+    Serial.print("Payload: ");
+    Serial.println(json);
+    
+    Serial.println("=====================");
+}
+
+static void dispatchFrame(void){
+    if (!validateCRC(g_rxFrame, g_rxPos)){
+      Serial.println("[RX] CRC fail");
+      return;
+    }
+    switch (g_rxFrame[5]) {
+    case CMD_UPSTREAM_PUSH: processDataFrame(g_rxFrame, g_rxPos); break;
+    case CMD_UPSTREAM_ALARM: processAlarmFrame(g_rxFrame, g_rxPos); break;
+    default:
+      Serial.printf("[RX] unknown cmd=0x%02X\n", g_rxFrame[5]);
+      break;
+    }
 }
 
 bool ledState = false;
@@ -119,6 +398,7 @@ static void rxByte(uint8_t b)
             g_rxFrame[g_rxPos++] = b;
         if (g_rxPos >= g_rxExpected) {
             Serial.printf("[SM] frame complete, CRC %s\n", validateCRC(g_rxFrame, g_rxPos) ? "OK" : "FAIL");
+            dispatchFrame();
 
             ledState = !ledState;
             digitalWrite(LED_PIN, ledState);
@@ -175,10 +455,52 @@ static void uartTask(void *pvParams){
         }
     }
 }
+
+static void wifiEnsureConnected(void){
+    if (WiFi.status() == WL_CONNECTED) return;
+
+    Serial.printf("[WiFi] connecting to %s", WIFI_SSID);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+    for (int i = 0; i < 40 && WiFi.status() != WL_CONNECTED; i++) {
+        delay(500);
+        Serial.print('.');
+    }
+    Serial.println();
+
+    if (WiFi.status() == WL_CONNECTED)
+        Serial.printf("[WiFi] OK IP=%s\n", WiFi.localIP().toString().c_str());
+    else
+        Serial.println("[WiFi] FAIL – will retry");
+}
+
+static void mqttEnsureConnected(void){
+    if (g_mqtt.connected()) return;
+    if (WiFi.status() != WL_CONNECTED) return;
+
+    Serial.printf("[MQTT] connecting %s:%d ...\n", MQTT_HOST, MQTT_PORT);
+
+#if defined(MQTT_USER) && defined(MQTT_PASS)
+    bool ok = g_mqtt.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASS);
+#else
+    bool ok = g_mqtt.connect(MQTT_CLIENT_ID);
+#endif
+
+    if (ok) Serial.println("[MQTT] connected");
+    else Serial.printf("[MQTT] fail rc=%d\n", g_mqtt.state());
+}
+
 void setup(){
     Serial.begin(115200);
     
     pinMode(LED_PIN, OUTPUT);
+
+    wifiEnsureConnected();
+
+    g_mqtt.setServer(MQTT_HOST, MQTT_PORT);
+    g_mqtt.setBufferSize(MQTT_BUF_SIZE);
+    mqttEnsureConnected();
 
     uart_config_t cfg = {
         .baud_rate = STM32_UART_BAUDRATE,
@@ -189,16 +511,24 @@ void setup(){
         .rx_flow_ctrl_thresh = 0,
         .source_clk = UART_SCLK_APB,
     };
+    
     uart_param_config(STM32_UART_PORT, &cfg);
+    
     uart_set_pin(STM32_UART_PORT, STM32_UART_TX_PIN, STM32_UART_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
     esp_err_t ret = uart_driver_install(STM32_UART_PORT, STM32_UART_RX_BUF, STM32_UART_TX_BUF, STM32_UART_EVT_SIZE, &g_uartEventQueue, 0);
+    
     Serial.printf("UART driver install: %s\n", esp_err_to_name(ret));
     
     xTaskCreatePinnedToCore(uartTask, "uartTask", 4096, NULL, 5, NULL, 0);
+
+    Serial.println("[SYS] ready");
 }
 
 void loop()
 {
+    wifiEnsureConnected();
+    mqttEnsureConnected();
+    g_mqtt.loop();
     delay(10);
 }

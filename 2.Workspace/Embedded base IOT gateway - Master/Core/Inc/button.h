@@ -7,18 +7,18 @@
 #include "Configuration.h"
 
 typedef enum {
-	BTN_UP = 0,
-	BTN_DOWN = 1,
-	BTN_OK = 2
+	BTN_UP 		= 0,
+	BTN_DOWN 	= 1,
+	BTN_OK 		= 2
 } eBtn;
 
 typedef enum {
-	BTN_SHORT = 0,
-	BTN_LONG = 1
+	BTN_SHORT 	= 0,
+	BTN_LONG 	= 1
 } eBtnType;
 
 typedef struct {
-    eBtn    btn;
+    eBtn btn;
     eBtnType type;
 } BtnEvent_t;
 

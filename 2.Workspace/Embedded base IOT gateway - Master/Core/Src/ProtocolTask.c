@@ -53,14 +53,14 @@ void Protocol_Task(void *pvParams){
     TxCmd_t c;
 
 	while(1){
-		volatile size_t freeHeap = xPortGetFreeHeapSize();
-		volatile UBaseType_t rxQLen = uxQueueMessagesWaiting(xQueue_RS485_RxFrame);
-		volatile uint32_t notifyCnt = ulTaskNotifyValueClear(NULL, 0);
+//		volatile size_t freeHeap = xPortGetFreeHeapSize();
+//		volatile UBaseType_t rxQLen = uxQueueMessagesWaiting(xQueue_RS485_RxFrame);
+//		volatile uint32_t notifyCnt = ulTaskNotifyValueClear(NULL, 0);
 
-		ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(DEVMGR_LOOP_MS));
+		ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(PROTO_LOOP_MS));
 		Watchdog_Kick(WDG_TASK_PROTOCOL);
 
-		while(xQueueReceive(xQueue_RS485_RxFrame, &frame, 0) == pdTRUE){
+		if(xQueueReceive(xQueue_RS485_RxFrame, &frame, 0) == pdTRUE){
             if (frame.addr == 0U && frame.cmd == 0U) {
                 for (int i = 0; i < PROTO_ADDR_MAX; i++) {
                 	SlaveProtoState_t *s = &g_state[i];

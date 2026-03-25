@@ -1,5 +1,6 @@
 #include "DeviceManager.h"
 #include "watchdog.h"
+#include "alarm.h"
 
 typedef enum {
     OP_NONE = 0,
@@ -201,6 +202,15 @@ static void _handleResponse(const Frame_t *f){
 
 	            while (Payload_UnpackReading(f->payload, f->payloadLen, &pos, &sid, &dt, &val)) {
 	                Registry_UpdateReading(g_pending.slotIdx, sid, dt, val);
+	                SlaveSlot_t snap = Registry_GetSlot(g_pending.slotIdx);
+	                uint8_t stype = 0;
+	                for (uint8_t k = 0; k < snap.sensorCount; k++) {
+	                    if (snap.sensors[k].sensorId == sid) {
+	                        stype = snap.sensors[k].sensorType;
+	                        break;
+	                    }
+	                }
+	                Alarm_Check(f->addr, sid, stype, dt, val);
 	            }
 
 	            Registry_SetLastSeen(g_pending.slotIdx, xTaskGetTickCount());
@@ -236,21 +246,21 @@ eDmPhase DeviceManager_GetState(void){ return g_state; }
 
 static void _HandleTimeout(void){
     switch (g_pending.op) {
-    case OP_PING:
-    	return;
-    case OP_GET_TABLE:
-        Registry_SetState(g_pending.slotIdx, SREG_ERROR);
-        g_fetchSlot++;
-        break;
-    case OP_GET_ALL_DATA:
-        Registry_IncrementTimeout(g_pending.slotIdx);
-        {
-            SlaveSlot_t s = Registry_GetSlot(g_pending.slotIdx);
-            if (s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD)
-                _GoOffline(g_pending.slotIdx);
-        }
-        break;
-    default: break;
+		case OP_PING:
+			return;
+		case OP_GET_TABLE:
+			Registry_SetState(g_pending.slotIdx, SREG_ERROR);
+			g_fetchSlot++;
+			break;
+		case OP_GET_ALL_DATA:
+			Registry_IncrementTimeout(g_pending.slotIdx);
+			{
+				SlaveSlot_t s = Registry_GetSlot(g_pending.slotIdx);
+				if (s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD)
+					_GoOffline(g_pending.slotIdx);
+			}
+			break;
+		default: break;
     }
     g_pending.op = OP_NONE;
 }

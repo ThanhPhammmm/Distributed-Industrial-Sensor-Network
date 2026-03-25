@@ -10,7 +10,9 @@
 #include "watchdog.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "alarm.h"
 
+QueueHandle_t xQueue_UpstreamSnapshot = NULL;
 extern UART_HandleTypeDef huart3;
 
 static uint8_t g_seq = 0;
@@ -41,42 +43,86 @@ static void _PushDataIfChanged(void){
     bool changed = g_firstPush;
     if (!changed) {
         for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
-            if (!cur[i].registered) continue;
-            //if (_SlotChanged(&cur[i], &g_lastPushed[i])) {
+            if (!cur[i].registered && !(cur[i].state == SREG_ONLINE)) continue;
+            if (_SlotChanged(&cur[i], &g_lastPushed[i])) {
                 changed = true;
                 break;
-            //}
+            }
         }
     }
 
-    if (!changed) return;
-
-    uint8_t payload[PROTO_MAX_PAYLOAD];
-    uint8_t plen = Payload_PackUpstream(payload, sizeof(payload), cur, MAX_SLAVE_SLOTS);
-    if (plen == 0) return;
-
-    uint8_t flen = Frame_Build(g_txBuf, UPSTREAM_ESP32_ADDR, g_seq++, CMD_UPSTREAM_PUSH, STATUS_OK, 0x01, payload, plen);
-    HAL_StatusTypeDef ret = HAL_UART_Transmit_DMA(&huart3, g_txBuf, flen);
-    if (ret != HAL_OK) {
-    	//
+    if (!changed){
+    	return;
     }
+
+    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+        if (cur[i].registered && cur[i].state == SREG_ONLINE) {
+            xQueueSend(xQueue_UpstreamSnapshot, &cur[i], 0);
+        }
+    }
+
     memcpy(g_lastPushed, cur, sizeof(cur));
     g_firstPush = false;
 }
 
-void Upstream_Init(void){}
+static void _SendAlarm(const AlarmEvent_t *ev){
+    uint8_t payload[12];
+    uint8_t pos = 0;
+
+    payload[pos++] = ev->slaveAddr;
+    payload[pos++] = ev->sensorId;
+    payload[pos++] = ev->sensorType;
+    payload[pos++] = (uint8_t)ev->level;
+    payload[pos++] = (uint8_t)ev->dataType;
+
+    uint8_t sz = DataType_Size(ev->dataType);
+    memcpy(&payload[pos], ev->readingData.bytes, sz);
+    pos = (uint8_t)(pos + sz);
+
+    uint8_t flen = Frame_Build(g_txBuf,
+                               UPSTREAM_ESP32_ADDR, g_seq++,
+                               CMD_UPSTREAM_ALARM, STATUS_OK, 0x01,
+                               payload, pos);
+    HAL_StatusTypeDef ret = HAL_UART_Transmit_DMA(&huart3, g_txBuf, flen);
+    if (ret != HAL_OK) {
+    	//
+    }}
+
+
+void Upstream_Init(void){
+    xQueue_UpstreamSnapshot = xQueueCreate(UPSTREAM_PUSH_QUEUE_SIZE, sizeof(SlaveSlot_t));
+    configASSERT(xQueue_UpstreamSnapshot != NULL);
+}
 
 void Upstream_Task(void *pvParams)
 {
     (void)pvParams;
-    TickType_t lastPushTick = 0;
+    //TickType_t lastPushTick = 0;
 
     while(1) {
-    	if ((xTaskGetTickCount() - lastPushTick) >= pdMS_TO_TICKS(UPSTREAM_PUSH_INTERVAL_MS)) {
-            if (SysState_Get() == SYS_RUN)
-            	_PushDataIfChanged();
-            lastPushTick = xTaskGetTickCount();
-        }
+        AlarmEvent_t ev;
+        while (xQueueReceive(xQueue_AlarmEvent, &ev, 0) == pdTRUE)
+            _SendAlarm(&ev);
+
+        //if ((xTaskGetTickCount() - lastPushTick) >= pdMS_TO_TICKS(UPSTREAM_PUSH_INTERVAL_MS)) {
+            if (SysState_Get() == SYS_RUN) {
+                SlaveSlot_t snapshot;
+                if (xQueueReceive(xQueue_UpstreamSnapshot, &snapshot, 0) == pdTRUE) {
+                    uint8_t payload[PROTO_MAX_PAYLOAD];
+                    uint8_t plen = Payload_PackUpstream(payload, sizeof(payload), &snapshot);
+                    if (plen == 0) continue;
+
+                    uint8_t flen = Frame_Build(g_txBuf, UPSTREAM_ESP32_ADDR, g_seq++, CMD_UPSTREAM_PUSH, STATUS_OK, 0x01, payload, plen);
+
+                    HAL_StatusTypeDef ret = HAL_UART_Transmit_DMA(&huart3, g_txBuf, flen);
+                    if (ret != HAL_OK) {
+                        //
+                    }
+                }
+                _PushDataIfChanged();
+            }
+            //lastPushTick = xTaskGetTickCount();
+        //}
 
         Watchdog_Kick(WDG_TASK_UPSTREAM);
         vTaskDelay(pdMS_TO_TICKS(10));
