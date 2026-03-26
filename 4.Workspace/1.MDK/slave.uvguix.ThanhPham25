@@ -3620,8 +3620,8 @@
       <Doc>
         <Name>..\2.USER\slave_config_store.c</Name>
         <ColumnNumber>0</ColumnNumber>
-        <TopLine>77</TopLine>
-        <CurrentLine>98</CurrentLine>
+        <TopLine>1</TopLine>
+        <CurrentLine>4</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
@@ -3637,9 +3637,9 @@
       </Doc>
       <Doc>
         <Name>..\2.USER\slave_sensor.c</Name>
-        <ColumnNumber>41</ColumnNumber>
-        <TopLine>42</TopLine>
-        <CurrentLine>58</CurrentLine>
+        <ColumnNumber>0</ColumnNumber>
+        <TopLine>47</TopLine>
+        <CurrentLine>62</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
@@ -3648,16 +3648,16 @@
         <Name>..\2.USER\slave_sensor.h</Name>
         <ColumnNumber>0</ColumnNumber>
         <TopLine>1</TopLine>
-        <CurrentLine>12</CurrentLine>
+        <CurrentLine>22</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
       </Doc>
       <Doc>
         <Name>..\2.USER\main.c</Name>
-        <ColumnNumber>10</ColumnNumber>
-        <TopLine>67</TopLine>
-        <CurrentLine>81</CurrentLine>
+        <ColumnNumber>0</ColumnNumber>
+        <TopLine>49</TopLine>
+        <CurrentLine>80</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
@@ -3682,9 +3682,9 @@
       </Doc>
       <Doc>
         <Name>..\2.USER\slave_protocol.c</Name>
-        <ColumnNumber>53</ColumnNumber>
+        <ColumnNumber>73</ColumnNumber>
         <TopLine>104</TopLine>
-        <CurrentLine>121</CurrentLine>
+        <CurrentLine>118</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>

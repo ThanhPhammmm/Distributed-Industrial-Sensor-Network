@@ -4,19 +4,19 @@
 #include <string.h>
 #include <stdlib.h>
 
-double Read_Temp_Float(void)   { return 25.5 + (rand() % 100) / 10.0; }
-double Read_Temp_Char(void)    { return (double)(20 + (rand() % 5)); }
+double Read_Temp_Float(void)   { return ((double)rand() / RAND_MAX) * 1000; }
+double Read_Temp_Char(void)    { return ((double)rand() / RAND_MAX) * 100; }
 
-double Read_Humid_Int(void)    { return (double)(50 + (rand() % 20)); }
-double Read_Humid_Int32(void)  { return (double)(5000 + (rand() % 1000)); }
+double Read_Humid_Int(void)    { return ((double)rand() / RAND_MAX) * 1000; }
+double Read_Humid_Int32(void)  { return ((double)rand() / RAND_MAX) * 1000; }
 
-double Read_Press_Double(void) { return 1013.25 + (rand() % 10); }
+double Read_Press_Double(void) { return ((double)rand() / RAND_MAX) * 1000; }
 
-double Read_ADC_Int32(void)    { return (double)(rand() % 4096); }
-double Read_ADC_Int(void)      { return (double)(rand() % 1024); }
+double Read_ADC_Int32(void)    { return ((double)rand() / RAND_MAX) * 1000; }
+double Read_ADC_Int(void)      { return ((double)rand() / RAND_MAX) * 1000; }
 
-double Read_DI_Float(void)     { return (rand() % 2) ? 1.0f : 0.0f; }
-double Read_DI_Char(void)      { return (double)(rand() % 2); }
+double Read_DI_Float(void)     { return ((double)rand() / RAND_MAX) * 1000; }
+double Read_DI_Char(void)      { return ((double)rand() / RAND_MAX) * 100; }
 
 typedef double (*SensorReadFn)(void);
 
@@ -54,8 +54,11 @@ SensorEntry_t g_sensors[] = {
     { 1, SENSOR_DIGITAL_IN, DTYPE_FLOAT},
     { 2, SENSOR_ADC_RAW, DTYPE_INT32},
 		{ 3, SENSOR_PRESSURE, DTYPE_DOUBLE},
-		{ 4, SENSOR_HUMIDITY, DTYPE_INT},
-		{ 5, SENSOR_TEMPERATURE, DTYPE_CHAR},
+		{ 4, SENSOR_HUMIDITY, DTYPE_INT32},
+		{ 5, SENSOR_TEMPERATURE, DTYPE_FLOAT},
+		{ 6, SENSOR_TEMPERATURE, DTYPE_CHAR},
+		{ 7, SENSOR_ADC_RAW, DTYPE_INT},
+		{ 8, SENSOR_PRESSURE, DTYPE_DOUBLE},
 };
 
 #elif SLAVE_ADDRESS == 0x02
@@ -64,7 +67,10 @@ SensorEntry_t g_sensors[] = {
     { 2, SENSOR_HUMIDITY, DTYPE_INT32},
     { 3, SENSOR_PRESSURE, DTYPE_DOUBLE },
     { 4, SENSOR_ADC_RAW, DTYPE_INT},
-		{ 5, SENSOR_DIGITAL_IN, DTYPE_CHAR },
+		{ 5, SENSOR_DIGITAL_IN, DTYPE_FLOAT},
+		{ 6, SENSOR_DIGITAL_IN, DTYPE_CHAR },
+		{ 7, SENSOR_TEMPERATURE, DTYPE_CHAR},
+		{ 8, SENSOR_HUMIDITY, DTYPE_INT},
 };
 
 #elif SLAVE_ADDRESS == 0x03
@@ -81,11 +87,43 @@ SensorEntry_t g_sensors[] = {
 #endif
 
 const uint8_t k_cnt = (uint8_t)(sizeof(g_sensors) / sizeof(g_sensors[0]));
+static uint8_t g_tableVersion = 0U;
+
+
+static uint8_t _CRC8_Update(uint8_t crc, uint8_t byte){
+    crc ^= byte;
+    for (uint8_t b = 0U; b < 8U; b++) {
+        crc = (crc & 0x01U)
+            ? (uint8_t)((crc >> 1U) ^ 0x8CU)
+            : (uint8_t)(crc >> 1U);
+    }
+    return crc;
+}
+ 
+static uint8_t _ComputeTableHash(void){
+    uint8_t crc = 0x00U;
+ 
+    crc = _CRC8_Update(crc, k_cnt);
+ 
+    for (uint8_t i = 0U; i < k_cnt; i++) {
+        crc = _CRC8_Update(crc, g_sensors[i].id);
+        crc = _CRC8_Update(crc, g_sensors[i].sensorType);
+        crc = _CRC8_Update(crc, g_sensors[i].dataType);
+    }
+ 
+    return (crc == 0U) ? 0xFFU : crc;
+}
 
 void Slave_Sensors_Init(void){
     uint8_t i;
     for (i = 0; i < k_cnt; i++)
         memset(g_sensors[i].reading.bytes, 0, 8);
+	
+	  g_tableVersion = _ComputeTableHash();
+}
+
+uint8_t Slave_Sensors_GetTableVersion(void){
+    return g_tableVersion;
 }
 
 void Slave_Sensors_Read(void) {
@@ -121,7 +159,6 @@ void Slave_Sensors_Read(void) {
 }
 
 uint8_t Slave_Sensors_GetCount(void) { return k_cnt; }
-
 
 uint8_t Slave_Sensors_PackTable(uint8_t *buf, uint8_t bufMax){
     uint8_t i;

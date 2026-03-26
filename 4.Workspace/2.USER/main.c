@@ -77,7 +77,6 @@ int main(void)
     NVIC_Config();
 	
     Slave_Sensors_Init();
-		SlaveConfig_Load();
     Actuator_Init();
     Protocol_Init(SLAVE_ADDRESS);
  

@@ -18,7 +18,7 @@ void Registry_Init(void){
         memset(&g_slots[i], 0, sizeof(SlaveSlot_t));
         g_slots[i].addr = k_addrs[i];
         g_slots[i].state = SREG_UNREGISTERED;
-        g_slots[i].configVersion = 1;
+        g_slots[i].configVersion = 0;
     }
 }
 

@@ -101,6 +101,8 @@ bool RS485_Send(uint8_t addr, uint8_t seq,
     return (ret == HAL_OK);
 }
 
+volatile uint8_t uart_ready = 1;
+
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
     if (huart->Instance == USART2){
 		HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
@@ -108,7 +110,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
 		return;
     }
     if (huart->Instance == USART3){
-    	//
+    	uart_ready = 1;
     }
 
 }

@@ -18,4 +18,6 @@ uint8_t Slave_Sensors_GetCount(void);
 uint8_t Slave_Sensors_PackTable(uint8_t *buf, uint8_t bufMax);
 uint8_t Slave_Sensors_PackAllData(uint8_t *buf, uint8_t bufMax);
 
+uint8_t Slave_Sensors_GetTableVersion(void);
+
 #endif
