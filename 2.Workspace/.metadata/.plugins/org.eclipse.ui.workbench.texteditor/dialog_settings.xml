@@ -3,6 +3,7 @@
 	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<item key="replaceBarOpen" value="true"/>
 	<list key="searchhistory">
+		<item value="SREG_DECLARED"/>
 		<item value="PollEntry_t"/>
 		<item value="Pending_t"/>
 		<item value="g_lastPollMs"/>
@@ -17,7 +18,6 @@
 		<item value="Callback"/>
 		<item value="TC"/>
 		<item value="RS485_Send"/>
-		<item value="g_state"/>
 	</list>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item key="wrap" value="true"/>

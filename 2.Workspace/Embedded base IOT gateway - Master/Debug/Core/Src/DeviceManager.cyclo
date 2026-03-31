@@ -8,9 +8,10 @@
 ../Core/Src/DeviceManager.c:59:13:_Fetch	6
 ../Core/Src/DeviceManager.c:76:13:_PollBuild	6
 ../Core/Src/DeviceManager.c:90:13:_Poll	2
-../Core/Src/DeviceManager.c:101:13:_TryRecovery	6
-../Core/Src/DeviceManager.c:123:13:_handleResponse	27
-../Core/Src/DeviceManager.c:245:10:DeviceManager_GetState	1
-../Core/Src/DeviceManager.c:247:13:_HandleTimeout	6
-../Core/Src/DeviceManager.c:268:6:DeviceManager_Task	14
-../Core/Src/DeviceManager.c:334:6:DeviceManager_Init	1
+../Core/Src/DeviceManager.c:103:13:_PollNext	4
+../Core/Src/DeviceManager.c:117:13:_TryRecovery	6
+../Core/Src/DeviceManager.c:139:13:_HandleResponse	27
+../Core/Src/DeviceManager.c:262:10:DeviceManager_GetState	1
+../Core/Src/DeviceManager.c:264:13:_HandleTimeout	6
+../Core/Src/DeviceManager.c:285:6:DeviceManager_Task	14
+../Core/Src/DeviceManager.c:354:6:DeviceManager_Init	1

@@ -32,7 +32,7 @@ void Watchdog_Kick(eWdgTask task)
 {
     if (task >= WDG_TASK_COUNT) return;
     g_slots[task].lastKickMs = xTaskGetTickCount();
-}
+	}
 
 
 void Watchdog_Task(void *pvParams){

@@ -1,6 +1,7 @@
 ../Core/Src/ProtocolTask.c:21:13:_TimerStart	8	static
 ../Core/Src/ProtocolTask.c:26:13:_TimerStop	8	static
 ../Core/Src/ProtocolTask.c:28:6:Protocol_Init	16	static,ignoring_inline_asm
-../Core/Src/ProtocolTask.c:35:27:_findSlaveByName	16	static
-../Core/Src/ProtocolTask.c:40:13:_DoSend	40	static
-../Core/Src/ProtocolTask.c:49:6:Protocol_Task	344	static
+../Core/Src/ProtocolTask.c:35:12:_GetSlaveIdxByAddr	24	static
+../Core/Src/ProtocolTask.c:42:27:_FindSlaveState	24	static
+../Core/Src/ProtocolTask.c:48:13:_DoSend	40	static
+../Core/Src/ProtocolTask.c:57:6:Protocol_Task	344	static

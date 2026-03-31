@@ -33,3 +33,4 @@
 .\objects\main.o: ..\3.FreeRTOS\include\queue.h
 .\objects\main.o: ..\3.FreeRTOS\include\task.h
 .\objects\main.o: ..\3.FreeRTOS\include\list.h
+.\objects\main.o: ..\2.USER\slave_config_store.h

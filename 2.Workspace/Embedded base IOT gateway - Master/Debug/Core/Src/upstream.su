@@ -2,8 +2,8 @@
 ../Core/Inc/ProtocolDefinition.h:86:24:CRC16_Calc	24	static
 ../Core/Inc/ProtocolDefinition.h:98:23:Frame_Build	24	static
 ../Core/Inc/ProtocolDefinition.h:218:23:Payload_PackUpstream	32	static
-../Core/Src/upstream.c:24:13:_SlotChanged	24	static
-../Core/Src/upstream.c:38:13:_PushDataIfChanged	384	static
-../Core/Src/upstream.c:68:13:_SendAlarm	48	static
-../Core/Src/upstream.c:92:6:Upstream_Init	16	static,ignoring_inline_asm
-../Core/Src/upstream.c:97:6:Upstream_Task	272	static
+../Core/Src/upstream.c:27:13:_SlotChanged	24	static
+../Core/Src/upstream.c:41:13:_PushDataIfChanged	384	static
+../Core/Src/upstream.c:71:13:_SendAlarm	48	static
+../Core/Src/upstream.c:94:6:Upstream_Init	16	static,ignoring_inline_asm
+../Core/Src/upstream.c:101:6:Upstream_Task	136	static

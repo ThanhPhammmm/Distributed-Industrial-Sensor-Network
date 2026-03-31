@@ -1,6 +1,6 @@
 Dependencies for Project 'slave', Target 'Target 1': (DO NOT MODIFY !)
 CompilerVersion: 5060750::V5.06 update 6 (build 750)::ARMCC
-F (..\2.USER\main.c)(0x69BFE04F)(--c99 --gnu -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\3.FreeRTOS\include -I ..\3.FreeRTOS\portable\RVDS\ARM_CM3 -I ..\3.FreeRTOS-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (..\2.USER\main.c)(0x69C4B798)(--c99 --gnu -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\3.FreeRTOS\include -I ..\3.FreeRTOS\portable\RVDS\ARM_CM3 -I ..\3.FreeRTOS-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include\stm32f10x.h)(0x61AD876E)
 I (.\RTE\_Target_1\RTE_Components.h)(0x69AC063E)
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include\core_cm3.h)(0x5D259EC6)
@@ -16,8 +16,8 @@ I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPe
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_rcc.h)(0x61AD876E)
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_usart.h)(0x61AD876E)
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\misc.h)(0x61AD876E)
-I (..\2.USER\slave_config.h)(0x69C2840F)
-I (..\2.USER\slave_sensor.h)(0x69BFE1B7)
+I (..\2.USER\slave_config.h)(0x69C4BD71)
+I (..\2.USER\slave_sensor.h)(0x69C4B798)
 I (..\2.USER\protocol_definition.h)(0x69C002C8)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9AE028)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
@@ -34,30 +34,18 @@ I (..\3.FreeRTOS\include\mpu_wrappers.h)(0x68F907AE)
 I (..\3.FreeRTOS\include\queue.h)(0x68F907AE)
 I (..\3.FreeRTOS\include\task.h)(0x68F907AE)
 I (..\3.FreeRTOS\include\list.h)(0x68F907AE)
-F (..\2.USER\slave_config.h)(0x69C2840F)()
-F (..\2.USER\slave_config_store.c)(0x69AF761A)(--c99 --gnu -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\3.FreeRTOS\include -I ..\3.FreeRTOS\portable\RVDS\ARM_CM3 -I ..\3.FreeRTOS-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD-o .\objects\slave_config_store.o --omf_browse .\objects\slave_config_store.crf --depend .\objects\slave_config_store.d)
-I (..\2.USER\slave_config_store.h)(0x69C002AB)
+I (..\2.USER\slave_config_store.h)(0x69C3DB91)
+F (..\2.USER\protocol_definition.h)(0x69C002C8)()
+F (..\2.USER\slave_config.h)(0x69C4BD71)()
+F (..\2.USER\slave_config_store.c)(0x69C4B7A2)(--c99 --gnu -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\3.FreeRTOS\include -I ..\3.FreeRTOS\portable\RVDS\ARM_CM3 -I ..\3.FreeRTOS-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD-o .\objects\slave_config_store.o --omf_browse .\objects\slave_config_store.crf --depend .\objects\slave_config_store.d)
+I (..\2.USER\slave_config_store.h)(0x69C3DB91)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
-I (..\2.USER\slave_config.h)(0x69C2840F)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include\stm32f10x.h)(0x61AD876E)
-I (.\RTE\_Target_1\RTE_Components.h)(0x69AC063E)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include\core_cm3.h)(0x5D259EC6)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include\cmsis_version.h)(0x5D259EC6)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include\cmsis_compiler.h)(0x5D259EC6)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include\cmsis_armcc.h)(0x5D259EC6)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include\system_stm32f10x.h)(0x61AD876E)
-I (.\RTE\Device\STM32F103C8\stm32f10x_conf.h)(0x61AD876E)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_dma.h)(0x61AD876E)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_flash.h)(0x61AD876E)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_gpio.h)(0x61AD876E)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_rcc.h)(0x61AD876E)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_usart.h)(0x61AD876E)
-I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\misc.h)(0x61AD876E)
-I (..\2.USER\slave_sensor.h)(0x69BFE1B7)
+I (..\2.USER\slave_sensor.h)(0x69C4B798)
 I (..\2.USER\protocol_definition.h)(0x69C002C8)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9AE028)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
-F (..\2.USER\slave_protocol.c)(0x69BFE1A6)(--c99 --gnu -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\3.FreeRTOS\include -I ..\3.FreeRTOS\portable\RVDS\ARM_CM3 -I ..\3.FreeRTOS-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD-o .\objects\slave_protocol.o --omf_browse .\objects\slave_protocol.crf --depend .\objects\slave_protocol.d)
+F (..\2.USER\slave_config_store.h)(0x69C3DB91)()
+F (..\2.USER\slave_protocol.c)(0x69C3E2DE)(--c99 --gnu -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\3.FreeRTOS\include -I ..\3.FreeRTOS\portable\RVDS\ARM_CM3 -I ..\3.FreeRTOS-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD-o .\objects\slave_protocol.o --omf_browse .\objects\slave_protocol.crf --depend .\objects\slave_protocol.d)
 I (..\2.USER\slave_protocol.h)(0x69BF6AB4)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include\stm32f10x.h)(0x61AD876E)
@@ -85,21 +73,21 @@ I (..\3.FreeRTOS\include\mpu_wrappers.h)(0x68F907AE)
 I (..\3.FreeRTOS\include\task.h)(0x68F907AE)
 I (..\3.FreeRTOS\include\list.h)(0x68F907AE)
 I (..\3.FreeRTOS\include\queue.h)(0x68F907AE)
-I (..\2.USER\slave_config.h)(0x69C2840F)
+I (..\2.USER\slave_config.h)(0x69C4BD71)
 I (..\2.USER\protocol_definition.h)(0x69C002C8)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9AE028)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
-I (..\2.USER\slave_sensor.h)(0x69BFE1B7)
-I (..\2.USER\slave_config_store.h)(0x69C002AB)
+I (..\2.USER\slave_sensor.h)(0x69C4B798)
+I (..\2.USER\slave_config_store.h)(0x69C3DB91)
 I (..\2.USER\slave_actuator.h)(0x69BFE183)
 F (..\2.USER\slave_protocol.h)(0x69BF6AB4)()
-F (..\2.USER\slave_sensor.c)(0x69C2D7A6)(--c99 --gnu -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\3.FreeRTOS\include -I ..\3.FreeRTOS\portable\RVDS\ARM_CM3 -I ..\3.FreeRTOS-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD-o .\objects\slave_sensor.o --omf_browse .\objects\slave_sensor.crf --depend .\objects\slave_sensor.d)
-I (..\2.USER\slave_sensor.h)(0x69BFE1B7)
+F (..\2.USER\slave_sensor.c)(0x69C4BD95)(--c99 --gnu -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\3.FreeRTOS\include -I ..\3.FreeRTOS\portable\RVDS\ARM_CM3 -I ..\3.FreeRTOS-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD-o .\objects\slave_sensor.o --omf_browse .\objects\slave_sensor.crf --depend .\objects\slave_sensor.d)
+I (..\2.USER\slave_sensor.h)(0x69C4B798)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
 I (..\2.USER\protocol_definition.h)(0x69C002C8)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5D9AE028)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
-I (..\2.USER\slave_config.h)(0x69C2840F)
+I (..\2.USER\slave_config.h)(0x69C4BD71)
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include\stm32f10x.h)(0x61AD876E)
 I (.\RTE\_Target_1\RTE_Components.h)(0x69AC063E)
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include\core_cm3.h)(0x5D259EC6)
@@ -115,8 +103,7 @@ I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPe
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_usart.h)(0x61AD876E)
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\misc.h)(0x61AD876E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
-F (..\2.USER\protocol_definition.h)(0x69C002C8)()
-F (..\2.USER\slave_sensor.h)(0x69BFE1B7)()
+F (..\2.USER\slave_sensor.h)(0x69C4B798)()
 F (..\2.USER\slave_actuator.c)(0x69BFE17C)(--c99 --gnu -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\3.FreeRTOS\include -I ..\3.FreeRTOS\portable\RVDS\ARM_CM3 -I ..\3.FreeRTOS-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD-o .\objects\slave_actuator.o --omf_browse .\objects\slave_actuator.crf --depend .\objects\slave_actuator.d)
 I (..\2.USER\slave_actuator.h)(0x69BFE183)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
@@ -145,7 +132,7 @@ I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPe
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_rcc.h)(0x61AD876E)
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_usart.h)(0x61AD876E)
 I (C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\misc.h)(0x61AD876E)
-I (..\2.USER\slave_config.h)(0x69C2840F)
+I (..\2.USER\slave_config.h)(0x69C4BD71)
 F (..\2.USER\slave_actuator.h)(0x69BFE183)()
 F (..\3.FreeRTOS\croutine.c)(0x68F907AE)(--c99 --gnu -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\3.FreeRTOS\include -I ..\3.FreeRTOS\portable\RVDS\ARM_CM3 -I ..\3.FreeRTOS-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include-IC:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F10X_MD-o .\objects\croutine.o --omf_browse .\objects\croutine.crf --depend .\objects\croutine.d)
 I (..\3.FreeRTOS\include\FreeRTOS.h)(0x68F907AE)

@@ -13,6 +13,7 @@
 #include "alarm.h"
 
 QueueHandle_t xQueue_UpstreamSnapshot = NULL;
+QueueHandle_t xQueue_UpstreamAlarm = NULL;
 extern UART_HandleTypeDef huart3;
 
 static uint8_t g_seq = 0;
@@ -20,6 +21,8 @@ static uint8_t g_txBuf[PROTO_FRAME_MAX];
 
 static SlaveSlot_t g_lastPushed[MAX_SLAVE_SLOTS];
 static bool g_firstPush = true;
+
+extern volatile uint8_t uart_ready;
 
 static bool _SlotChanged(const SlaveSlot_t *cur, const SlaveSlot_t *prev){
     if (cur->state != prev->state) return true;
@@ -43,7 +46,7 @@ static void _PushDataIfChanged(void){
     bool changed = g_firstPush;
     if (!changed) {
         for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
-            if (!cur[i].registered && !(cur[i].state == SREG_ONLINE)) continue;
+            if (!cur[i].registered || !(cur[i].state == SREG_ONLINE)) continue;
             if (_SlotChanged(&cur[i], &g_lastPushed[i])) {
                 changed = true;
                 break;
@@ -88,43 +91,59 @@ static void _SendAlarm(const AlarmEvent_t *ev){
     	//
     }}
 
-
 void Upstream_Init(void){
     xQueue_UpstreamSnapshot = xQueueCreate(UPSTREAM_PUSH_QUEUE_SIZE, sizeof(SlaveSlot_t));
     configASSERT(xQueue_UpstreamSnapshot != NULL);
+    xQueue_UpstreamAlarm = xQueueCreate(UPSTREAM_PUSH_QUEUE_SIZE, sizeof(AlarmEvent_t));
+    configASSERT(xQueue_UpstreamAlarm != NULL);
 }
 
 void Upstream_Task(void *pvParams)
 {
     (void)pvParams;
-    //TickType_t lastPushTick = 0;
+    static AlarmEvent_t pendingAlarm;
+    static SlaveSlot_t pendingSnapshot;
+    static bool hasPendingAlarm = false;
+    static bool hasPendingSnapshot = false;
 
     while(1) {
-        AlarmEvent_t ev;
-        while (xQueueReceive(xQueue_AlarmEvent, &ev, 0) == pdTRUE)
-            _SendAlarm(&ev);
+        if (SysState_Get() == SYS_RUN) {
+            Watchdog_Kick(WDG_TASK_UPSTREAM);
+            _PushDataIfChanged();
 
-        //if ((xTaskGetTickCount() - lastPushTick) >= pdMS_TO_TICKS(UPSTREAM_PUSH_INTERVAL_MS)) {
-            if (SysState_Get() == SYS_RUN) {
-                SlaveSlot_t snapshot;
-                if (xQueueReceive(xQueue_UpstreamSnapshot, &snapshot, 0) == pdTRUE) {
-                    uint8_t payload[PROTO_MAX_PAYLOAD];
-                    uint8_t plen = Payload_PackUpstream(payload, sizeof(payload), &snapshot);
-                    if (plen == 0) continue;
-
-                    uint8_t flen = Frame_Build(g_txBuf, UPSTREAM_ESP32_ADDR, g_seq++, CMD_UPSTREAM_PUSH, STATUS_OK, 0x01, payload, plen);
-
-                    HAL_StatusTypeDef ret = HAL_UART_Transmit_DMA(&huart3, g_txBuf, flen);
-                    if (ret != HAL_OK) {
-                        //
-                    }
+            if (!hasPendingAlarm) {
+                if (xQueueReceive(xQueue_AlarmEvent, &pendingAlarm, 0) == pdTRUE) {
+                    hasPendingAlarm = true;
                 }
-                _PushDataIfChanged();
             }
-            //lastPushTick = xTaskGetTickCount();
-        //}
+            if (!hasPendingSnapshot) {
+                if (xQueueReceive(xQueue_UpstreamSnapshot, &pendingSnapshot, 0) == pdTRUE) {
+                    hasPendingSnapshot = true;
+                }
+            }
 
-        Watchdog_Kick(WDG_TASK_UPSTREAM);
-        vTaskDelay(pdMS_TO_TICKS(10));
+            if (uart_ready) {
+                if (hasPendingAlarm) {
+                    uart_ready = 0;
+                    _SendAlarm(&pendingAlarm);
+                    hasPendingAlarm = false;
+                }
+                else if (hasPendingSnapshot) {
+                    uint8_t payload[PROTO_MAX_PAYLOAD];
+                    uint8_t plen = Payload_PackUpstream(payload, sizeof(payload), &pendingSnapshot);
+                    if (plen > 0) {
+                        uint8_t flen = Frame_Build(g_txBuf, UPSTREAM_ESP32_ADDR, g_seq++, CMD_UPSTREAM_PUSH, STATUS_OK, 0x01, payload, plen);
+                        uart_ready = 0;
+                        HAL_StatusTypeDef ret = HAL_UART_Transmit_DMA(&huart3, g_txBuf, flen);
+                        (void)ret;
+                    }
+                    hasPendingSnapshot = false;
+                }
+            }
+            vTaskDelay(pdMS_TO_TICKS(5));
+        }
+        else {
+            vTaskDelay(pdMS_TO_TICKS(10));
+        }
     }
 }

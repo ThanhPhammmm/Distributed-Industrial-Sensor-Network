@@ -8,5 +8,5 @@
 ../Core/Src/rs485_driver.c:34:6:RS485_Driver_Init	2
 ../Core/Src/rs485_driver.c:41:6:RS485_OnRxDmaComplete	11
 ../Core/Src/rs485_driver.c:90:6:RS485_Send	1
-../Core/Src/rs485_driver.c:104:6:HAL_UART_TxCpltCallback	2
-../Core/Src/rs485_driver.c:116:6:HAL_UART_RxCpltCallback	2
+../Core/Src/rs485_driver.c:106:6:HAL_UART_TxCpltCallback	3
+../Core/Src/rs485_driver.c:118:6:HAL_UART_RxCpltCallback	2

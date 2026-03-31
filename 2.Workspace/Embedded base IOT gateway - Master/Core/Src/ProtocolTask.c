@@ -32,9 +32,17 @@ void Protocol_Init(void){
     memset(g_state, 0, sizeof(g_state));
 }
 
-static SlaveProtoState_t* _findSlaveByName(uint8_t addr){
-    if(addr < PROTO_ADDR_MIN || addr > PROTO_ADDR_MAX) return NULL;
-    return &g_state[addr - 1U];
+static int _GetSlaveIdxByAddr(uint8_t addr) {
+    for (int i = 0; i < MAX_SLAVE_SLOTS; i++) {
+        if (Registry_GetAddr(i) == addr) return i;
+    }
+    return -1;
+}
+
+static SlaveProtoState_t* _FindSlaveState(uint8_t addr) {
+    int idx = _GetSlaveIdxByAddr(addr);
+    if (idx == -1) return NULL;
+    return &g_state[idx];
 }
 
 static void _DoSend(SlaveProtoState_t *s){
@@ -62,7 +70,7 @@ void Protocol_Task(void *pvParams){
 
 		if(xQueueReceive(xQueue_RS485_RxFrame, &frame, 0) == pdTRUE){
             if (frame.addr == 0U && frame.cmd == 0U) {
-                for (int i = 0; i < PROTO_ADDR_MAX; i++) {
+                for (int i = 0; i < MAX_SLAVE_SLOTS; i++) {
                 	SlaveProtoState_t *s = &g_state[i];
                     if (!s->waiting) continue;
                     s->retryCnt++;
@@ -77,29 +85,25 @@ void Protocol_Task(void *pvParams){
                                          .status = STATUS_ERROR };
                         xQueueSend(xQueue_ValidFrame, &ol, 0);
                     }
-                    break;
                 }
-                continue;
             }
-            SlaveProtoState_t *s = _findSlaveByName(frame.addr);
-            if (s == NULL || !s->waiting){
-                continue;
+            else{
+            	SlaveProtoState_t *s = _FindSlaveState(frame.addr);
+            	if (s && s->waiting && frame.seq == s->txSeq) {
+					_TimerStop();
+					s->retryCnt = 0;
+					s->waiting = false;
+					s->txSeq = (uint8_t)((s->txSeq + 1) & 0xFFU);
+					xQueueSend(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(10));
+				}
             }
-
-            if(frame.seq != s->txSeq){
-                continue;
-            }
-            _TimerStop();
-            s->retryCnt = 0;
-            s->waiting = false;
-            s->txSeq = (uint8_t)((s->txSeq + 1) & 0xFFU);
-            xQueueSend(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(10));
 		}
 
 		if (xQueueReceive(xQueue_TxCmd, &c, 0) == pdTRUE) {
-			SlaveProtoState_t *s = _findSlaveByName(c.addr);
+			SlaveProtoState_t *s = _FindSlaveState(c.addr);
 			if(s && !s->waiting){
 				s->pending = c;
+				s->retryCnt = 0;
 				_DoSend(s);
 			}
 		}

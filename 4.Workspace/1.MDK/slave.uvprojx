@@ -388,6 +388,11 @@
               <FilePath>..\2.USER\main.c</FilePath>
             </File>
             <File>
+              <FileName>protocol_definition.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\2.USER\protocol_definition.h</FilePath>
+            </File>
+            <File>
               <FileName>slave_config.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\2.USER\slave_config.h</FilePath>
@@ -396,6 +401,11 @@
               <FileName>slave_config_store.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\2.USER\slave_config_store.c</FilePath>
+            </File>
+            <File>
+              <FileName>slave_config_store.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\2.USER\slave_config_store.h</FilePath>
             </File>
             <File>
               <FileName>slave_protocol.c</FileName>
@@ -411,11 +421,6 @@
               <FileName>slave_sensor.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\2.USER\slave_sensor.c</FilePath>
-            </File>
-            <File>
-              <FileName>protocol_definition.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\2.USER\protocol_definition.h</FilePath>
             </File>
             <File>
               <FileName>slave_sensor.h</FileName>

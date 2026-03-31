@@ -98,6 +98,22 @@ static void _Poll(void){
     _Send(e->addr, CMD_GET_ALL_DATA);
 }
 
+static uint32_t g_pollTimestamps[MAX_SLAVE_SLOTS];
+
+static void _PollNext(void){
+    uint32_t now = xTaskGetTickCount();
+    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+        uint8_t idx = (g_pollIdx + i) % MAX_SLAVE_SLOTS;
+        if (!Registry_IsRegistered(idx)) continue;
+        if ((now - g_pollTimestamps[idx]) < DEVMGR_POLL_INTERVAL_MS) continue;
+        g_pollTimestamps[idx] = now;
+        g_pollIdx = (idx + 1) % MAX_SLAVE_SLOTS;
+        _SetPend(OP_GET_ALL_DATA, idx);
+        _Send(Registry_GetAddr(idx), CMD_GET_ALL_DATA);
+        return;
+    }
+}
+
 static void _TryRecovery(void){
     uint32_t now = xTaskGetTickCount();
     if ((now - g_lastRecoveryMs) < DEVMGR_RECOVERY_INTERVAL_MS) return;
@@ -120,7 +136,7 @@ static void _TryRecovery(void){
     }
 }
 
-static void _handleResponse(const Frame_t *f){
+static void _HandleResponse(const Frame_t *f){
     if (g_pending.op == OP_NONE) return;
     if (f->addr != Registry_GetAddr(g_pending.slotIdx)) return;
 
@@ -165,6 +181,7 @@ static void _handleResponse(const Frame_t *f){
 	        Registry_SetState(g_pending.slotIdx, SREG_ERROR);
 	        g_pending.op = OP_NONE;
 	        g_fetchSlot++;
+	        break;
 
 		case OP_GET_TABLE:
 			if (f->cmd == CMD_SENSOR_TABLE && f->payloadLen >= 1U) {
@@ -305,7 +322,7 @@ void DeviceManager_Task(void *pvParams){
                 g_pending.op = OP_NONE;
             }
             else {
-            	_handleResponse(&frame);
+            	_HandleResponse(&frame);
             }
         }
 
@@ -322,12 +339,15 @@ void DeviceManager_Task(void *pvParams){
 				else if ((xTaskGetTickCount() - g_lastPollMs) >= DEVMGR_POLL_INTERVAL_MS) {
 					_PollBuild();
 					_Poll();
+					//_PollNext();
 				}
 				else{
 					_TryRecovery();
 				}
         	}
         }
+
+
     }
 }
 
