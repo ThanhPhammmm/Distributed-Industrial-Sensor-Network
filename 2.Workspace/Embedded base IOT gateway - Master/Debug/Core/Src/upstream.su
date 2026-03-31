@@ -6,4 +6,4 @@
 ../Core/Src/upstream.c:41:13:_PushDataIfChanged	384	static
 ../Core/Src/upstream.c:71:13:_SendAlarm	48	static
 ../Core/Src/upstream.c:94:6:Upstream_Init	16	static,ignoring_inline_asm
-../Core/Src/upstream.c:101:6:Upstream_Task	136	static
+../Core/Src/upstream.c:101:6:Upstream_Task	160	static
