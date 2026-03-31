@@ -211,13 +211,13 @@ void Alarm_Check(uint8_t slaveAddr, uint8_t sensorId, uint8_t sensorType, eDataT
 			v = readingData.f;
 			break;
 		case DTYPE_INT32:
-			v = (float)readingData.i2;
+			v = (float)readingData.i;
 			break;
 		case DTYPE_DOUBLE:
 			v = (float)readingData.d;
 			break;
 		case DTYPE_INT:
-			v = (float)readingData.i;
+			v = (float)readingData.i2;
 			break;
 		case DTYPE_CHAR:
 			v = (float)readingData.c;

@@ -44,7 +44,7 @@
 
 #define WIFI_SSID      "Thu Trang 2007"
 #define WIFI_PASSWORD  "trangbong"
-#define MQTT_HOST      "192.168.0.102"
+#define MQTT_HOST      "192.168.0.103"
 #define MQTT_PORT      1883
 #define MQTT_CLIENT_ID "esp32-gateway"
 
@@ -363,7 +363,6 @@ static void rxByte(uint8_t b)
                 break;
             }
 
-            /* ── Push vào queue (không block) ── */
             sFrame_t frame;
             memcpy(frame.data, g_rxFrame, g_rxPos);
             frame.len = g_rxPos;

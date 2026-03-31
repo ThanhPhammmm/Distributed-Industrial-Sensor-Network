@@ -46,7 +46,7 @@ static void _PushDataIfChanged(void){
     bool changed = g_firstPush;
     if (!changed) {
         for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
-            if (!cur[i].registered && !(cur[i].state == SREG_ONLINE)) continue;
+            if (!cur[i].registered || !(cur[i].state == SREG_ONLINE)) continue;
             if (_SlotChanged(&cur[i], &g_lastPushed[i])) {
                 changed = true;
                 break;
