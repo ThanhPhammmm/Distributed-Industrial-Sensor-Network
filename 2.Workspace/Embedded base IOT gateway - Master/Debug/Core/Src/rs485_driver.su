@@ -5,9 +5,8 @@
 ../Core/Src/rs485_driver.c:15:6:RS485_OnTimeout	120	static,ignoring_inline_asm
 ../Core/Src/rs485_driver.c:24:13:_RxStartPrefix	8	static
 ../Core/Src/rs485_driver.c:29:13:_RxStartRest	16	static
-../Core/Src/rs485_driver.c:34:6:RS485_AbortTransfer	8	static
-../Core/Src/rs485_driver.c:39:6:RS485_Driver_Init	16	static,ignoring_inline_asm
-../Core/Src/rs485_driver.c:46:6:RS485_OnRxDmaComplete	232	static,ignoring_inline_asm
-../Core/Src/rs485_driver.c:95:6:RS485_Send	48	static
-../Core/Src/rs485_driver.c:111:6:HAL_UART_TxCpltCallback	16	static
-../Core/Src/rs485_driver.c:123:6:HAL_UART_RxCpltCallback	16	static
+../Core/Src/rs485_driver.c:34:6:RS485_Driver_Init	16	static,ignoring_inline_asm
+../Core/Src/rs485_driver.c:41:6:RS485_OnRxDmaComplete	232	static,ignoring_inline_asm
+../Core/Src/rs485_driver.c:90:6:RS485_Send	48	static
+../Core/Src/rs485_driver.c:106:6:HAL_UART_TxCpltCallback	16	static
+../Core/Src/rs485_driver.c:118:6:HAL_UART_RxCpltCallback	16	static

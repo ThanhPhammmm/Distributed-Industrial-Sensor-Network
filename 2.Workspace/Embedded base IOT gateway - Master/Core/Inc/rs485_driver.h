@@ -28,6 +28,5 @@ void RS485_OnRxDmaComplete(void);   /* DMA1_Stream5 */
 void RS485_OnTxDmaComplete(void);   /* DMA1_Stream6 */
 void RS485_Timer_IRQHandler(void);  /*     TIM7  	*/
 void RS485_OnTxComplete(void);
-void RS485_AbortTransfer(void);
 
 #endif /* INC_RS485_DRIVER_H_ */
