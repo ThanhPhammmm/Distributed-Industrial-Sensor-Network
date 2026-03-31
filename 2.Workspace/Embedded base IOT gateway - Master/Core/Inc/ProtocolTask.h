@@ -21,5 +21,6 @@ extern QueueHandle_t xQueue_TxCmd;       /* DevMgr → Protocol  */
 
 void Protocol_Init(void);
 void Protocol_Task(void *pvParams);
+void Protocol_AbortAndReset(void);
 
 #endif /* INC_PROTOCOLTASK_H_ */

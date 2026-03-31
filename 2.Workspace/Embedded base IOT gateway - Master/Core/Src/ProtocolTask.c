@@ -19,11 +19,35 @@ typedef struct{
 static SlaveProtoState_t g_state[MAX_SLAVE_SLOTS];
 
 static void _TimerStart(void){
+    HAL_TIM_Base_Stop_IT(&htim7);
+    __HAL_TIM_CLEAR_IT(&htim7, TIM_IT_UPDATE);
+    NVIC_ClearPendingIRQ(TIM7_IRQn);
     __HAL_TIM_SET_COUNTER(&htim7, 0);
     HAL_TIM_Base_Start_IT(&htim7);
 }
 
-static void _TimerStop(void) { HAL_TIM_Base_Stop_IT(&htim7); }
+static void _TimerStop(void) {
+    HAL_TIM_Base_Stop_IT(&htim7);
+    __HAL_TIM_CLEAR_IT(&htim7, TIM_IT_UPDATE);
+    NVIC_ClearPendingIRQ(TIM7_IRQn);
+}
+
+void Protocol_AbortAndReset(void){
+    HAL_TIM_Base_Stop_IT(&htim7);
+    __HAL_TIM_CLEAR_IT(&htim7, TIM_IT_UPDATE);
+    NVIC_ClearPendingIRQ(TIM7_IRQn);
+
+    for (int i = 0; i < MAX_SLAVE_SLOTS; i++){
+        g_state[i].waiting  = false;
+        g_state[i].retryCnt = 0;
+        g_state[i].pending = (TxCmd_t){0};
+        g_state[i].txSeq = 0;
+    }
+
+    Frame_t f;
+    while (xQueueReceive(xQueue_RS485_RxFrame, &f, 0) == pdTRUE) {}
+}
+
 
 void Protocol_Init(void){
     xQueue_TxCmd = xQueueCreate(PROTO_TXCMD_QUEUE_SIZE, sizeof(TxCmd_t));

@@ -98,16 +98,29 @@ void Upstream_Init(void){
     configASSERT(xQueue_UpstreamAlarm != NULL);
 }
 
-void Upstream_Task(void *pvParams)
-{
+void Upstream_Task(void *pvParams){
     (void)pvParams;
     static AlarmEvent_t pendingAlarm;
     static SlaveSlot_t pendingSnapshot;
     static bool hasPendingAlarm = false;
     static bool hasPendingSnapshot = false;
+    static eSysState prevUpstreamSys = SYS_IDLE;
+
 
     while(1) {
-        if (SysState_Get() == SYS_RUN) {
+    	eSysState curSys = SysState_Get();
+        if (prevUpstreamSys == SYS_RUN && curSys != SYS_RUN) {
+            hasPendingAlarm    = false;
+            hasPendingSnapshot = false;
+            g_firstPush        = true;
+
+            SlaveSlot_t s_drain;
+            while (xQueueReceive(xQueue_UpstreamSnapshot, &s_drain, 0) == pdTRUE) {}
+        }
+
+        prevUpstreamSys = curSys;
+
+        if (curSys == SYS_RUN) {
             Watchdog_Kick(WDG_TASK_UPSTREAM);
             _PushDataIfChanged();
 

@@ -293,16 +293,24 @@ void DeviceManager_Task(void *pvParams){
         if (sys != prevSys) {
             if (sys == SYS_RUN) {
                 Registry_ResetForRun();
-                g_state = DM_FETCHING;
-                g_fetchSlot = 0;
-                g_pending.op = OP_NONE;
-                g_pollActive = false;
+                g_state 		= DM_FETCHING;
+                g_fetchSlot		= 0;
+                g_pending.op 	= OP_NONE;
+                g_pollActive 	= false;
                 g_lastRecoveryMs = xTaskGetTickCount();
+                memset(g_pollTimestamps, 0, sizeof(g_pollTimestamps));
             }
             else {
-            	g_state = DM_IDLE;
-                g_pending.op = OP_NONE;
-                while (xQueueReceive(xQueue_ValidFrame, &frame, pdMS_TO_TICKS(DEVMGR_LOOP_MS)) == pdTRUE) {}
+            	g_state 		= DM_IDLE;
+                g_pending.op 	= OP_NONE;
+                RS485_AbortTransfer();
+                Protocol_AbortAndReset();
+
+                Frame_t frame_drain;
+                while (xQueueReceive(xQueue_ValidFrame, &frame_drain, 0) == pdTRUE) {}
+
+                AlarmEvent_t ev_drain;
+                while (xQueueReceive(xQueue_AlarmEvent, &ev_drain, 0) == pdTRUE) {}
             }
             prevSys = sys;
         }
