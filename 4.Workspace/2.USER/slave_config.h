@@ -24,4 +24,5 @@
 #define RX_FRAME_QUEUE_SIZE     4U
 #define ACTUATOR_CMD_QUEUE_SIZE 8U
 
+#define RX_IDLE_TIMEOUT_MS   1500U
 #endif /* SLAVE_CONFIG_H */

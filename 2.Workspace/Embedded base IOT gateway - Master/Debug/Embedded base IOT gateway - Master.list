@@ -39,15 +39,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_macro  00028cd8  00000000  00000000  0003e9a6  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   000297ac  00000000  00000000  0006767e  2**0
+ 18 .debug_line   000297a4  00000000  00000000  0006767e  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    000f19f6  00000000  00000000  00090e2a  2**0
+ 19 .debug_str    000f19f6  00000000  00000000  00090e22  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000043  00000000  00000000  00182820  2**0
+ 20 .comment      00000043  00000000  00000000  00182818  2**0
                   CONTENTS, READONLY
- 21 .debug_frame  00008ca4  00000000  00000000  00182864  2**2
+ 21 .debug_frame  00008ca4  00000000  00000000  0018285c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 22 .debug_line_str 000000e7  00000000  00000000  0018b508  2**0
+ 22 .debug_line_str 000000e7  00000000  00000000  0018b500  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1864,7 +1864,7 @@ static void _Fetch(void){
  80012b0:	b580      	push	{r7, lr}
  80012b2:	b09e      	sub	sp, #120	@ 0x78
  80012b4:	af00      	add	r7, sp, #0
-    while (g_fetchSlot < MAX_SLAVE_SLOTS) {
+    while(g_fetchSlot < MAX_SLAVE_SLOTS){
  80012b6:	e028      	b.n	800130a <_Fetch+0x5a>
         SlaveSlot_t s = Registry_GetSlot(g_fetchSlot);
  80012b8:	4b1d      	ldr	r3, [pc, #116]	@ (8001330 <_Fetch+0x80>)
@@ -1873,7 +1873,7 @@ static void _Fetch(void){
  80012be:	4611      	mov	r1, r2
  80012c0:	4618      	mov	r0, r3
  80012c2:	f000 ff2f 	bl	8002124 <Registry_GetSlot>
-        if (!s.registered || s.state == SREG_READY || s.state == SREG_ONLINE || s.state == SREG_FETCHING) {
+        if(!s.registered || s.state == SREG_READY || s.state == SREG_ONLINE || s.state == SREG_FETCHING){
  80012c6:	787b      	ldrb	r3, [r7, #1]
  80012c8:	f083 0301 	eor.w	r3, r3, #1
  80012cc:	b2db      	uxtb	r3, r3
@@ -1910,7 +1910,7 @@ static void _Fetch(void){
  8001302:	4618      	mov	r0, r3
  8001304:	f7ff ff80 	bl	8001208 <_Send>
  8001308:	e00e      	b.n	8001328 <_Fetch+0x78>
-    while (g_fetchSlot < MAX_SLAVE_SLOTS) {
+    while(g_fetchSlot < MAX_SLAVE_SLOTS){
  800130a:	4b09      	ldr	r3, [pc, #36]	@ (8001330 <_Fetch+0x80>)
  800130c:	781b      	ldrb	r3, [r3, #0]
  800130e:	2b01      	cmp	r3, #1
@@ -1951,7 +1951,7 @@ static void _PollBuild(void){
  8001346:	4b24      	ldr	r3, [pc, #144]	@ (80013d8 <_PollBuild+0x98>)
  8001348:	2200      	movs	r2, #0
  800134a:	701a      	strb	r2, [r3, #0]
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  800134c:	2300      	movs	r3, #0
  800134e:	f887 307f 	strb.w	r3, [r7, #127]	@ 0x7f
  8001352:	e02d      	b.n	80013b0 <_PollBuild+0x70>
@@ -1961,7 +1961,7 @@ static void _PollBuild(void){
  800135a:	4611      	mov	r1, r2
  800135c:	4618      	mov	r0, r3
  800135e:	f000 fee1 	bl	8002124 <Registry_GetSlot>
-        if (s.registered && (s.state == SREG_READY || s.state == SREG_ONLINE) && s.sensorCount > 0U){
+        if(s.registered && (s.state == SREG_READY || s.state == SREG_ONLINE) && s.sensorCount > 0U){
  8001362:	787b      	ldrb	r3, [r7, #1]
  8001364:	2b00      	cmp	r3, #0
  8001366:	d01e      	beq.n	80013a6 <_PollBuild+0x66>
@@ -1997,7 +1997,7 @@ static void _PollBuild(void){
  80013a0:	b2da      	uxtb	r2, r3
  80013a2:	4b0d      	ldr	r3, [pc, #52]	@ (80013d8 <_PollBuild+0x98>)
  80013a4:	701a      	strb	r2, [r3, #0]
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  80013a6:	f897 307f 	ldrb.w	r3, [r7, #127]	@ 0x7f
  80013aa:	3301      	adds	r3, #1
  80013ac:	f887 307f 	strb.w	r3, [r7, #127]	@ 0x7f
@@ -2036,7 +2036,7 @@ static void _Poll(void){
  80013e8:	b580      	push	{r7, lr}
  80013ea:	b082      	sub	sp, #8
  80013ec:	af00      	add	r7, sp, #0
-    if (g_pollIdx >= g_pollCount) {
+    if(g_pollIdx >= g_pollCount){
  80013ee:	4b14      	ldr	r3, [pc, #80]	@ (8001440 <_Poll+0x58>)
  80013f0:	781a      	ldrb	r2, [r3, #0]
  80013f2:	4b14      	ldr	r3, [pc, #80]	@ (8001444 <_Poll+0x5c>)
@@ -2102,7 +2102,7 @@ static void _TryRecovery(void){
     uint32_t now = xTaskGetTickCount();
  800145a:	f009 f9cd 	bl	800a7f8 <xTaskGetTickCount>
  800145e:	67b8      	str	r0, [r7, #120]	@ 0x78
-    if ((now - g_lastRecoveryMs) < DEVMGR_RECOVERY_INTERVAL_MS) return;
+    if((now - g_lastRecoveryMs) < DEVMGR_RECOVERY_INTERVAL_MS)return;
  8001460:	4b22      	ldr	r3, [pc, #136]	@ (80014ec <_TryRecovery+0x98>)
  8001462:	681b      	ldr	r3, [r3, #0]
  8001464:	6fba      	ldr	r2, [r7, #120]	@ 0x78
@@ -2118,7 +2118,7 @@ static void _TryRecovery(void){
     bool hasOffline = false;
  8001476:	2300      	movs	r3, #0
  8001478:	f887 307f 	strb.w	r3, [r7, #127]	@ 0x7f
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  800147c:	2300      	movs	r3, #0
  800147e:	f887 307e 	strb.w	r3, [r7, #126]	@ 0x7e
  8001482:	e01a      	b.n	80014ba <_TryRecovery+0x66>
@@ -2128,7 +2128,7 @@ static void _TryRecovery(void){
  800148a:	4611      	mov	r1, r2
  800148c:	4618      	mov	r0, r3
  800148e:	f000 fe49 	bl	8002124 <Registry_GetSlot>
-        if (s.registered && s.state == SREG_OFFLINE) {
+        if(s.registered && s.state == SREG_OFFLINE){
  8001492:	787b      	ldrb	r3, [r7, #1]
  8001494:	2b00      	cmp	r3, #0
  8001496:	d00b      	beq.n	80014b0 <_TryRecovery+0x5c>
@@ -2143,7 +2143,7 @@ static void _TryRecovery(void){
             hasOffline = true;
  80014aa:	2301      	movs	r3, #1
  80014ac:	f887 307f 	strb.w	r3, [r7, #127]	@ 0x7f
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  80014b0:	f897 307e 	ldrb.w	r3, [r7, #126]	@ 0x7e
  80014b4:	3301      	adds	r3, #1
  80014b6:	f887 307e 	strb.w	r3, [r7, #126]	@ 0x7e
@@ -2153,7 +2153,7 @@ static void _TryRecovery(void){
         }
     }
 
-    if (hasOffline) {
+    if(hasOffline){
  80014c2:	f897 307f 	ldrb.w	r3, [r7, #127]	@ 0x7f
  80014c6:	2b00      	cmp	r3, #0
  80014c8:	d00d      	beq.n	80014e6 <_TryRecovery+0x92>
@@ -2174,7 +2174,7 @@ static void _TryRecovery(void){
  80014de:	2200      	movs	r2, #0
  80014e0:	701a      	strb	r2, [r3, #0]
  80014e2:	e000      	b.n	80014e6 <_TryRecovery+0x92>
-    if ((now - g_lastRecoveryMs) < DEVMGR_RECOVERY_INTERVAL_MS) return;
+    if((now - g_lastRecoveryMs) < DEVMGR_RECOVERY_INTERVAL_MS)return;
  80014e4:	bf00      	nop
     }
 }
@@ -2194,12 +2194,12 @@ static void _HandleResponse(const Frame_t *f){
  8001502:	b0ae      	sub	sp, #184	@ 0xb8
  8001504:	af02      	add	r7, sp, #8
  8001506:	6078      	str	r0, [r7, #4]
-    if (g_pending.op == OP_NONE) return;
+    if(g_pending.op == OP_NONE) return;
  8001508:	4bb7      	ldr	r3, [pc, #732]	@ (80017e8 <_HandleResponse+0x2e8>)
  800150a:	781b      	ldrb	r3, [r3, #0]
  800150c:	2b00      	cmp	r3, #0
  800150e:	f000 8207 	beq.w	8001920 <_HandleResponse+0x420>
-    if (f->addr != Registry_GetAddr(g_pending.slotIdx)) return;
+    if(f->addr != Registry_GetAddr(g_pending.slotIdx)) return;
  8001512:	687b      	ldr	r3, [r7, #4]
  8001514:	781c      	ldrb	r4, [r3, #0]
  8001516:	4bb4      	ldr	r3, [pc, #720]	@ (80017e8 <_HandleResponse+0x2e8>)
@@ -2210,7 +2210,7 @@ static void _HandleResponse(const Frame_t *f){
  8001522:	429c      	cmp	r4, r3
  8001524:	f040 81fe 	bne.w	8001924 <_HandleResponse+0x424>
 
-    switch (g_pending.op) {
+    switch(g_pending.op){
  8001528:	4baf      	ldr	r3, [pc, #700]	@ (80017e8 <_HandleResponse+0x2e8>)
  800152a:	781b      	ldrb	r3, [r3, #0]
  800152c:	2b03      	cmp	r3, #3
@@ -2228,12 +2228,12 @@ static void _HandleResponse(const Frame_t *f){
 	        break;
 	    default: break;
  8001540:	e1e8      	b.n	8001914 <_HandleResponse+0x414>
-    switch (g_pending.op) {
+    switch(g_pending.op){
  8001542:	2b02      	cmp	r3, #2
  8001544:	f000 80a6 	beq.w	8001694 <_HandleResponse+0x194>
 	    default: break;
  8001548:	e1e4      	b.n	8001914 <_HandleResponse+0x414>
-	    	if (f->cmd == CMD_ACK && f->payloadLen >= 1U) {
+	    	if(f->cmd == CMD_ACK && f->payloadLen >= 1U){
  800154a:	687b      	ldr	r3, [r7, #4]
  800154c:	789b      	ldrb	r3, [r3, #2]
  800154e:	2b06      	cmp	r3, #6
@@ -2278,7 +2278,7 @@ static void _HandleResponse(const Frame_t *f){
  80015a4:	f897 30a9 	ldrb.w	r3, [r7, #169]	@ 0xa9
  80015a8:	f003 0301 	and.w	r3, r3, #1
  80015ac:	f887 30a9 	strb.w	r3, [r7, #169]	@ 0xa9
-	            if (tableValid) {
+	            if(tableValid){
  80015b0:	f897 30a9 	ldrb.w	r3, [r7, #169]	@ 0xa9
  80015b4:	2b00      	cmp	r3, #0
  80015b6:	d00f      	beq.n	80015d8 <_HandleResponse+0xd8>
@@ -2300,7 +2300,7 @@ static void _HandleResponse(const Frame_t *f){
  80015d2:	4b86      	ldr	r3, [pc, #536]	@ (80017ec <_HandleResponse+0x2ec>)
  80015d4:	701a      	strb	r2, [r3, #0]
  80015d6:	e038      	b.n	800164a <_HandleResponse+0x14a>
-	            else if (nSens == 0U) {
+	            else if(nSens == 0U){
  80015d8:	f897 30aa 	ldrb.w	r3, [r7, #170]	@ 0xaa
  80015dc:	2b00      	cmp	r3, #0
  80015de:	d118      	bne.n	8001612 <_HandleResponse+0x112>
@@ -2392,7 +2392,7 @@ static void _HandleResponse(const Frame_t *f){
  8001690:	701a      	strb	r2, [r3, #0]
 	        break;
  8001692:	e144      	b.n	800191e <_HandleResponse+0x41e>
-			if (f->cmd == CMD_SENSOR_TABLE && f->payloadLen >= 1U) {
+			if(f->cmd == CMD_SENSOR_TABLE && f->payloadLen >= 1U){
  8001694:	687b      	ldr	r3, [r7, #4]
  8001696:	789b      	ldrb	r3, [r3, #2]
  8001698:	2b03      	cmp	r3, #3
@@ -2463,7 +2463,7 @@ static void _HandleResponse(const Frame_t *f){
  8001728:	f004 fdf3 	bl	8006312 <HAL_GPIO_TogglePin>
 			    return;
  800172c:	e0fd      	b.n	800192a <_HandleResponse+0x42a>
-			if (f->cmd == CMD_NACK || f->cmd == 0xFFU) {
+			if(f->cmd == CMD_NACK || f->cmd == 0xFFU){
  800172e:	687b      	ldr	r3, [r7, #4]
  8001730:	789b      	ldrb	r3, [r3, #2]
  8001732:	2b07      	cmp	r3, #7
@@ -2491,7 +2491,7 @@ static void _HandleResponse(const Frame_t *f){
  800175c:	701a      	strb	r2, [r3, #0]
 			break;
  800175e:	e0db      	b.n	8001918 <_HandleResponse+0x418>
-	        if (f->cmd == CMD_ALL_DATA && f->payloadLen > 0U) {
+	        if(f->cmd == CMD_ALL_DATA && f->payloadLen > 0U){
  8001760:	687b      	ldr	r3, [r7, #4]
  8001762:	789b      	ldrb	r3, [r3, #2]
  8001764:	2b05      	cmp	r3, #5
@@ -2503,7 +2503,7 @@ static void _HandleResponse(const Frame_t *f){
 	            uint8_t pos = 0;
  8001774:	2300      	movs	r3, #0
  8001776:	f887 308f 	strb.w	r3, [r7, #143]	@ 0x8f
-	            while (Payload_UnpackReading(f->payload, f->payloadLen, &pos, &sid, &dt, &val)) {
+	            while(Payload_UnpackReading(f->payload, f->payloadLen, &pos, &sid, &dt, &val)){
  800177a:	e055      	b.n	8001828 <_HandleResponse+0x328>
 	                Registry_UpdateReading(g_pending.slotIdx, sid, dt, val);
  800177c:	4b1a      	ldr	r3, [pc, #104]	@ (80017e8 <_HandleResponse+0x2e8>)
@@ -2524,11 +2524,11 @@ static void _HandleResponse(const Frame_t *f){
 	                uint8_t stype = 0;
  80017a6:	2300      	movs	r3, #0
  80017a8:	f887 30af 	strb.w	r3, [r7, #175]	@ 0xaf
-	                for (uint8_t k = 0; k < snap.sensorCount; k++) {
+	                for(uint8_t k = 0; k < snap.sensorCount; k++){
  80017ac:	2300      	movs	r3, #0
  80017ae:	f887 30ae 	strb.w	r3, [r7, #174]	@ 0xae
  80017b2:	e024      	b.n	80017fe <_HandleResponse+0x2fe>
-	                    if (snap.sensors[k].sensorId == sid) {
+	                    if(snap.sensors[k].sensorId == sid){
  80017b4:	f897 20ae 	ldrb.w	r2, [r7, #174]	@ 0xae
  80017b8:	4613      	mov	r3, r2
  80017ba:	005b      	lsls	r3, r3, #1
@@ -2556,7 +2556,7 @@ static void _HandleResponse(const Frame_t *f){
  80017e8:	20000260 	.word	0x20000260
  80017ec:	20000268 	.word	0x20000268
  80017f0:	40020c00 	.word	0x40020c00
-	                for (uint8_t k = 0; k < snap.sensorCount; k++) {
+	                for(uint8_t k = 0; k < snap.sensorCount; k++){
  80017f4:	f897 30ae 	ldrb.w	r3, [r7, #174]	@ 0xae
  80017f8:	3301      	adds	r3, #1
  80017fa:	f887 30ae 	strb.w	r3, [r7, #174]	@ 0xae
@@ -2575,7 +2575,7 @@ static void _HandleResponse(const Frame_t *f){
  8001820:	462b      	mov	r3, r5
  8001822:	4622      	mov	r2, r4
  8001824:	f001 f92a 	bl	8002a7c <Alarm_Check>
-	            while (Payload_UnpackReading(f->payload, f->payloadLen, &pos, &sid, &dt, &val)) {
+	            while(Payload_UnpackReading(f->payload, f->payloadLen, &pos, &sid, &dt, &val)){
  8001828:	687b      	ldr	r3, [r7, #4]
  800182a:	1d98      	adds	r0, r3, #6
  800182c:	687b      	ldr	r3, [r7, #4]
@@ -2637,7 +2637,7 @@ static void _HandleResponse(const Frame_t *f){
  80018ac:	4821      	ldr	r0, [pc, #132]	@ (8001934 <_HandleResponse+0x434>)
  80018ae:	f004 fd30 	bl	8006312 <HAL_GPIO_TogglePin>
  80018b2:	e03a      	b.n	800192a <_HandleResponse+0x42a>
-	        if (f->cmd == CMD_NACK || f->cmd == 0xFFU) {
+	        if(f->cmd == CMD_NACK || f->cmd == 0xFFU){
  80018b4:	687b      	ldr	r3, [r7, #4]
  80018b6:	789b      	ldrb	r3, [r3, #2]
  80018b8:	2b07      	cmp	r3, #7
@@ -2669,7 +2669,7 @@ static void _HandleResponse(const Frame_t *f){
  80018f0:	4611      	mov	r1, r2
  80018f2:	4618      	mov	r0, r3
  80018f4:	f000 fd7c 	bl	80023f0 <Registry_SetMissedPolls>
-	            if (missed >= DEVMGR_OFFLINE_THRESHOLD) {
+	            if(missed >= DEVMGR_OFFLINE_THRESHOLD){
  80018f8:	f897 30ad 	ldrb.w	r3, [r7, #173]	@ 0xad
  80018fc:	2b04      	cmp	r3, #4
  80018fe:	d905      	bls.n	800190c <_HandleResponse+0x40c>
@@ -2696,10 +2696,10 @@ static void _HandleResponse(const Frame_t *f){
     }
 	return;
  800191e:	e004      	b.n	800192a <_HandleResponse+0x42a>
-    if (g_pending.op == OP_NONE) return;
+    if(g_pending.op == OP_NONE) return;
  8001920:	bf00      	nop
  8001922:	e002      	b.n	800192a <_HandleResponse+0x42a>
-    if (f->addr != Registry_GetAddr(g_pending.slotIdx)) return;
+    if(f->addr != Registry_GetAddr(g_pending.slotIdx)) return;
  8001924:	bf00      	nop
  8001926:	e000      	b.n	800192a <_HandleResponse+0x42a>
 				if(Registry_GetSensorCount(g_pending.slotIdx) != count) return;
@@ -2731,7 +2731,7 @@ static void _HandleTimeout(void){
  8001950:	b580      	push	{r7, lr}
  8001952:	b09e      	sub	sp, #120	@ 0x78
  8001954:	af00      	add	r7, sp, #0
-    switch (g_pending.op) {
+    switch(g_pending.op){
  8001956:	4b1c      	ldr	r3, [pc, #112]	@ (80019c8 <_HandleTimeout+0x78>)
  8001958:	781b      	ldrb	r3, [r3, #0]
  800195a:	2b03      	cmp	r3, #3
@@ -2743,7 +2743,7 @@ static void _HandleTimeout(void){
  8001966:	2b02      	cmp	r3, #2
  8001968:	d000      	beq.n	800196c <_HandleTimeout+0x1c>
 				SlaveSlot_t s = Registry_GetSlot(g_pending.slotIdx);
-				if (s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD)
+				if(s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD)
 					_GoOffline(g_pending.slotIdx);
 			}
 			break;
@@ -2776,7 +2776,7 @@ static void _HandleTimeout(void){
  8001996:	4611      	mov	r1, r2
  8001998:	4618      	mov	r0, r3
  800199a:	f000 fbc3 	bl	8002124 <Registry_GetSlot>
-				if (s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD)
+				if(s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD)
  800199e:	f897 3064 	ldrb.w	r3, [r7, #100]	@ 0x64
  80019a2:	2b04      	cmp	r3, #4
  80019a4:	d907      	bls.n	80019b6 <_HandleTimeout+0x66>
@@ -2826,12 +2826,12 @@ void DeviceManager_Task(void *pvParams){
  80019e2:	4603      	mov	r3, r0
  80019e4:	f887 30ee 	strb.w	r3, [r7, #238]	@ 0xee
 
-        if (sys != prevSys) {
+        if(sys != prevSys){
  80019e8:	f897 20ee 	ldrb.w	r2, [r7, #238]	@ 0xee
  80019ec:	f897 30ef 	ldrb.w	r3, [r7, #239]	@ 0xef
  80019f0:	429a      	cmp	r2, r3
  80019f2:	d042      	beq.n	8001a7a <DeviceManager_Task+0xaa>
-            if (sys == SYS_RUN) {
+            if(sys == SYS_RUN){
  80019f4:	f897 30ee 	ldrb.w	r3, [r7, #238]	@ 0xee
  80019f8:	2b02      	cmp	r3, #2
  80019fa:	d118      	bne.n	8001a2e <DeviceManager_Task+0x5e>
@@ -2865,7 +2865,7 @@ void DeviceManager_Task(void *pvParams){
  8001a28:	f00d fa17 	bl	800ee5a <memset>
  8001a2c:	e021      	b.n	8001a72 <DeviceManager_Task+0xa2>
             }
-            else {
+            else{
             	g_state 		= DM_IDLE;
  8001a2e:	4b48      	ldr	r3, [pc, #288]	@ (8001b50 <DeviceManager_Task+0x180>)
  8001a30:	2200      	movs	r2, #0
@@ -2880,7 +2880,7 @@ void DeviceManager_Task(void *pvParams){
  8001a3e:	f000 f8f7 	bl	8001c30 <Protocol_AbortAndReset>
 
                 Frame_t frame_drain;
-                while (xQueueReceive(xQueue_ValidFrame, &frame_drain, 0) == pdTRUE) {}
+                while(xQueueReceive(xQueue_ValidFrame, &frame_drain, 0) == pdTRUE){}
  8001a42:	bf00      	nop
  8001a44:	4b48      	ldr	r3, [pc, #288]	@ (8001b68 <DeviceManager_Task+0x198>)
  8001a46:	681b      	ldr	r3, [r3, #0]
@@ -2893,7 +2893,7 @@ void DeviceManager_Task(void *pvParams){
  8001a58:	d0f4      	beq.n	8001a44 <DeviceManager_Task+0x74>
 
                 AlarmEvent_t ev_drain;
-                while (xQueueReceive(xQueue_AlarmEvent, &ev_drain, 0) == pdTRUE) {}
+                while(xQueueReceive(xQueue_AlarmEvent, &ev_drain, 0) == pdTRUE){}
  8001a5a:	bf00      	nop
  8001a5c:	4b43      	ldr	r3, [pc, #268]	@ (8001b6c <DeviceManager_Task+0x19c>)
  8001a5e:	681b      	ldr	r3, [r3, #0]
@@ -2910,7 +2910,7 @@ void DeviceManager_Task(void *pvParams){
  8001a76:	f887 30ef 	strb.w	r3, [r7, #239]	@ 0xef
         }
 
-        if (sys != SYS_RUN) {
+        if(sys != SYS_RUN){
  8001a7a:	f897 30ee 	ldrb.w	r3, [r7, #238]	@ 0xee
  8001a7e:	2b02      	cmp	r3, #2
  8001a80:	d003      	beq.n	8001a8a <DeviceManager_Task+0xba>
@@ -2938,11 +2938,11 @@ void DeviceManager_Task(void *pvParams){
  8001aa8:	2001      	movs	r0, #1
  8001aaa:	f003 fc81 	bl	80053b0 <Watchdog_Kick>
 
-        if (gotFrame) {
+        if(gotFrame){
  8001aae:	f897 30ed 	ldrb.w	r3, [r7, #237]	@ 0xed
  8001ab2:	2b00      	cmp	r3, #0
  8001ab4:	d01b      	beq.n	8001aee <DeviceManager_Task+0x11e>
-            if (frame.cmd == 0xFFU) {
+            if(frame.cmd == 0xFFU){
  8001ab6:	f897 3086 	ldrb.w	r3, [r7, #134]	@ 0x86
  8001aba:	2bff      	cmp	r3, #255	@ 0xff
  8001abc:	d112      	bne.n	8001ae4 <DeviceManager_Task+0x114>
@@ -2951,7 +2951,7 @@ void DeviceManager_Task(void *pvParams){
  8001ac0:	785b      	ldrb	r3, [r3, #1]
  8001ac2:	4618      	mov	r0, r3
  8001ac4:	f7ff fbe6 	bl	8001294 <_GoOffline>
-                if (g_state == DM_FETCHING) g_fetchSlot++;
+                if(g_state == DM_FETCHING) g_fetchSlot++;
  8001ac8:	4b21      	ldr	r3, [pc, #132]	@ (8001b50 <DeviceManager_Task+0x180>)
  8001aca:	781b      	ldrb	r3, [r3, #0]
  8001acc:	2b01      	cmp	r3, #1
@@ -2968,7 +2968,7 @@ void DeviceManager_Task(void *pvParams){
  8001ae0:	701a      	strb	r2, [r3, #0]
  8001ae2:	e004      	b.n	8001aee <DeviceManager_Task+0x11e>
             }
-            else {
+            else{
             	_HandleResponse(&frame);
  8001ae4:	f107 0384 	add.w	r3, r7, #132	@ 0x84
  8001ae8:	4618      	mov	r0, r3
@@ -2976,7 +2976,7 @@ void DeviceManager_Task(void *pvParams){
             }
         }
 
-        if (_TimedOut()) _HandleTimeout();
+        if(_TimedOut()) _HandleTimeout();
  8001aee:	f7ff fb71 	bl	80011d4 <_TimedOut>
  8001af2:	4603      	mov	r3, r0
  8001af4:	2b00      	cmp	r3, #0
@@ -3002,7 +3002,7 @@ void DeviceManager_Task(void *pvParams){
  8001b16:	781b      	ldrb	r3, [r3, #0]
  8001b18:	2b02      	cmp	r3, #2
  8001b1a:	f47f af60 	bne.w	80019de <DeviceManager_Task+0xe>
-				if (g_pollActive) {
+				if(g_pollActive){
  8001b1e:	4b0f      	ldr	r3, [pc, #60]	@ (8001b5c <DeviceManager_Task+0x18c>)
  8001b20:	781b      	ldrb	r3, [r3, #0]
  8001b22:	2b00      	cmp	r3, #0
@@ -3011,7 +3011,7 @@ void DeviceManager_Task(void *pvParams){
  8001b26:	f7ff fc5f 	bl	80013e8 <_Poll>
  8001b2a:	e758      	b.n	80019de <DeviceManager_Task+0xe>
 				}
-				else if ((xTaskGetTickCount() - g_lastPollMs) >= DEVMGR_POLL_INTERVAL_MS) {
+				else if((xTaskGetTickCount() - g_lastPollMs) >= DEVMGR_POLL_INTERVAL_MS){
  8001b2c:	f008 fe64 	bl	800a7f8 <xTaskGetTickCount>
  8001b30:	4602      	mov	r2, r0
  8001b32:	4b0f      	ldr	r3, [pc, #60]	@ (8001b70 <DeviceManager_Task+0x1a0>)
@@ -3143,7 +3143,7 @@ static void _TimerStart(void){
 
 08001c0c <_TimerStop>:
 
-static void _TimerStop(void) {
+static void _TimerStop(void){
  8001c0c:	b580      	push	{r7, lr}
  8001c0e:	af00      	add	r7, sp, #0
     HAL_TIM_Base_Stop_IT(&htim7);
@@ -3181,7 +3181,7 @@ void Protocol_AbortAndReset(void){
  8001c46:	2037      	movs	r0, #55	@ 0x37
  8001c48:	f7ff ffaa 	bl	8001ba0 <__NVIC_ClearPendingIRQ>
 
-    for (int i = 0; i < MAX_SLAVE_SLOTS; i++){
+    for(int i = 0; i < MAX_SLAVE_SLOTS; i++){
  8001c4c:	2300      	movs	r3, #0
  8001c4e:	f8c7 30cc 	str.w	r3, [r7, #204]	@ 0xcc
  8001c52:	e02e      	b.n	8001cb2 <Protocol_AbortAndReset+0x82>
@@ -3222,7 +3222,7 @@ void Protocol_AbortAndReset(void){
  8001ca2:	3301      	adds	r3, #1
  8001ca4:	2200      	movs	r2, #0
  8001ca6:	701a      	strb	r2, [r3, #0]
-    for (int i = 0; i < MAX_SLAVE_SLOTS; i++){
+    for(int i = 0; i < MAX_SLAVE_SLOTS; i++){
  8001ca8:	f8d7 30cc 	ldr.w	r3, [r7, #204]	@ 0xcc
  8001cac:	3301      	adds	r3, #1
  8001cae:	f8c7 30cc 	str.w	r3, [r7, #204]	@ 0xcc
@@ -3232,7 +3232,7 @@ void Protocol_AbortAndReset(void){
     }
 
     Frame_t f;
-    while (xQueueReceive(xQueue_RS485_RxFrame, &f, 0) == pdTRUE) {}
+    while(xQueueReceive(xQueue_RS485_RxFrame, &f, 0) == pdTRUE) {}
  8001cba:	bf00      	nop
  8001cbc:	4b09      	ldr	r3, [pc, #36]	@ (8001ce4 <Protocol_AbortAndReset+0xb4>)
  8001cbe:	681b      	ldr	r3, [r3, #0]
@@ -3327,17 +3327,17 @@ portFORCE_INLINE static void vPortRaiseBASEPRI( void )
 
 08001d60 <_GetSlaveIdxByAddr>:
 
-static int _GetSlaveIdxByAddr(uint8_t addr) {
+static int _GetSlaveIdxByAddr(uint8_t addr){
  8001d60:	b580      	push	{r7, lr}
  8001d62:	b084      	sub	sp, #16
  8001d64:	af00      	add	r7, sp, #0
  8001d66:	4603      	mov	r3, r0
  8001d68:	71fb      	strb	r3, [r7, #7]
-    for (int i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(int i = 0; i < MAX_SLAVE_SLOTS; i++){
  8001d6a:	2300      	movs	r3, #0
  8001d6c:	60fb      	str	r3, [r7, #12]
  8001d6e:	e00e      	b.n	8001d8e <_GetSlaveIdxByAddr+0x2e>
-        if (Registry_GetAddr(i) == addr) return i;
+        if(Registry_GetAddr(i) == addr) return i;
  8001d70:	68fb      	ldr	r3, [r7, #12]
  8001d72:	b2db      	uxtb	r3, r3
  8001d74:	4618      	mov	r0, r3
@@ -3349,7 +3349,7 @@ static int _GetSlaveIdxByAddr(uint8_t addr) {
  8001d82:	d101      	bne.n	8001d88 <_GetSlaveIdxByAddr+0x28>
  8001d84:	68fb      	ldr	r3, [r7, #12]
  8001d86:	e007      	b.n	8001d98 <_GetSlaveIdxByAddr+0x38>
-    for (int i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(int i = 0; i < MAX_SLAVE_SLOTS; i++){
  8001d88:	68fb      	ldr	r3, [r7, #12]
  8001d8a:	3301      	adds	r3, #1
  8001d8c:	60fb      	str	r3, [r7, #12]
@@ -3367,7 +3367,7 @@ static int _GetSlaveIdxByAddr(uint8_t addr) {
 
 08001da0 <_FindSlaveState>:
 
-static SlaveProtoState_t* _FindSlaveState(uint8_t addr) {
+static SlaveProtoState_t* _FindSlaveState(uint8_t addr){
  8001da0:	b580      	push	{r7, lr}
  8001da2:	b084      	sub	sp, #16
  8001da4:	af00      	add	r7, sp, #0
@@ -3378,7 +3378,7 @@ static SlaveProtoState_t* _FindSlaveState(uint8_t addr) {
  8001dac:	4618      	mov	r0, r3
  8001dae:	f7ff ffd7 	bl	8001d60 <_GetSlaveIdxByAddr>
  8001db2:	60f8      	str	r0, [r7, #12]
-    if (idx == -1) return NULL;
+    if(idx == -1) return NULL;
  8001db4:	68fb      	ldr	r3, [r7, #12]
  8001db6:	f1b3 3fff 	cmp.w	r3, #4294967295
  8001dba:	d101      	bne.n	8001dc0 <_FindSlaveState+0x20>
@@ -3480,14 +3480,14 @@ void Protocol_Task(void *pvParams){
  8001e58:	4603      	mov	r3, r0
  8001e5a:	2b01      	cmp	r3, #1
  8001e5c:	f040 809f 	bne.w	8001f9e <Protocol_Task+0x176>
-            if (frame.addr == 0U && frame.cmd == 0U) {
+            if(frame.addr == 0U && frame.cmd == 0U){
  8001e60:	f897 30d8 	ldrb.w	r3, [r7, #216]	@ 0xd8
  8001e64:	2b00      	cmp	r3, #0
  8001e66:	d168      	bne.n	8001f3a <Protocol_Task+0x112>
  8001e68:	f897 30da 	ldrb.w	r3, [r7, #218]	@ 0xda
  8001e6c:	2b00      	cmp	r3, #0
  8001e6e:	d164      	bne.n	8001f3a <Protocol_Task+0x112>
-                for (int i = 0; i < MAX_SLAVE_SLOTS; i++) {
+                for (int i = 0; i < MAX_SLAVE_SLOTS; i++){
  8001e70:	2300      	movs	r3, #0
  8001e72:	f8c7 314c 	str.w	r3, [r7, #332]	@ 0x14c
  8001e76:	e05b      	b.n	8001f30 <Protocol_Task+0x108>
@@ -3498,7 +3498,7 @@ void Protocol_Task(void *pvParams){
  8001e82:	4a62      	ldr	r2, [pc, #392]	@ (800200c <Protocol_Task+0x1e4>)
  8001e84:	4413      	add	r3, r2
  8001e86:	f8c7 3148 	str.w	r3, [r7, #328]	@ 0x148
-                    if (!s->waiting) continue;
+                    if(!s->waiting) continue;
  8001e8a:	f8d7 3148 	ldr.w	r3, [r7, #328]	@ 0x148
  8001e8e:	781b      	ldrb	r3, [r3, #0]
  8001e90:	f083 0301 	eor.w	r3, r3, #1
@@ -3512,7 +3512,7 @@ void Protocol_Task(void *pvParams){
  8001ea4:	b2da      	uxtb	r2, r3
  8001ea6:	f8d7 3148 	ldr.w	r3, [r7, #328]	@ 0x148
  8001eaa:	f883 2066 	strb.w	r2, [r3, #102]	@ 0x66
-                    if (s->retryCnt <= PROTO_RETRY_MAX) {
+                    if(s->retryCnt <= PROTO_RETRY_MAX){
  8001eae:	f8d7 3148 	ldr.w	r3, [r7, #328]	@ 0x148
  8001eb2:	f893 3066 	ldrb.w	r3, [r3, #102]	@ 0x66
  8001eb6:	2b03      	cmp	r3, #3
@@ -3522,7 +3522,7 @@ void Protocol_Task(void *pvParams){
  8001ebe:	f7ff ff8b 	bl	8001dd8 <_DoSend>
  8001ec2:	e030      	b.n	8001f26 <Protocol_Task+0xfe>
                     }
-                    else {
+                    else{
                         s->waiting = false;
  8001ec4:	f8d7 3148 	ldr.w	r3, [r7, #328]	@ 0x148
  8001ec8:	2200      	movs	r2, #0
@@ -3562,9 +3562,9 @@ void Protocol_Task(void *pvParams){
  8001f1c:	2200      	movs	r2, #0
  8001f1e:	f007 fc2b 	bl	8009778 <xQueueGenericSend>
  8001f22:	e000      	b.n	8001f26 <Protocol_Task+0xfe>
-                    if (!s->waiting) continue;
+                    if(!s->waiting) continue;
  8001f24:	bf00      	nop
-                for (int i = 0; i < MAX_SLAVE_SLOTS; i++) {
+                for (int i = 0; i < MAX_SLAVE_SLOTS; i++){
  8001f26:	f8d7 314c 	ldr.w	r3, [r7, #332]	@ 0x14c
  8001f2a:	3301      	adds	r3, #1
  8001f2c:	f8c7 314c 	str.w	r3, [r7, #332]	@ 0x14c
@@ -3581,7 +3581,7 @@ void Protocol_Task(void *pvParams){
  8001f3e:	4618      	mov	r0, r3
  8001f40:	f7ff ff2e 	bl	8001da0 <_FindSlaveState>
  8001f44:	f8c7 0144 	str.w	r0, [r7, #324]	@ 0x144
-            	if (s && s->waiting && frame.seq == s->txSeq) {
+            	if(s && s->waiting && frame.seq == s->txSeq){
  8001f48:	f8d7 3144 	ldr.w	r3, [r7, #324]	@ 0x144
  8001f4c:	2b00      	cmp	r3, #0
  8001f4e:	d026      	beq.n	8001f9e <Protocol_Task+0x176>
@@ -3622,7 +3622,7 @@ void Protocol_Task(void *pvParams){
             }
 		}
 
-		if (xQueueReceive(xQueue_TxCmd, &c, 0) == pdTRUE) {
+		if(xQueueReceive(xQueue_TxCmd, &c, 0) == pdTRUE){
  8001f9e:	4b1d      	ldr	r3, [pc, #116]	@ (8002014 <Protocol_Task+0x1ec>)
  8001fa0:	681b      	ldr	r3, [r3, #0]
  8001fa2:	f107 0174 	add.w	r1, r7, #116	@ 0x74
@@ -3700,7 +3700,7 @@ void Registry_Init(void){
  8002044:	bf00      	nop
  8002046:	bf00      	nop
  8002048:	e7fd      	b.n	8002046 <Registry_Init+0x2e>
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  800204a:	2300      	movs	r3, #0
  800204c:	71fb      	strb	r3, [r7, #7]
  800204e:	e02e      	b.n	80020ae <Registry_Init+0x96>
@@ -3751,7 +3751,7 @@ void Registry_Init(void){
  80020a2:	3303      	adds	r3, #3
  80020a4:	2200      	movs	r2, #0
  80020a6:	701a      	strb	r2, [r3, #0]
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  80020a8:	79fb      	ldrb	r3, [r7, #7]
  80020aa:	3301      	adds	r3, #1
  80020ac:	71fb      	strb	r3, [r7, #7]
@@ -3781,7 +3781,7 @@ void Registry_SetState(uint8_t idx, eSlaveRegState s){
  80020d6:	71fb      	strb	r3, [r7, #7]
  80020d8:	4613      	mov	r3, r2
  80020da:	71bb      	strb	r3, [r7, #6]
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  80020dc:	79fb      	ldrb	r3, [r7, #7]
  80020de:	2b01      	cmp	r3, #1
  80020e0:	d818      	bhi.n	8002114 <Registry_SetState+0x48>
@@ -3810,7 +3810,7 @@ void Registry_SetState(uint8_t idx, eSlaveRegState s){
  800210c:	2100      	movs	r1, #0
  800210e:	f007 fb33 	bl	8009778 <xQueueGenericSend>
  8002112:	e000      	b.n	8002116 <Registry_SetState+0x4a>
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  8002114:	bf00      	nop
 }
  8002116:	3708      	adds	r7, #8
@@ -3834,7 +3834,7 @@ SlaveSlot_t Registry_GetSlot(uint8_t idx){
  8002136:	2100      	movs	r1, #0
  8002138:	4618      	mov	r0, r3
  800213a:	f00c fe8e 	bl	800ee5a <memset>
-	if (idx < MAX_SLAVE_SLOTS) {
+	if(idx < MAX_SLAVE_SLOTS){
  800213e:	78fb      	ldrb	r3, [r7, #3]
  8002140:	2b01      	cmp	r3, #1
  8002142:	d81a      	bhi.n	800217a <Registry_GetSlot+0x56>
@@ -3891,7 +3891,7 @@ void Registry_SetConfigVersion(uint8_t idx, uint8_t ver){
  80021a6:	71fb      	strb	r3, [r7, #7]
  80021a8:	4613      	mov	r3, r2
  80021aa:	71bb      	strb	r3, [r7, #6]
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  80021ac:	79fb      	ldrb	r3, [r7, #7]
  80021ae:	2b01      	cmp	r3, #1
  80021b0:	d818      	bhi.n	80021e4 <Registry_SetConfigVersion+0x48>
@@ -3920,7 +3920,7 @@ void Registry_SetConfigVersion(uint8_t idx, uint8_t ver){
  80021dc:	2100      	movs	r1, #0
  80021de:	f007 facb 	bl	8009778 <xQueueGenericSend>
  80021e2:	e000      	b.n	80021e6 <Registry_SetConfigVersion+0x4a>
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  80021e4:	bf00      	nop
 }
  80021e6:	3708      	adds	r7, #8
@@ -3940,7 +3940,7 @@ void Registry_SetSensorTable(uint8_t idx, uint8_t count, const SensorDesc_t *d){
  80021fe:	71fb      	strb	r3, [r7, #7]
  8002200:	460b      	mov	r3, r1
  8002202:	71bb      	strb	r3, [r7, #6]
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  8002204:	79fb      	ldrb	r3, [r7, #7]
  8002206:	2b01      	cmp	r3, #1
  8002208:	d844      	bhi.n	8002294 <Registry_SetSensorTable+0xa0>
@@ -3966,7 +3966,7 @@ void Registry_SetSensorTable(uint8_t idx, uint8_t count, const SensorDesc_t *d){
  8002230:	3304      	adds	r3, #4
  8002232:	4602      	mov	r2, r0
  8002234:	701a      	strb	r2, [r3, #0]
-    if (g_slots[idx].sensorCount && d)
+    if(g_slots[idx].sensorCount && d)
  8002236:	79fa      	ldrb	r2, [r7, #7]
  8002238:	4919      	ldr	r1, [pc, #100]	@ (80022a0 <Registry_SetSensorTable+0xac>)
  800223a:	4613      	mov	r3, r2
@@ -4015,7 +4015,7 @@ void Registry_SetSensorTable(uint8_t idx, uint8_t count, const SensorDesc_t *d){
  800228c:	2100      	movs	r1, #0
  800228e:	f007 fa73 	bl	8009778 <xQueueGenericSend>
  8002292:	e000      	b.n	8002296 <Registry_SetSensorTable+0xa2>
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  8002294:	bf00      	nop
 }
  8002296:	3708      	adds	r7, #8
@@ -4036,11 +4036,11 @@ void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, eDataType dt, SensorR
  80022b0:	71bb      	strb	r3, [r7, #6]
  80022b2:	4613      	mov	r3, r2
  80022b4:	717b      	strb	r3, [r7, #5]
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  80022b6:	79fb      	ldrb	r3, [r7, #7]
  80022b8:	2b01      	cmp	r3, #1
  80022ba:	d864      	bhi.n	8002386 <Registry_UpdateReading+0xe2>
-    if (sensorId < 1U || sensorId > MAX_SENSORS_PER_SLAVE) return;
+    if(sensorId < 1U || sensorId > MAX_SENSORS_PER_SLAVE) return;
  80022bc:	79bb      	ldrb	r3, [r7, #6]
  80022be:	2b00      	cmp	r3, #0
  80022c0:	d063      	beq.n	800238a <Registry_UpdateReading+0xe6>
@@ -4055,11 +4055,11 @@ void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, eDataType dt, SensorR
  80022d2:	f007 fcd9 	bl	8009c88 <xQueueSemaphoreTake>
     //g_slots[idx].lastReading[sensorId - 1U] = reading;
     /* Keep cached dataType in sync */
-    for (uint8_t i = 0; i < g_slots[idx].sensorCount; i++) {
+    for(uint8_t i = 0; i < g_slots[idx].sensorCount; i++){
  80022d6:	2300      	movs	r3, #0
  80022d8:	73fb      	strb	r3, [r7, #15]
  80022da:	e040      	b.n	800235e <Registry_UpdateReading+0xba>
-        if (g_slots[idx].sensors[i].sensorId == sensorId && g_slots[idx].sensors[i].dataType == dt) {
+        if(g_slots[idx].sensors[i].sensorId == sensorId && g_slots[idx].sensors[i].dataType == dt){
  80022dc:	79f9      	ldrb	r1, [r7, #7]
  80022de:	7bfb      	ldrb	r3, [r7, #15]
  80022e0:	482d      	ldr	r0, [pc, #180]	@ (8002398 <Registry_UpdateReading+0xf4>)
@@ -4123,7 +4123,7 @@ void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, eDataType dt, SensorR
  8002354:	601a      	str	r2, [r3, #0]
             break;
  8002356:	e00e      	b.n	8002376 <Registry_UpdateReading+0xd2>
-    for (uint8_t i = 0; i < g_slots[idx].sensorCount; i++) {
+    for(uint8_t i = 0; i < g_slots[idx].sensorCount; i++){
  8002358:	7bfb      	ldrb	r3, [r7, #15]
  800235a:	3301      	adds	r3, #1
  800235c:	73fb      	strb	r3, [r7, #15]
@@ -4149,10 +4149,10 @@ void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, eDataType dt, SensorR
  800237e:	2100      	movs	r1, #0
  8002380:	f007 f9fa 	bl	8009778 <xQueueGenericSend>
  8002384:	e002      	b.n	800238c <Registry_UpdateReading+0xe8>
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  8002386:	bf00      	nop
  8002388:	e000      	b.n	800238c <Registry_UpdateReading+0xe8>
-    if (sensorId < 1U || sensorId > MAX_SENSORS_PER_SLAVE) return;
+    if(sensorId < 1U || sensorId > MAX_SENSORS_PER_SLAVE) return;
  800238a:	bf00      	nop
 }
  800238c:	3714      	adds	r7, #20
@@ -4171,7 +4171,7 @@ void Registry_SetLastSeen(uint8_t idx, uint32_t ms){
  80023a2:	4603      	mov	r3, r0
  80023a4:	6039      	str	r1, [r7, #0]
  80023a6:	71fb      	strb	r3, [r7, #7]
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  80023a8:	79fb      	ldrb	r3, [r7, #7]
  80023aa:	2b01      	cmp	r3, #1
  80023ac:	d818      	bhi.n	80023e0 <Registry_SetLastSeen+0x44>
@@ -4200,7 +4200,7 @@ void Registry_SetLastSeen(uint8_t idx, uint32_t ms){
  80023d8:	2100      	movs	r1, #0
  80023da:	f007 f9cd 	bl	8009778 <xQueueGenericSend>
  80023de:	e000      	b.n	80023e2 <Registry_SetLastSeen+0x46>
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  80023e0:	bf00      	nop
 }
  80023e2:	3708      	adds	r7, #8
@@ -4220,7 +4220,7 @@ void Registry_SetMissedPolls(uint8_t idx, uint8_t n){
  80023fa:	71fb      	strb	r3, [r7, #7]
  80023fc:	4613      	mov	r3, r2
  80023fe:	71bb      	strb	r3, [r7, #6]
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  8002400:	79fb      	ldrb	r3, [r7, #7]
  8002402:	2b01      	cmp	r3, #1
  8002404:	d818      	bhi.n	8002438 <Registry_SetMissedPolls+0x48>
@@ -4249,7 +4249,7 @@ void Registry_SetMissedPolls(uint8_t idx, uint8_t n){
  8002430:	2100      	movs	r1, #0
  8002432:	f007 f9a1 	bl	8009778 <xQueueGenericSend>
  8002436:	e000      	b.n	800243a <Registry_SetMissedPolls+0x4a>
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  8002438:	bf00      	nop
 }
  800243a:	3708      	adds	r7, #8
@@ -4266,7 +4266,7 @@ void Registry_IncrementPoll(uint8_t idx){
  800244c:	af00      	add	r7, sp, #0
  800244e:	4603      	mov	r3, r0
  8002450:	71fb      	strb	r3, [r7, #7]
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  8002452:	79fb      	ldrb	r3, [r7, #7]
  8002454:	2b01      	cmp	r3, #1
  8002456:	d820      	bhi.n	800249a <Registry_IncrementPoll+0x52>
@@ -4303,7 +4303,7 @@ void Registry_IncrementPoll(uint8_t idx){
  8002492:	2100      	movs	r1, #0
  8002494:	f007 f970 	bl	8009778 <xQueueGenericSend>
  8002498:	e000      	b.n	800249c <Registry_IncrementPoll+0x54>
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  800249a:	bf00      	nop
 }
  800249c:	3708      	adds	r7, #8
@@ -4325,7 +4325,7 @@ void Registry_IncrementNack(uint8_t idx){
  80024b0:	af00      	add	r7, sp, #0
  80024b2:	4603      	mov	r3, r0
  80024b4:	71fb      	strb	r3, [r7, #7]
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  80024b6:	79fb      	ldrb	r3, [r7, #7]
  80024b8:	2b01      	cmp	r3, #1
  80024ba:	d820      	bhi.n	80024fe <Registry_IncrementNack+0x52>
@@ -4362,7 +4362,7 @@ void Registry_IncrementNack(uint8_t idx){
  80024f6:	2100      	movs	r1, #0
  80024f8:	f007 f93e 	bl	8009778 <xQueueGenericSend>
  80024fc:	e000      	b.n	8002500 <Registry_IncrementNack+0x54>
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  80024fe:	bf00      	nop
 }
  8002500:	3708      	adds	r7, #8
@@ -4387,11 +4387,11 @@ uint8_t Registry_GetRegisteredCount(void){
     uint8_t n = 0;
  8002524:	2300      	movs	r3, #0
  8002526:	71fb      	strb	r3, [r7, #7]
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
  8002528:	2300      	movs	r3, #0
  800252a:	71bb      	strb	r3, [r7, #6]
  800252c:	e010      	b.n	8002550 <Registry_GetRegisteredCount+0x40>
-        if (g_slots[i].registered) n++;
+        if(g_slots[i].registered) n++;
  800252e:	79ba      	ldrb	r2, [r7, #6]
  8002530:	4910      	ldr	r1, [pc, #64]	@ (8002574 <Registry_GetRegisteredCount+0x64>)
  8002532:	4613      	mov	r3, r2
@@ -4406,7 +4406,7 @@ uint8_t Registry_GetRegisteredCount(void){
  8002544:	79fb      	ldrb	r3, [r7, #7]
  8002546:	3301      	adds	r3, #1
  8002548:	71fb      	strb	r3, [r7, #7]
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
  800254a:	79bb      	ldrb	r3, [r7, #6]
  800254c:	3301      	adds	r3, #1
  800254e:	71bb      	strb	r3, [r7, #6]
@@ -4445,11 +4445,11 @@ uint8_t Registry_GetOnlineCount(void){
     uint8_t n = 0;
  800258c:	2300      	movs	r3, #0
  800258e:	71fb      	strb	r3, [r7, #7]
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
  8002590:	2300      	movs	r3, #0
  8002592:	71bb      	strb	r3, [r7, #6]
  8002594:	e010      	b.n	80025b8 <Registry_GetOnlineCount+0x40>
-        if (g_slots[i].state == SREG_ONLINE) n++;
+        if(g_slots[i].state == SREG_ONLINE) n++;
  8002596:	79ba      	ldrb	r2, [r7, #6]
  8002598:	4910      	ldr	r1, [pc, #64]	@ (80025dc <Registry_GetOnlineCount+0x64>)
  800259a:	4613      	mov	r3, r2
@@ -4464,7 +4464,7 @@ uint8_t Registry_GetOnlineCount(void){
  80025ac:	79fb      	ldrb	r3, [r7, #7]
  80025ae:	3301      	adds	r3, #1
  80025b0:	71fb      	strb	r3, [r7, #7]
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
  80025b2:	79bb      	ldrb	r3, [r7, #6]
  80025b4:	3301      	adds	r3, #1
  80025b6:	71bb      	strb	r3, [r7, #6]
@@ -4506,11 +4506,11 @@ uint8_t Registry_CountByState(eSlaveRegState s){
     uint8_t n = 0;
  80025f8:	2300      	movs	r3, #0
  80025fa:	73fb      	strb	r3, [r7, #15]
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
  80025fc:	2300      	movs	r3, #0
  80025fe:	73bb      	strb	r3, [r7, #14]
  8002600:	e011      	b.n	8002626 <Registry_CountByState+0x46>
-        if (g_slots[i].state == s) n++;
+        if(g_slots[i].state == s) n++;
  8002602:	7bba      	ldrb	r2, [r7, #14]
  8002604:	4910      	ldr	r1, [pc, #64]	@ (8002648 <Registry_CountByState+0x68>)
  8002606:	4613      	mov	r3, r2
@@ -4526,7 +4526,7 @@ uint8_t Registry_CountByState(eSlaveRegState s){
  800261a:	7bfb      	ldrb	r3, [r7, #15]
  800261c:	3301      	adds	r3, #1
  800261e:	73fb      	strb	r3, [r7, #15]
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
  8002620:	7bbb      	ldrb	r3, [r7, #14]
  8002622:	3301      	adds	r3, #1
  8002624:	73bb      	strb	r3, [r7, #14]
@@ -4558,7 +4558,7 @@ bool Registry_IsRegistered(uint8_t idx){
  8002650:	af00      	add	r7, sp, #0
  8002652:	4603      	mov	r3, r0
  8002654:	71fb      	strb	r3, [r7, #7]
-    if (idx >= MAX_SLAVE_SLOTS) return false;
+    if(idx >= MAX_SLAVE_SLOTS) return false;
  8002656:	79fb      	ldrb	r3, [r7, #7]
  8002658:	2b01      	cmp	r3, #1
  800265a:	d901      	bls.n	8002660 <Registry_IsRegistered+0x14>
@@ -4607,7 +4607,7 @@ bool Registry_Toggle(uint8_t idx){
  80026a8:	af00      	add	r7, sp, #0
  80026aa:	4603      	mov	r3, r0
  80026ac:	71fb      	strb	r3, [r7, #7]
-    if (idx >= MAX_SLAVE_SLOTS) return false;
+    if(idx >= MAX_SLAVE_SLOTS) return false;
  80026ae:	79fb      	ldrb	r3, [r7, #7]
  80026b0:	2b01      	cmp	r3, #1
  80026b2:	d901      	bls.n	80026b8 <Registry_Toggle+0x14>
@@ -4619,7 +4619,7 @@ bool Registry_Toggle(uint8_t idx){
  80026bc:	f04f 31ff 	mov.w	r1, #4294967295
  80026c0:	4618      	mov	r0, r3
  80026c2:	f007 fae1 	bl	8009c88 <xQueueSemaphoreTake>
-    if (g_slots[idx].registered) {
+    if(g_slots[idx].registered){
  80026c6:	79fa      	ldrb	r2, [r7, #7]
  80026c8:	492f      	ldr	r1, [pc, #188]	@ (8002788 <Registry_Toggle+0xe4>)
  80026ca:	4613      	mov	r3, r2
@@ -4676,7 +4676,7 @@ bool Registry_Toggle(uint8_t idx){
  800272a:	701a      	strb	r2, [r3, #0]
  800272c:	e013      	b.n	8002756 <Registry_Toggle+0xb2>
     }
-    else {
+    else{
         g_slots[idx].registered = true;
  800272e:	79fa      	ldrb	r2, [r7, #7]
  8002730:	4915      	ldr	r1, [pc, #84]	@ (8002788 <Registry_Toggle+0xe4>)
@@ -4741,11 +4741,11 @@ void Registry_ResetForRun(void){
  8002796:	f04f 31ff 	mov.w	r1, #4294967295
  800279a:	4618      	mov	r0, r3
  800279c:	f007 fa74 	bl	8009c88 <xQueueSemaphoreTake>
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  80027a0:	2300      	movs	r3, #0
  80027a2:	71fb      	strb	r3, [r7, #7]
  80027a4:	e053      	b.n	800284e <Registry_ResetForRun+0xc2>
-        if (!g_slots[i].registered) {
+        if(!g_slots[i].registered){
  80027a6:	79fa      	ldrb	r2, [r7, #7]
  80027a8:	4931      	ldr	r1, [pc, #196]	@ (8002870 <Registry_ResetForRun+0xe4>)
  80027aa:	4613      	mov	r3, r2
@@ -4832,7 +4832,7 @@ void Registry_ResetForRun(void){
  8002840:	2100      	movs	r1, #0
  8002842:	4618      	mov	r0, r3
  8002844:	f00c fb09 	bl	800ee5a <memset>
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  8002848:	79fb      	ldrb	r3, [r7, #7]
  800284a:	3301      	adds	r3, #1
  800284c:	71fb      	strb	r3, [r7, #7]
@@ -4864,7 +4864,7 @@ void Registry_IncrementTimeout(uint8_t idx){
  8002878:	af00      	add	r7, sp, #0
  800287a:	4603      	mov	r3, r0
  800287c:	71fb      	strb	r3, [r7, #7]
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  800287e:	79fb      	ldrb	r3, [r7, #7]
  8002880:	2b01      	cmp	r3, #1
  8002882:	d834      	bhi.n	80028ee <Registry_IncrementTimeout+0x7a>
@@ -4922,7 +4922,7 @@ void Registry_IncrementTimeout(uint8_t idx){
  80028e6:	2100      	movs	r1, #0
  80028e8:	f006 ff46 	bl	8009778 <xQueueGenericSend>
  80028ec:	e000      	b.n	80028f0 <Registry_IncrementTimeout+0x7c>
-    if (idx >= MAX_SLAVE_SLOTS) return;
+    if(idx >= MAX_SLAVE_SLOTS) return;
  80028ee:	bf00      	nop
 }
  80028f0:	3708      	adds	r7, #8
@@ -4940,7 +4940,7 @@ uint8_t Registry_GetAddr(uint8_t idx){
  8002904:	af00      	add	r7, sp, #0
  8002906:	4603      	mov	r3, r0
  8002908:	71fb      	strb	r3, [r7, #7]
-    return (idx < MAX_SLAVE_SLOTS) ? k_addrs[idx] : 0U;
+    return(idx < MAX_SLAVE_SLOTS) ? k_addrs[idx] : 0U;
  800290a:	79fb      	ldrb	r3, [r7, #7]
  800290c:	2b01      	cmp	r3, #1
  800290e:	d803      	bhi.n	8002918 <Registry_GetAddr+0x18>
@@ -5015,7 +5015,7 @@ uint8_t Registry_GetSensorCount(uint8_t idx){
  8002988:	af00      	add	r7, sp, #0
  800298a:	4603      	mov	r3, r0
  800298c:	71fb      	strb	r3, [r7, #7]
-    if (idx >= MAX_SLAVE_SLOTS) return 0;
+    if(idx >= MAX_SLAVE_SLOTS) return 0;
  800298e:	79fb      	ldrb	r3, [r7, #7]
  8002990:	2b01      	cmp	r3, #1
  8002992:	d901      	bls.n	8002998 <Registry_GetSensorCount+0x14>
@@ -5068,7 +5068,7 @@ static eAlarmLevel _Evaluate(const AlarmRule_t *r, float v){
  80029e0:	af00      	add	r7, sp, #0
  80029e2:	6078      	str	r0, [r7, #4]
  80029e4:	ed87 0a00 	vstr	s0, [r7]
-    if (v <= r->critLow || v >= r->critHigh) return ALARM_CRITICAL;
+    if(v <= r->critLow || v >= r->critHigh) return ALARM_CRITICAL;
  80029e8:	687b      	ldr	r3, [r7, #4]
  80029ea:	edd3 7a03 	vldr	s15, [r3, #12]
  80029ee:	ed97 7a00 	vldr	s14, [r7]
@@ -5083,7 +5083,7 @@ static eAlarmLevel _Evaluate(const AlarmRule_t *r, float v){
  8002a0e:	db01      	blt.n	8002a14 <_Evaluate+0x38>
  8002a10:	2302      	movs	r3, #2
  8002a12:	e016      	b.n	8002a42 <_Evaluate+0x66>
-    if (v <= r->warnLow || v >= r->warnHigh) return ALARM_WARN;
+    if(v <= r->warnLow || v >= r->warnHigh) return ALARM_WARN;
  8002a14:	687b      	ldr	r3, [r7, #4]
  8002a16:	edd3 7a01 	vldr	s15, [r3, #4]
  8002a1a:	ed97 7a00 	vldr	s14, [r7]
@@ -5154,7 +5154,7 @@ void Alarm_Check(uint8_t slaveAddr, uint8_t sensorId, uint8_t sensorType, eDataT
     float v = 0.0f;
  8002a9a:	f04f 0300 	mov.w	r3, #0
  8002a9e:	627b      	str	r3, [r7, #36]	@ 0x24
-    switch (dt) {
+    switch(dt){
  8002aa0:	793b      	ldrb	r3, [r7, #4]
  8002aa2:	3b01      	subs	r3, #1
  8002aa4:	2b04      	cmp	r3, #4
@@ -5209,7 +5209,7 @@ void Alarm_Check(uint8_t slaveAddr, uint8_t sensorId, uint8_t sensorType, eDataT
 		default: return;
     }
 
-    for (uint8_t i = 0; i < RULE_COUNT; i++) {
+    for(uint8_t i = 0; i < RULE_COUNT; i++){
  8002b0e:	2300      	movs	r3, #0
  8002b10:	f887 3023 	strb.w	r3, [r7, #35]	@ 0x23
  8002b14:	e056      	b.n	8002bc4 <Alarm_Check+0x148>
@@ -5222,25 +5222,25 @@ void Alarm_Check(uint8_t slaveAddr, uint8_t sensorId, uint8_t sensorType, eDataT
  8002b22:	4a2d      	ldr	r2, [pc, #180]	@ (8002bd8 <Alarm_Check+0x15c>)
  8002b24:	4413      	add	r3, r2
  8002b26:	61fb      	str	r3, [r7, #28]
-        if (r->slaveAddr != slaveAddr) continue;
+        if(r->slaveAddr != slaveAddr) continue;
  8002b28:	69fb      	ldr	r3, [r7, #28]
  8002b2a:	781b      	ldrb	r3, [r3, #0]
  8002b2c:	79fa      	ldrb	r2, [r7, #7]
  8002b2e:	429a      	cmp	r2, r3
  8002b30:	d13a      	bne.n	8002ba8 <Alarm_Check+0x12c>
-        if (r->sensorId != sensorId) continue;
+        if(r->sensorId != sensorId) continue;
  8002b32:	69fb      	ldr	r3, [r7, #28]
  8002b34:	785b      	ldrb	r3, [r3, #1]
  8002b36:	79ba      	ldrb	r2, [r7, #6]
  8002b38:	429a      	cmp	r2, r3
  8002b3a:	d137      	bne.n	8002bac <Alarm_Check+0x130>
-        if (r->sensorType != sensorType) continue;
+        if(r->sensorType != sensorType) continue;
  8002b3c:	69fb      	ldr	r3, [r7, #28]
  8002b3e:	789b      	ldrb	r3, [r3, #2]
  8002b40:	797a      	ldrb	r2, [r7, #5]
  8002b42:	429a      	cmp	r2, r3
  8002b44:	d134      	bne.n	8002bb0 <Alarm_Check+0x134>
-        if (r->dataType != dt) continue;
+        if(r->dataType != dt) continue;
  8002b46:	69fb      	ldr	r3, [r7, #28]
  8002b48:	78db      	ldrb	r3, [r3, #3]
  8002b4a:	793a      	ldrb	r2, [r7, #4]
@@ -5258,7 +5258,7 @@ void Alarm_Check(uint8_t slaveAddr, uint8_t sensorId, uint8_t sensorType, eDataT
  8002b62:	4a1e      	ldr	r2, [pc, #120]	@ (8002bdc <Alarm_Check+0x160>)
  8002b64:	5cd3      	ldrb	r3, [r2, r3]
  8002b66:	76bb      	strb	r3, [r7, #26]
-        if (newLevel == oldLevel) continue;
+        if(newLevel == oldLevel) continue;
  8002b68:	7efa      	ldrb	r2, [r7, #27]
  8002b6a:	7ebb      	ldrb	r3, [r7, #26]
  8002b6c:	429a      	cmp	r2, r3
@@ -5300,21 +5300,21 @@ void Alarm_Check(uint8_t slaveAddr, uint8_t sensorId, uint8_t sensorType, eDataT
  8002ba0:	2200      	movs	r2, #0
  8002ba2:	f006 fde9 	bl	8009778 <xQueueGenericSend>
  8002ba6:	e008      	b.n	8002bba <Alarm_Check+0x13e>
-        if (r->slaveAddr != slaveAddr) continue;
+        if(r->slaveAddr != slaveAddr) continue;
  8002ba8:	bf00      	nop
  8002baa:	e006      	b.n	8002bba <Alarm_Check+0x13e>
-        if (r->sensorId != sensorId) continue;
+        if(r->sensorId != sensorId) continue;
  8002bac:	bf00      	nop
  8002bae:	e004      	b.n	8002bba <Alarm_Check+0x13e>
-        if (r->sensorType != sensorType) continue;
+        if(r->sensorType != sensorType) continue;
  8002bb0:	bf00      	nop
  8002bb2:	e002      	b.n	8002bba <Alarm_Check+0x13e>
-        if (r->dataType != dt) continue;
+        if(r->dataType != dt) continue;
  8002bb4:	bf00      	nop
  8002bb6:	e000      	b.n	8002bba <Alarm_Check+0x13e>
-        if (newLevel == oldLevel) continue;
+        if(newLevel == oldLevel) continue;
  8002bb8:	bf00      	nop
-    for (uint8_t i = 0; i < RULE_COUNT; i++) {
+    for(uint8_t i = 0; i < RULE_COUNT; i++){
  8002bba:	f897 3023 	ldrb.w	r3, [r7, #35]	@ 0x23
  8002bbe:	3301      	adds	r3, #1
  8002bc0:	f887 3023 	strb.w	r3, [r7, #35]	@ 0x23
@@ -5421,7 +5421,7 @@ void Button_Task(void *pvParams){
  8002c7a:	6078      	str	r0, [r7, #4]
     (void)pvParams;
 
-    while(1) {
+    while(1){
         vTaskDelay(pdMS_TO_TICKS(BTN_POLL_MS));
  8002c7c:	200a      	movs	r0, #10
  8002c7e:	f007 fbc7 	bl	800a410 <vTaskDelay>
@@ -5429,7 +5429,7 @@ void Button_Task(void *pvParams){
  8002c82:	2003      	movs	r0, #3
  8002c84:	f002 fb94 	bl	80053b0 <Watchdog_Kick>
 
-        for (uint8_t i = 0; i < 3U; i++) {
+        for(uint8_t i = 0; i < 3U; i++){
  8002c88:	2300      	movs	r3, #0
  8002c8a:	75fb      	strb	r3, [r7, #23]
  8002c8c:	e072      	b.n	8002d74 <Button_Task+0x100>
@@ -5461,11 +5461,11 @@ void Button_Task(void *pvParams){
  8002cc0:	4413      	add	r3, r2
  8002cc2:	613b      	str	r3, [r7, #16]
 
-            if (pressed) {
+            if(pressed){
  8002cc4:	7dbb      	ldrb	r3, [r7, #22]
  8002cc6:	2b00      	cmp	r3, #0
  8002cc8:	d02e      	beq.n	8002d28 <Button_Task+0xb4>
-                if (s->debounce < DEBOUNCE_CNT) {
+                if(s->debounce < DEBOUNCE_CNT){
  8002cca:	693b      	ldr	r3, [r7, #16]
  8002ccc:	881b      	ldrh	r3, [r3, #0]
  8002cce:	2b02      	cmp	r3, #2
@@ -5479,7 +5479,7 @@ void Button_Task(void *pvParams){
  8002cdc:	801a      	strh	r2, [r3, #0]
  8002cde:	e046      	b.n	8002d6e <Button_Task+0xfa>
                 }
-                else {
+                else{
                     s->active = true;
  8002ce0:	693b      	ldr	r3, [r7, #16]
  8002ce2:	2201      	movs	r2, #1
@@ -5491,7 +5491,7 @@ void Button_Task(void *pvParams){
  8002cec:	b29a      	uxth	r2, r3
  8002cee:	693b      	ldr	r3, [r7, #16]
  8002cf0:	805a      	strh	r2, [r3, #2]
-                    if (!s->longFired && s->held >= LONG_CNT) {
+                    if(!s->longFired && s->held >= LONG_CNT){
  8002cf2:	693b      	ldr	r3, [r7, #16]
  8002cf4:	795b      	ldrb	r3, [r3, #5]
  8002cf6:	f083 0301 	eor.w	r3, r3, #1
@@ -5522,8 +5522,8 @@ void Button_Task(void *pvParams){
                     }
                 }
             }
-            else {
-                if (s->active && !s->longFired) {
+            else{
+                if(s->active && !s->longFired){
  8002d28:	693b      	ldr	r3, [r7, #16]
  8002d2a:	791b      	ldrb	r3, [r3, #4]
  8002d2c:	2b00      	cmp	r3, #0
@@ -5563,7 +5563,7 @@ void Button_Task(void *pvParams){
  8002d68:	693b      	ldr	r3, [r7, #16]
  8002d6a:	2200      	movs	r2, #0
  8002d6c:	715a      	strb	r2, [r3, #5]
-        for (uint8_t i = 0; i < 3U; i++) {
+        for(uint8_t i = 0; i < 3U; i++){
  8002d6e:	7dfb      	ldrb	r3, [r7, #23]
  8002d70:	3301      	adds	r3, #1
  8002d72:	75fb      	strb	r3, [r7, #23]
@@ -5840,12 +5840,12 @@ void LCD_Print(const char *str){
  8002f46:	bd80      	pop	{r7, pc}
 
 08002f48 <LCD_Write2Lines>:
+void LCD_SetBacklight(bool on){
     g_bl = on ? BIT_BL : 0x00U;
     _I2C(g_bl);
 }
 
-void LCD_Write2Lines(const char *line1, const char *line2)
-{
+void LCD_Write2Lines(const char *line1, const char *line2){
  8002f48:	b580      	push	{r7, lr}
  8002f4a:	b088      	sub	sp, #32
  8002f4c:	af00      	add	r7, sp, #0
@@ -5960,7 +5960,7 @@ static char _TypeChar(uint8_t t){
  8003010:	af00      	add	r7, sp, #0
  8003012:	4603      	mov	r3, r0
  8003014:	71fb      	strb	r3, [r7, #7]
-    switch ((eSensorType)t) {
+    switch((eSensorType)t){
  8003016:	79fb      	ldrb	r3, [r7, #7]
  8003018:	3b01      	subs	r3, #1
  800301a:	2b04      	cmp	r3, #4
@@ -6011,7 +6011,7 @@ static void _FmtVal(char *buf, uint8_t sz, const SensorReading_t *r, uint8_t dt)
  800306a:	72fb      	strb	r3, [r7, #11]
  800306c:	4613      	mov	r3, r2
  800306e:	72bb      	strb	r3, [r7, #10]
-    switch ((eDataType)dt) {
+    switch((eDataType)dt){
  8003070:	7abb      	ldrb	r3, [r7, #10]
  8003072:	3b01      	subs	r3, #1
  8003074:	2b04      	cmp	r3, #4
@@ -6098,7 +6098,7 @@ static const char *_StateStr(eSlaveRegState s){
  8003128:	af00      	add	r7, sp, #0
  800312a:	4603      	mov	r3, r0
  800312c:	71fb      	strb	r3, [r7, #7]
-    switch (s) {
+    switch(s){
  800312e:	79fb      	ldrb	r3, [r7, #7]
  8003130:	2b06      	cmp	r3, #6
  8003132:	d81f      	bhi.n	8003174 <_StateStr+0x50>
@@ -6274,7 +6274,7 @@ static void _DrawRun(void){
  800328c:	af02      	add	r7, sp, #8
     char l1[17], l2[17];
 
-    if (DeviceManager_GetState() == DM_FETCHING) {
+    if(DeviceManager_GetState() == DM_FETCHING){
  800328e:	f7fe fb53 	bl	8001938 <DeviceManager_GetState>
  8003292:	4603      	mov	r3, r0
  8003294:	2b01      	cmp	r3, #1
@@ -6319,7 +6319,7 @@ static void _DrawRun(void){
  80032e8:	4b7b      	ldr	r3, [pc, #492]	@ (80034d8 <_DrawRun+0x250>)
  80032ea:	781b      	ldrb	r3, [r3, #0]
  80032ec:	f887 30dd 	strb.w	r3, [r7, #221]	@ 0xdd
-        while (!Registry_IsRegistered(g_slotView)) {
+        while(!Registry_IsRegistered(g_slotView)){
  80032f0:	e00e      	b.n	8003310 <_DrawRun+0x88>
             g_slotView = (uint8_t)((g_slotView + 1U) % MAX_SLAVE_SLOTS);
  80032f2:	4b79      	ldr	r3, [pc, #484]	@ (80034d8 <_DrawRun+0x250>)
@@ -6330,13 +6330,13 @@ static void _DrawRun(void){
  80032fe:	b2da      	uxtb	r2, r3
  8003300:	4b75      	ldr	r3, [pc, #468]	@ (80034d8 <_DrawRun+0x250>)
  8003302:	701a      	strb	r2, [r3, #0]
-            if (g_slotView == orig) break;
+            if(g_slotView == orig) break;
  8003304:	4b74      	ldr	r3, [pc, #464]	@ (80034d8 <_DrawRun+0x250>)
  8003306:	781b      	ldrb	r3, [r3, #0]
  8003308:	f897 20dd 	ldrb.w	r2, [r7, #221]	@ 0xdd
  800330c:	429a      	cmp	r2, r3
  800330e:	d00b      	beq.n	8003328 <_DrawRun+0xa0>
-        while (!Registry_IsRegistered(g_slotView)) {
+        while(!Registry_IsRegistered(g_slotView)){
  8003310:	4b71      	ldr	r3, [pc, #452]	@ (80034d8 <_DrawRun+0x250>)
  8003312:	781b      	ldrb	r3, [r3, #0]
  8003314:	4618      	mov	r0, r3
@@ -6347,7 +6347,7 @@ static void _DrawRun(void){
  8003322:	2b00      	cmp	r3, #0
  8003324:	d1e5      	bne.n	80032f2 <_DrawRun+0x6a>
  8003326:	e000      	b.n	800332a <_DrawRun+0xa2>
-            if (g_slotView == orig) break;
+            if(g_slotView == orig) break;
  8003328:	bf00      	nop
         }
     }
@@ -6359,7 +6359,7 @@ static void _DrawRun(void){
  8003332:	4611      	mov	r1, r2
  8003334:	4618      	mov	r0, r3
  8003336:	f7fe fef5 	bl	8002124 <Registry_GetSlot>
-    if (s.sensorCount > 0U && g_senView >= s.sensorCount) g_senView = 0;
+    if(s.sensorCount > 0U && g_senView >= s.sensorCount) g_senView = 0;
  800333a:	f897 3034 	ldrb.w	r3, [r7, #52]	@ 0x34
  800333e:	2b00      	cmp	r3, #0
  8003340:	d008      	beq.n	8003354 <_DrawRun+0xcc>
@@ -6386,7 +6386,7 @@ static void _DrawRun(void){
  8003370:	2111      	movs	r1, #17
  8003372:	f00b fce9 	bl	800ed48 <sniprintf>
 
-    if (s.sensorCount == 0U) {
+    if(s.sensorCount == 0U){
  8003376:	f897 3034 	ldrb.w	r3, [r7, #52]	@ 0x34
  800337a:	2b00      	cmp	r3, #0
  800337c:	d107      	bne.n	800338e <_DrawRun+0x106>
@@ -6398,7 +6398,7 @@ static void _DrawRun(void){
  8003388:	f00b fcde 	bl	800ed48 <sniprintf>
  800338c:	e095      	b.n	80034ba <_DrawRun+0x232>
     }
-    else {
+    else{
         char tmp[17] = {0};
  800338e:	f107 031c 	add.w	r3, r7, #28
  8003392:	2200      	movs	r2, #0
@@ -6411,7 +6411,7 @@ static void _DrawRun(void){
  800339e:	2300      	movs	r3, #0
  80033a0:	f887 30df 	strb.w	r3, [r7, #223]	@ 0xdf
 
-        for (uint8_t i = 0; i < s.sensorCount && pos < LCD_COLS; i++) {
+        for(uint8_t i = 0; i < s.sensorCount && pos < LCD_COLS; i++) {
  80033a4:	2300      	movs	r3, #0
  80033a6:	f887 30de 	strb.w	r3, [r7, #222]	@ 0xde
  80033aa:	e074      	b.n	8003496 <_DrawRun+0x20e>
@@ -6488,7 +6488,7 @@ static void _DrawRun(void){
  8003442:	210e      	movs	r1, #14
  8003444:	f00b fc80 	bl	800ed48 <sniprintf>
  8003448:	f8c7 00d4 	str.w	r0, [r7, #212]	@ 0xd4
-            if (n > 0 && (uint8_t)(pos + (uint8_t)n) <= LCD_COLS) {
+            if(n > 0 && (uint8_t)(pos + (uint8_t)n) <= LCD_COLS){
  800344c:	f8d7 30d4 	ldr.w	r3, [r7, #212]	@ 0xd4
  8003450:	2b00      	cmp	r3, #0
  8003452:	dd2a      	ble.n	80034aa <_DrawRun+0x222>
@@ -6513,7 +6513,7 @@ static void _DrawRun(void){
  8003482:	f897 30df 	ldrb.w	r3, [r7, #223]	@ 0xdf
  8003486:	4413      	add	r3, r2
  8003488:	f887 30df 	strb.w	r3, [r7, #223]	@ 0xdf
-        for (uint8_t i = 0; i < s.sensorCount && pos < LCD_COLS; i++) {
+        for(uint8_t i = 0; i < s.sensorCount && pos < LCD_COLS; i++) {
  800348c:	f897 30de 	ldrb.w	r3, [r7, #222]	@ 0xde
  8003490:	3301      	adds	r3, #1
  8003492:	f887 30de 	strb.w	r3, [r7, #222]	@ 0xde
@@ -6525,7 +6525,7 @@ static void _DrawRun(void){
  80034a6:	2b0f      	cmp	r3, #15
  80034a8:	d980      	bls.n	80033ac <_DrawRun+0x124>
             }
-            else {
+            else{
                 break;
             }
         }
@@ -6563,7 +6563,7 @@ static void _Btn_Idle(BtnEvent_t ev){
  80034f2:	b082      	sub	sp, #8
  80034f4:	af00      	add	r7, sp, #0
  80034f6:	80b8      	strh	r0, [r7, #4]
-    if (ev.btn == BTN_OK && ev.type == BTN_SHORT) {
+    if(ev.btn == BTN_OK && ev.type == BTN_SHORT){
  80034f8:	793b      	ldrb	r3, [r7, #4]
  80034fa:	2b02      	cmp	r3, #2
  80034fc:	d10d      	bne.n	800351a <_Btn_Idle+0x2a>
@@ -6600,7 +6600,7 @@ static void _Btn_StopMenu(BtnEvent_t ev){
  800352e:	b082      	sub	sp, #8
  8003530:	af00      	add	r7, sp, #0
  8003532:	80b8      	strh	r0, [r7, #4]
-    if (ev.btn == BTN_UP || ev.btn == BTN_DOWN) {
+    if(ev.btn == BTN_UP || ev.btn == BTN_DOWN){
  8003534:	793b      	ldrb	r3, [r7, #4]
  8003536:	2b00      	cmp	r3, #0
  8003538:	d002      	beq.n	8003540 <_Btn_StopMenu+0x14>
@@ -6619,14 +6619,14 @@ static void _Btn_StopMenu(BtnEvent_t ev){
         return;
  8003552:	e030      	b.n	80035b6 <_Btn_StopMenu+0x8a>
     }
-    if (ev.btn == BTN_OK && ev.type == BTN_SHORT) {
+    if(ev.btn == BTN_OK && ev.type == BTN_SHORT){
  8003554:	793b      	ldrb	r3, [r7, #4]
  8003556:	2b02      	cmp	r3, #2
  8003558:	d12d      	bne.n	80035b6 <_Btn_StopMenu+0x8a>
  800355a:	797b      	ldrb	r3, [r7, #5]
  800355c:	2b00      	cmp	r3, #0
  800355e:	d12a      	bne.n	80035b6 <_Btn_StopMenu+0x8a>
-        if (g_menuRow == 0U) {
+        if(g_menuRow == 0U){
  8003560:	4b16      	ldr	r3, [pc, #88]	@ (80035bc <_Btn_StopMenu+0x90>)
  8003562:	781b      	ldrb	r3, [r3, #0]
  8003564:	2b00      	cmp	r3, #0
@@ -6642,8 +6642,9 @@ static void _Btn_StopMenu(BtnEvent_t ev){
             _Dirty();
  8003574:	f7ff fd3e 	bl	8002ff4 <_Dirty>
  8003578:	e01d      	b.n	80035b6 <_Btn_StopMenu+0x8a>
-        } else {
-            if (Registry_GetRegisteredCount() == 0U) {
+        } 
+        else{
+            if(Registry_GetRegisteredCount() == 0U){
  800357a:	f7fe ffc9 	bl	8002510 <Registry_GetRegisteredCount>
  800357e:	4603      	mov	r3, r0
  8003580:	2b00      	cmp	r3, #0
@@ -6697,7 +6698,7 @@ static void _Btn_SlaveList(BtnEvent_t ev){
  80035d6:	b08a      	sub	sp, #40	@ 0x28
  80035d8:	af02      	add	r7, sp, #8
  80035da:	80b8      	strh	r0, [r7, #4]
-    if (ev.btn == BTN_UP) {
+    if(ev.btn == BTN_UP){
  80035dc:	793b      	ldrb	r3, [r7, #4]
  80035de:	2b00      	cmp	r3, #0
  80035e0:	d10e      	bne.n	8003600 <_Btn_SlaveList+0x2c>
@@ -6721,7 +6722,7 @@ static void _Btn_SlaveList(BtnEvent_t ev){
  80035fa:	f7ff fcfb 	bl	8002ff4 <_Dirty>
  80035fe:	e041      	b.n	8003684 <_Btn_SlaveList+0xb0>
     }
-    if (ev.btn == BTN_DOWN) {
+    if(ev.btn == BTN_DOWN){
  8003600:	793b      	ldrb	r3, [r7, #4]
  8003602:	2b01      	cmp	r3, #1
  8003604:	d10b      	bne.n	800361e <_Btn_SlaveList+0x4a>
@@ -6738,11 +6739,11 @@ static void _Btn_SlaveList(BtnEvent_t ev){
  8003618:	f7ff fcec 	bl	8002ff4 <_Dirty>
  800361c:	e032      	b.n	8003684 <_Btn_SlaveList+0xb0>
     }
-    if (ev.btn == BTN_OK) {
+    if(ev.btn == BTN_OK){
  800361e:	793b      	ldrb	r3, [r7, #4]
  8003620:	2b02      	cmp	r3, #2
  8003622:	d12f      	bne.n	8003684 <_Btn_SlaveList+0xb0>
-        if (ev.type == BTN_SHORT) {
+        if(ev.type == BTN_SHORT){
  8003624:	797b      	ldrb	r3, [r7, #5]
  8003626:	2b00      	cmp	r3, #0
  8003628:	d124      	bne.n	8003674 <_Btn_SlaveList+0xa0>
@@ -6782,7 +6783,7 @@ static void _Btn_SlaveList(BtnEvent_t ev){
  800366e:	f7ff fcc1 	bl	8002ff4 <_Dirty>
  8003672:	e007      	b.n	8003684 <_Btn_SlaveList+0xb0>
         }
-        else {
+        else{
             g_screen = SCREEN_STOP_MENU;
  8003674:	4b0a      	ldr	r3, [pc, #40]	@ (80036a0 <_Btn_SlaveList+0xcc>)
  8003676:	2201      	movs	r2, #1
@@ -6815,7 +6816,7 @@ static void _Btn_Run(BtnEvent_t ev){
  80036aa:	b0a0      	sub	sp, #128	@ 0x80
  80036ac:	af00      	add	r7, sp, #0
  80036ae:	80b8      	strh	r0, [r7, #4]
-    if (ev.btn == BTN_UP) {
+    if(ev.btn == BTN_UP){
  80036b0:	793b      	ldrb	r3, [r7, #4]
  80036b2:	2b00      	cmp	r3, #0
  80036b4:	d111      	bne.n	80036da <_Btn_Run+0x32>
@@ -6843,7 +6844,7 @@ static void _Btn_Run(BtnEvent_t ev){
  80036d4:	f7ff fc8e 	bl	8002ff4 <_Dirty>
  80036d8:	e03c      	b.n	8003754 <_Btn_Run+0xac>
     }
-    if (ev.btn == BTN_DOWN) {
+    if(ev.btn == BTN_DOWN){
  80036da:	793b      	ldrb	r3, [r7, #4]
  80036dc:	2b01      	cmp	r3, #1
  80036de:	d10e      	bne.n	80036fe <_Btn_Run+0x56>
@@ -6864,11 +6865,11 @@ static void _Btn_Run(BtnEvent_t ev){
  80036f8:	f7ff fc7c 	bl	8002ff4 <_Dirty>
  80036fc:	e02a      	b.n	8003754 <_Btn_Run+0xac>
     }
-    if (ev.btn == BTN_OK) {
+    if(ev.btn == BTN_OK){
  80036fe:	793b      	ldrb	r3, [r7, #4]
  8003700:	2b02      	cmp	r3, #2
  8003702:	d127      	bne.n	8003754 <_Btn_Run+0xac>
-        if (ev.type == BTN_SHORT) {
+        if(ev.type == BTN_SHORT){
  8003704:	797b      	ldrb	r3, [r7, #5]
  8003706:	2b00      	cmp	r3, #0
  8003708:	d119      	bne.n	800373e <_Btn_Run+0x96>
@@ -6879,7 +6880,7 @@ static void _Btn_Run(BtnEvent_t ev){
  8003712:	4611      	mov	r1, r2
  8003714:	4618      	mov	r0, r3
  8003716:	f7fe fd05 	bl	8002124 <Registry_GetSlot>
-            if (s.sensorCount > 1U)
+            if(s.sensorCount > 1U)
  800371a:	7b3b      	ldrb	r3, [r7, #12]
  800371c:	2b01      	cmp	r3, #1
  800371e:	d90b      	bls.n	8003738 <_Btn_Run+0x90>
@@ -6898,7 +6899,7 @@ static void _Btn_Run(BtnEvent_t ev){
  8003738:	f7ff fc5c 	bl	8002ff4 <_Dirty>
  800373c:	e00a      	b.n	8003754 <_Btn_Run+0xac>
         }
-        else {
+        else{
             SysState_Set(SYS_STOP);
  800373e:	2001      	movs	r0, #1
  8003740:	f001 f9c8 	bl	8004ad4 <SysState_Set>
@@ -6926,7 +6927,7 @@ static void _Btn_Run(BtnEvent_t ev){
 
 0800376c <LCD_UI_Init>:
 
-void LCD_UI_Init(void) {
+void LCD_UI_Init(void){
  800376c:	b480      	push	{r7}
  800376e:	af00      	add	r7, sp, #0
 	g_screen = SCREEN_IDLE;
@@ -6953,7 +6954,7 @@ void LCD_Task(void *pvParams){
     _Dirty();
  8003790:	f7ff fc30 	bl	8002ff4 <_Dirty>
 
-    while(1) {
+    while(1){
         BtnEvent_t ev;
         bool gotBtn = (xQueueReceive(xQueue_BtnEvent, &ev, pdMS_TO_TICKS(LCD_REFRESH_MS)) == pdTRUE);
  8003794:	4b2d      	ldr	r3, [pc, #180]	@ (800384c <LCD_Task+0xc8>)
@@ -6972,11 +6973,11 @@ void LCD_Task(void *pvParams){
  80037b0:	2002      	movs	r0, #2
  80037b2:	f001 fdfd 	bl	80053b0 <Watchdog_Kick>
 
-        if (gotBtn) {
+        if(gotBtn){
  80037b6:	7bfb      	ldrb	r3, [r7, #15]
  80037b8:	2b00      	cmp	r3, #0
  80037ba:	d01f      	beq.n	80037fc <LCD_Task+0x78>
-            switch (g_screen) {
+            switch(g_screen){
  80037bc:	4b24      	ldr	r3, [pc, #144]	@ (8003850 <LCD_Task+0xcc>)
  80037be:	781b      	ldrb	r3, [r3, #0]
  80037c0:	2b03      	cmp	r3, #3
@@ -7007,7 +7008,7 @@ void LCD_Task(void *pvParams){
             }
         }
 
-        if (g_redraw || g_screen == SCREEN_RUN) {
+        if(g_redraw || g_screen == SCREEN_RUN){
  80037fc:	4b15      	ldr	r3, [pc, #84]	@ (8003854 <LCD_Task+0xd0>)
  80037fe:	781b      	ldrb	r3, [r3, #0]
  8003800:	2b00      	cmp	r3, #0
@@ -7016,7 +7017,7 @@ void LCD_Task(void *pvParams){
  8003806:	781b      	ldrb	r3, [r3, #0]
  8003808:	2b03      	cmp	r3, #3
  800380a:	d1c3      	bne.n	8003794 <LCD_Task+0x10>
-            switch (g_screen) {
+            switch(g_screen){
  800380c:	4b10      	ldr	r3, [pc, #64]	@ (8003850 <LCD_Task+0xcc>)
  800380e:	781b      	ldrb	r3, [r3, #0]
  8003810:	2b03      	cmp	r3, #3
@@ -7045,7 +7046,7 @@ void LCD_Task(void *pvParams){
  8003844:	4b03      	ldr	r3, [pc, #12]	@ (8003854 <LCD_Task+0xd0>)
  8003846:	2200      	movs	r2, #0
  8003848:	701a      	strb	r2, [r3, #0]
-    while(1) {
+    while(1){
  800384a:	e7a3      	b.n	8003794 <LCD_Task+0x10>
  800384c:	20000454 	.word	0x20000454
  8003850:	2000046a 	.word	0x2000046a
@@ -8787,10 +8788,10 @@ bool RS485_Send(uint8_t addr, uint8_t seq,
  800436a:	f003 fce3 	bl	8007d34 <HAL_UART_Transmit_DMA>
  800436e:	4603      	mov	r3, r0
  8004370:	73fb      	strb	r3, [r7, #15]
-    if (ret != HAL_OK) {
+    if(ret != HAL_OK){
     	//
     }
-    return (ret == HAL_OK);
+    return(ret == HAL_OK);
  8004372:	7bfb      	ldrb	r3, [r7, #15]
  8004374:	2b00      	cmp	r3, #0
  8004376:	bf0c      	ite	eq
@@ -8816,7 +8817,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
  8004396:	b082      	sub	sp, #8
  8004398:	af00      	add	r7, sp, #0
  800439a:	6078      	str	r0, [r7, #4]
-    if (huart->Instance == USART2){
+    if(huart->Instance == USART2){
  800439c:	687b      	ldr	r3, [r7, #4]
  800439e:	681b      	ldr	r3, [r3, #0]
  80043a0:	4a0a      	ldr	r2, [pc, #40]	@ (80043cc <HAL_UART_TxCpltCallback+0x38>)
@@ -8832,7 +8833,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
 		return;
  80043b4:	e007      	b.n	80043c6 <HAL_UART_TxCpltCallback+0x32>
     }
-    if (huart->Instance == USART3){
+    if(huart->Instance == USART3){
  80043b6:	687b      	ldr	r3, [r7, #4]
  80043b8:	681b      	ldr	r3, [r3, #0]
  80043ba:	4a06      	ldr	r2, [pc, #24]	@ (80043d4 <HAL_UART_TxCpltCallback+0x40>)
@@ -8860,7 +8861,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
  80043de:	b082      	sub	sp, #8
  80043e0:	af00      	add	r7, sp, #0
  80043e2:	6078      	str	r0, [r7, #4]
-    if (huart->Instance == USART2){
+    if(huart->Instance == USART2){
  80043e4:	687b      	ldr	r3, [r7, #4]
  80043e6:	681b      	ldr	r3, [r3, #0]
  80043e8:	4a04      	ldr	r2, [pc, #16]	@ (80043fc <HAL_UART_RxCpltCallback+0x20>)
@@ -8871,7 +8872,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     	return;
  80043f2:	bf00      	nop
     }
-    if (huart->Instance == USART3){
+    if(huart->Instance == USART3){
     	//
     }
 }
@@ -10164,7 +10165,7 @@ int _lseek(int file, int ptr, int dir)
 
 static volatile eSysState g_state = SYS_IDLE;
 
-void SysState_Init(void) {
+void SysState_Init(void){
  8004a98:	b480      	push	{r7}
  8004a9a:	af00      	add	r7, sp, #0
 	g_state = SYS_IDLE;
@@ -10677,7 +10678,7 @@ static bool _SlotChanged(const SlaveSlot_t *cur, const SlaveSlot_t *prev){
  8004de8:	af00      	add	r7, sp, #0
  8004dea:	6078      	str	r0, [r7, #4]
  8004dec:	6039      	str	r1, [r7, #0]
-    if (cur->state != prev->state) return true;
+    if(cur->state != prev->state) return true;
  8004dee:	687b      	ldr	r3, [r7, #4]
  8004df0:	789a      	ldrb	r2, [r3, #2]
  8004df2:	683b      	ldr	r3, [r7, #0]
@@ -10686,7 +10687,7 @@ static bool _SlotChanged(const SlaveSlot_t *cur, const SlaveSlot_t *prev){
  8004df8:	d001      	beq.n	8004dfe <_SlotChanged+0x1a>
  8004dfa:	2301      	movs	r3, #1
  8004dfc:	e045      	b.n	8004e8a <_SlotChanged+0xa6>
-    if (cur->sensorCount != prev->sensorCount) return true;
+    if(cur->sensorCount != prev->sensorCount) return true;
  8004dfe:	687b      	ldr	r3, [r7, #4]
  8004e00:	791a      	ldrb	r2, [r3, #4]
  8004e02:	683b      	ldr	r3, [r7, #0]
@@ -10696,7 +10697,7 @@ static bool _SlotChanged(const SlaveSlot_t *cur, const SlaveSlot_t *prev){
  8004e0a:	2301      	movs	r3, #1
  8004e0c:	e03d      	b.n	8004e8a <_SlotChanged+0xa6>
 
-    for (uint8_t i = 0; i < cur->sensorCount; i++) {
+    for(uint8_t i = 0; i < cur->sensorCount; i++){
  8004e0e:	2300      	movs	r3, #0
  8004e10:	73fb      	strb	r3, [r7, #15]
  8004e12:	e034      	b.n	8004e7e <_SlotChanged+0x9a>
@@ -10710,7 +10711,7 @@ static bool _SlotChanged(const SlaveSlot_t *cur, const SlaveSlot_t *prev){
  8004e20:	3305      	adds	r3, #5
  8004e22:	781b      	ldrb	r3, [r3, #0]
  8004e24:	73bb      	strb	r3, [r7, #14]
-        if (id == 0 || id > MAX_SENSORS_PER_SLAVE) continue;
+        if(id == 0 || id > MAX_SENSORS_PER_SLAVE) continue;
  8004e26:	7bbb      	ldrb	r3, [r7, #14]
  8004e28:	2b00      	cmp	r3, #0
  8004e2a:	d024      	beq.n	8004e76 <_SlotChanged+0x92>
@@ -10730,7 +10731,7 @@ static bool _SlotChanged(const SlaveSlot_t *cur, const SlaveSlot_t *prev){
  8004e44:	f7ff fe6a 	bl	8004b1c <DataType_Size>
  8004e48:	4603      	mov	r3, r0
  8004e4a:	737b      	strb	r3, [r7, #13]
-        if (memcmp(cur->lastReading[id - 1U].bytes, prev->lastReading[id - 1U].bytes, sz) != 0)
+        if(memcmp(cur->lastReading[id - 1U].bytes, prev->lastReading[id - 1U].bytes, sz) != 0)
  8004e4c:	7bbb      	ldrb	r3, [r7, #14]
  8004e4e:	3b01      	subs	r3, #1
  8004e50:	3304      	adds	r3, #4
@@ -10752,9 +10753,9 @@ static bool _SlotChanged(const SlaveSlot_t *cur, const SlaveSlot_t *prev){
             return true;
  8004e72:	2301      	movs	r3, #1
  8004e74:	e009      	b.n	8004e8a <_SlotChanged+0xa6>
-        if (id == 0 || id > MAX_SENSORS_PER_SLAVE) continue;
+        if(id == 0 || id > MAX_SENSORS_PER_SLAVE) continue;
  8004e76:	bf00      	nop
-    for (uint8_t i = 0; i < cur->sensorCount; i++) {
+    for(uint8_t i = 0; i < cur->sensorCount; i++){
  8004e78:	7bfb      	ldrb	r3, [r7, #15]
  8004e7a:	3301      	adds	r3, #1
  8004e7c:	73fb      	strb	r3, [r7, #15]
@@ -10780,7 +10781,7 @@ static void _PushDataIfChanged(void){
  8004e96:	b0dd      	sub	sp, #372	@ 0x174
  8004e98:	af00      	add	r7, sp, #0
     SlaveSlot_t cur[MAX_SLAVE_SLOTS];
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
  8004e9a:	2300      	movs	r3, #0
  8004e9c:	f887 316f 	strb.w	r3, [r7, #367]	@ 0x16f
  8004ea0:	e020      	b.n	8004ee4 <_PushDataIfChanged+0x50>
@@ -10805,7 +10806,7 @@ static void _PushDataIfChanged(void){
  8004ed2:	2378      	movs	r3, #120	@ 0x78
  8004ed4:	461a      	mov	r2, r3
  8004ed6:	f00a f82e 	bl	800ef36 <memcpy>
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
  8004eda:	f897 316f 	ldrb.w	r3, [r7, #367]	@ 0x16f
  8004ede:	3301      	adds	r3, #1
  8004ee0:	f887 316f 	strb.w	r3, [r7, #367]	@ 0x16f
@@ -10817,17 +10818,17 @@ static void _PushDataIfChanged(void){
  8004eec:	4b4f      	ldr	r3, [pc, #316]	@ (800502c <_PushDataIfChanged+0x198>)
  8004eee:	781b      	ldrb	r3, [r3, #0]
  8004ef0:	f887 316e 	strb.w	r3, [r7, #366]	@ 0x16e
-    if (!changed) {
+    if(!changed){
  8004ef4:	f897 316e 	ldrb.w	r3, [r7, #366]	@ 0x16e
  8004ef8:	f083 0301 	eor.w	r3, r3, #1
  8004efc:	b2db      	uxtb	r3, r3
  8004efe:	2b00      	cmp	r3, #0
  8004f00:	d045      	beq.n	8004f8e <_PushDataIfChanged+0xfa>
-        for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+        for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  8004f02:	2300      	movs	r3, #0
  8004f04:	f887 316d 	strb.w	r3, [r7, #365]	@ 0x16d
  8004f08:	e03d      	b.n	8004f86 <_PushDataIfChanged+0xf2>
-            if (!cur[i].registered || !(cur[i].state == SREG_ONLINE)) continue;
+            if(!cur[i].registered || !(cur[i].state == SREG_ONLINE)) continue;
  8004f0a:	f897 216d 	ldrb.w	r2, [r7, #365]	@ 0x16d
  8004f0e:	4613      	mov	r3, r2
  8004f10:	011b      	lsls	r3, r3, #4
@@ -10852,7 +10853,7 @@ static void _PushDataIfChanged(void){
  8004f3e:	781b      	ldrb	r3, [r3, #0]
  8004f40:	2b04      	cmp	r3, #4
  8004f42:	d11a      	bne.n	8004f7a <_PushDataIfChanged+0xe6>
-            if (_SlotChanged(&cur[i], &g_lastPushed[i])) {
+            if(_SlotChanged(&cur[i], &g_lastPushed[i])){
  8004f44:	f897 216d 	ldrb.w	r2, [r7, #365]	@ 0x16d
  8004f48:	f107 0178 	add.w	r1, r7, #120	@ 0x78
  8004f4c:	4613      	mov	r3, r2
@@ -10877,9 +10878,9 @@ static void _PushDataIfChanged(void){
  8004f74:	f887 316e 	strb.w	r3, [r7, #366]	@ 0x16e
                 break;
  8004f78:	e009      	b.n	8004f8e <_PushDataIfChanged+0xfa>
-            if (!cur[i].registered || !(cur[i].state == SREG_ONLINE)) continue;
+            if(!cur[i].registered || !(cur[i].state == SREG_ONLINE)) continue;
  8004f7a:	bf00      	nop
-        for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+        for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  8004f7c:	f897 316d 	ldrb.w	r3, [r7, #365]	@ 0x16d
  8004f80:	3301      	adds	r3, #1
  8004f82:	f887 316d 	strb.w	r3, [r7, #365]	@ 0x16d
@@ -10890,7 +10891,7 @@ static void _PushDataIfChanged(void){
         }
     }
 
-    if (!changed){
+    if(!changed){
  8004f8e:	f897 316e 	ldrb.w	r3, [r7, #366]	@ 0x16e
  8004f92:	f083 0301 	eor.w	r3, r3, #1
  8004f96:	b2db      	uxtb	r3, r3
@@ -10899,11 +10900,11 @@ static void _PushDataIfChanged(void){
     	return;
     }
 
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  8004f9c:	2300      	movs	r3, #0
  8004f9e:	f887 316c 	strb.w	r3, [r7, #364]	@ 0x16c
  8004fa2:	e02d      	b.n	8005000 <_PushDataIfChanged+0x16c>
-        if (cur[i].registered && cur[i].state == SREG_ONLINE) {
+        if(cur[i].registered && cur[i].state == SREG_ONLINE){
  8004fa4:	f897 216c 	ldrb.w	r2, [r7, #364]	@ 0x16c
  8004fa8:	4613      	mov	r3, r2
  8004faa:	011b      	lsls	r3, r3, #4
@@ -10939,7 +10940,7 @@ static void _PushDataIfChanged(void){
  8004fee:	2300      	movs	r3, #0
  8004ff0:	2200      	movs	r2, #0
  8004ff2:	f004 fbc1 	bl	8009778 <xQueueGenericSend>
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
  8004ff6:	f897 316c 	ldrb.w	r3, [r7, #364]	@ 0x16c
  8004ffa:	3301      	adds	r3, #1
  8004ffc:	f887 316c 	strb.w	r3, [r7, #364]	@ 0x16c
@@ -11090,7 +11091,7 @@ static void _SendAlarm(const AlarmEvent_t *ev){
  8005112:	f002 fe0f 	bl	8007d34 <HAL_UART_Transmit_DMA>
  8005116:	4603      	mov	r3, r0
  8005118:	753b      	strb	r3, [r7, #20]
-    if (ret != HAL_OK) {
+    if(ret != HAL_OK){
     	//
     }}
  800511a:	bf00      	nop
@@ -11174,12 +11175,12 @@ void Upstream_Task(void *pvParams){
     static eSysState prevUpstreamSys = SYS_IDLE;
 
 
-    while(1) {
+    while(1){
     	eSysState curSys = SysState_Get();
  80051b0:	f7ff fc7e 	bl	8004ab0 <SysState_Get>
  80051b4:	4603      	mov	r3, r0
  80051b6:	f887 3087 	strb.w	r3, [r7, #135]	@ 0x87
-        if (prevUpstreamSys == SYS_RUN && curSys != SYS_RUN) {
+        if(prevUpstreamSys == SYS_RUN && curSys != SYS_RUN){
  80051ba:	4b54      	ldr	r3, [pc, #336]	@ (800530c <Upstream_Task+0x164>)
  80051bc:	781b      	ldrb	r3, [r3, #0]
  80051be:	2b02      	cmp	r3, #2
@@ -11201,7 +11202,7 @@ void Upstream_Task(void *pvParams){
  80051da:	701a      	strb	r2, [r3, #0]
 
             SlaveSlot_t s_drain;
-            while (xQueueReceive(xQueue_UpstreamSnapshot, &s_drain, 0) == pdTRUE) {}
+            while(xQueueReceive(xQueue_UpstreamSnapshot, &s_drain, 0) == pdTRUE) {}
  80051dc:	bf00      	nop
  80051de:	4b4f      	ldr	r3, [pc, #316]	@ (800531c <Upstream_Task+0x174>)
  80051e0:	681b      	ldr	r3, [r3, #0]
@@ -11219,7 +11220,7 @@ void Upstream_Task(void *pvParams){
  80051f6:	f897 3087 	ldrb.w	r3, [r7, #135]	@ 0x87
  80051fa:	7013      	strb	r3, [r2, #0]
 
-        if (curSys == SYS_RUN) {
+        if(curSys == SYS_RUN){
  80051fc:	f897 3087 	ldrb.w	r3, [r7, #135]	@ 0x87
  8005200:	2b02      	cmp	r3, #2
  8005202:	d17e      	bne.n	8005302 <Upstream_Task+0x15a>
@@ -11229,14 +11230,14 @@ void Upstream_Task(void *pvParams){
             _PushDataIfChanged();
  800520a:	f7ff fe43 	bl	8004e94 <_PushDataIfChanged>
 
-            if (!hasPendingAlarm) {
+            if(!hasPendingAlarm){
  800520e:	4b40      	ldr	r3, [pc, #256]	@ (8005310 <Upstream_Task+0x168>)
  8005210:	781b      	ldrb	r3, [r3, #0]
  8005212:	f083 0301 	eor.w	r3, r3, #1
  8005216:	b2db      	uxtb	r3, r3
  8005218:	2b00      	cmp	r3, #0
  800521a:	d00c      	beq.n	8005236 <Upstream_Task+0x8e>
-                if (xQueueReceive(xQueue_AlarmEvent, &pendingAlarm, 0) == pdTRUE) {
+                if(xQueueReceive(xQueue_AlarmEvent, &pendingAlarm, 0) == pdTRUE){
  800521c:	4b40      	ldr	r3, [pc, #256]	@ (8005320 <Upstream_Task+0x178>)
  800521e:	681b      	ldr	r3, [r3, #0]
  8005220:	2200      	movs	r2, #0
@@ -11252,14 +11253,14 @@ void Upstream_Task(void *pvParams){
  8005234:	701a      	strb	r2, [r3, #0]
                 }
             }
-            if (!hasPendingSnapshot) {
+            if(!hasPendingSnapshot){
  8005236:	4b37      	ldr	r3, [pc, #220]	@ (8005314 <Upstream_Task+0x16c>)
  8005238:	781b      	ldrb	r3, [r3, #0]
  800523a:	f083 0301 	eor.w	r3, r3, #1
  800523e:	b2db      	uxtb	r3, r3
  8005240:	2b00      	cmp	r3, #0
  8005242:	d00c      	beq.n	800525e <Upstream_Task+0xb6>
-                if (xQueueReceive(xQueue_UpstreamSnapshot, &pendingSnapshot, 0) == pdTRUE) {
+                if(xQueueReceive(xQueue_UpstreamSnapshot, &pendingSnapshot, 0) == pdTRUE){
  8005244:	4b35      	ldr	r3, [pc, #212]	@ (800531c <Upstream_Task+0x174>)
  8005246:	681b      	ldr	r3, [r3, #0]
  8005248:	2200      	movs	r2, #0
@@ -11276,13 +11277,13 @@ void Upstream_Task(void *pvParams){
                 }
             }
 
-            if (uart_ready) {
+            if(uart_ready){
  800525e:	4b33      	ldr	r3, [pc, #204]	@ (800532c <Upstream_Task+0x184>)
  8005260:	781b      	ldrb	r3, [r3, #0]
  8005262:	b2db      	uxtb	r3, r3
  8005264:	2b00      	cmp	r3, #0
  8005266:	d048      	beq.n	80052fa <Upstream_Task+0x152>
-                if (hasPendingAlarm) {
+                if(hasPendingAlarm){
  8005268:	4b29      	ldr	r3, [pc, #164]	@ (8005310 <Upstream_Task+0x168>)
  800526a:	781b      	ldrb	r3, [r3, #0]
  800526c:	2b00      	cmp	r3, #0
@@ -11300,7 +11301,7 @@ void Upstream_Task(void *pvParams){
  8005280:	701a      	strb	r2, [r3, #0]
  8005282:	e03a      	b.n	80052fa <Upstream_Task+0x152>
                 }
-                else if (hasPendingSnapshot) {
+                else if(hasPendingSnapshot){
  8005284:	4b23      	ldr	r3, [pc, #140]	@ (8005314 <Upstream_Task+0x16c>)
  8005286:	781b      	ldrb	r3, [r3, #0]
  8005288:	2b00      	cmp	r3, #0
@@ -11314,7 +11315,7 @@ void Upstream_Task(void *pvParams){
  8005296:	f7ff fd0e 	bl	8004cb6 <Payload_PackUpstream>
  800529a:	4603      	mov	r3, r0
  800529c:	f887 3086 	strb.w	r3, [r7, #134]	@ 0x86
-                    if (plen > 0) {
+                    if(plen > 0){
  80052a0:	f897 3086 	ldrb.w	r3, [r7, #134]	@ 0x86
  80052a4:	2b00      	cmp	r3, #0
  80052a6:	d025      	beq.n	80052f4 <Upstream_Task+0x14c>
@@ -11365,11 +11366,11 @@ void Upstream_Task(void *pvParams){
  80052fc:	f005 f888 	bl	800a410 <vTaskDelay>
  8005300:	e756      	b.n	80051b0 <Upstream_Task+0x8>
         }
-        else {
+        else{
             vTaskDelay(pdMS_TO_TICKS(10));
  8005302:	200a      	movs	r0, #10
  8005304:	f005 f884 	bl	800a410 <vTaskDelay>
-    while(1) {
+    while(1){
  8005308:	e752      	b.n	80051b0 <Upstream_Task+0x8>
  800530a:	bf00      	nop
  800530c:	200009b8 	.word	0x200009b8
@@ -11438,7 +11439,7 @@ void Watchdog_Init(void){
     uint32_t now = xTaskGetTickCount();
  800536e:	f005 fa43 	bl	800a7f8 <xTaskGetTickCount>
  8005372:	6038      	str	r0, [r7, #0]
-    for (uint8_t i = 0; i < WDG_TASK_COUNT; i++) {
+    for(uint8_t i = 0; i < WDG_TASK_COUNT; i++){
  8005374:	2300      	movs	r3, #0
  8005376:	71fb      	strb	r3, [r7, #7]
  8005378:	e010      	b.n	800539c <Watchdog_Init+0x34>
@@ -11458,7 +11459,7 @@ void Watchdog_Init(void){
  8005390:	330c      	adds	r3, #12
  8005392:	2201      	movs	r2, #1
  8005394:	701a      	strb	r2, [r3, #0]
-    for (uint8_t i = 0; i < WDG_TASK_COUNT; i++) {
+    for(uint8_t i = 0; i < WDG_TASK_COUNT; i++){
  8005396:	79fb      	ldrb	r3, [r7, #7]
  8005398:	3301      	adds	r3, #1
  800539a:	71fb      	strb	r3, [r7, #7]
@@ -11476,14 +11477,13 @@ void Watchdog_Init(void){
 
 080053b0 <Watchdog_Kick>:
 
-void Watchdog_Kick(eWdgTask task)
-{
+void Watchdog_Kick(eWdgTask task){
  80053b0:	b590      	push	{r4, r7, lr}
  80053b2:	b083      	sub	sp, #12
  80053b4:	af00      	add	r7, sp, #0
  80053b6:	4603      	mov	r3, r0
  80053b8:	71fb      	strb	r3, [r7, #7]
-    if (task >= WDG_TASK_COUNT) return;
+    if(task >= WDG_TASK_COUNT) return;
  80053ba:	79fb      	ldrb	r3, [r7, #7]
  80053bc:	2b04      	cmp	r3, #4
  80053be:	d809      	bhi.n	80053d4 <Watchdog_Kick+0x24>
@@ -11497,9 +11497,9 @@ void Watchdog_Kick(eWdgTask task)
  80053ce:	3308      	adds	r3, #8
  80053d0:	601a      	str	r2, [r3, #0]
  80053d2:	e000      	b.n	80053d6 <Watchdog_Kick+0x26>
-    if (task >= WDG_TASK_COUNT) return;
+    if(task >= WDG_TASK_COUNT) return;
  80053d4:	bf00      	nop
-	}
+}
  80053d6:	370c      	adds	r7, #12
  80053d8:	46bd      	mov	sp, r7
  80053da:	bd90      	pop	{r4, r7, pc}
@@ -11519,12 +11519,12 @@ void Watchdog_Task(void *pvParams){
  80053ea:	f241 3088 	movw	r0, #5000	@ 0x1388
  80053ee:	f005 f80f 	bl	800a410 <vTaskDelay>
 
-    while(1) {
+    while(1){
         uint32_t now = xTaskGetTickCount();
  80053f2:	f005 fa01 	bl	800a7f8 <xTaskGetTickCount>
  80053f6:	6138      	str	r0, [r7, #16]
 
-        for (uint8_t i = 0; i < WDG_TASK_COUNT; i++) {
+        for(uint8_t i = 0; i < WDG_TASK_COUNT; i++){
  80053f8:	2300      	movs	r3, #0
  80053fa:	75fb      	strb	r3, [r7, #23]
  80053fc:	e055      	b.n	80054aa <Watchdog_Task+0xca>
@@ -11534,7 +11534,7 @@ void Watchdog_Task(void *pvParams){
  8005402:	4a2e      	ldr	r2, [pc, #184]	@ (80054bc <Watchdog_Task+0xdc>)
  8005404:	4413      	add	r3, r2
  8005406:	60fb      	str	r3, [r7, #12]
-            if (!s->enabled) continue;
+            if(!s->enabled) continue;
  8005408:	68fb      	ldr	r3, [r7, #12]
  800540a:	7b1b      	ldrb	r3, [r3, #12]
  800540c:	b2db      	uxtb	r3, r3
@@ -11550,7 +11550,7 @@ void Watchdog_Task(void *pvParams){
  800541e:	1ad3      	subs	r3, r2, r3
  8005420:	60bb      	str	r3, [r7, #8]
 
-            if (elapsed > pdMS_TO_TICKS(s->deadlineMs)) {
+            if(elapsed > pdMS_TO_TICKS(s->deadlineMs)){
  8005422:	68fb      	ldr	r3, [r7, #12]
  8005424:	685b      	ldr	r3, [r3, #4]
  8005426:	2200      	movs	r2, #0
@@ -11600,9 +11600,9 @@ void Watchdog_Task(void *pvParams){
                 __disable_irq();
                 NVIC_SystemReset();
  800549e:	f7ff ff4d 	bl	800533c <__NVIC_SystemReset>
-            if (!s->enabled) continue;
+            if(!s->enabled) continue;
  80054a2:	bf00      	nop
-        for (uint8_t i = 0; i < WDG_TASK_COUNT; i++) {
+        for(uint8_t i = 0; i < WDG_TASK_COUNT; i++){
  80054a4:	7dfb      	ldrb	r3, [r7, #23]
  80054a6:	3301      	adds	r3, #1
  80054a8:	75fb      	strb	r3, [r7, #23]
@@ -11615,7 +11615,7 @@ void Watchdog_Task(void *pvParams){
         vTaskDelay(pdMS_TO_TICKS(WDG_CHECK_INTERVAL_MS));
  80054b0:	f241 3088 	movw	r0, #5000	@ 0x1388
  80054b4:	f004 ffac 	bl	800a410 <vTaskDelay>
-    while(1) {
+    while(1){
  80054b8:	e79b      	b.n	80053f2 <Watchdog_Task+0x12>
  80054ba:	bf00      	nop
  80054bc:	2000000c 	.word	0x2000000c

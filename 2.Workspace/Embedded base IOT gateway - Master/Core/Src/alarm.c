@@ -194,8 +194,8 @@ static eAlarmLevel g_currentLevel[RULE_COUNT];
 //}
 
 static eAlarmLevel _Evaluate(const AlarmRule_t *r, float v){
-    if (v <= r->critLow || v >= r->critHigh) return ALARM_CRITICAL;
-    if (v <= r->warnLow || v >= r->warnHigh) return ALARM_WARN;
+    if(v <= r->critLow || v >= r->critHigh) return ALARM_CRITICAL;
+    if(v <= r->warnLow || v >= r->warnHigh) return ALARM_WARN;
     return ALARM_NONE;
 }
 
@@ -206,7 +206,7 @@ void Alarm_Init(void){
 
 void Alarm_Check(uint8_t slaveAddr, uint8_t sensorId, uint8_t sensorType, eDataType dt, SensorReading_t readingData){
     float v = 0.0f;
-    switch (dt) {
+    switch(dt){
 		case DTYPE_FLOAT:
 			v = readingData.f;
 			break;
@@ -225,16 +225,16 @@ void Alarm_Check(uint8_t slaveAddr, uint8_t sensorId, uint8_t sensorType, eDataT
 		default: return;
     }
 
-    for (uint8_t i = 0; i < RULE_COUNT; i++) {
+    for(uint8_t i = 0; i < RULE_COUNT; i++){
         const AlarmRule_t *r = &k_rules[i];
-        if (r->slaveAddr != slaveAddr) continue;
-        if (r->sensorId != sensorId) continue;
-        if (r->sensorType != sensorType) continue;
-        if (r->dataType != dt) continue;
+        if(r->slaveAddr != slaveAddr) continue;
+        if(r->sensorId != sensorId) continue;
+        if(r->sensorType != sensorType) continue;
+        if(r->dataType != dt) continue;
 
         eAlarmLevel newLevel = _Evaluate(r, v);
         eAlarmLevel oldLevel = g_currentLevel[i];
-        if (newLevel == oldLevel) continue;
+        if(newLevel == oldLevel) continue;
 
         g_currentLevel[i] = newLevel;
 

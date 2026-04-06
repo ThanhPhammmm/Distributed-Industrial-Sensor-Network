@@ -9034,45 +9034,45 @@ LOAD C:/ST/STM32CubeIDE_1.19.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_macro   0x00028b59      0x16f ./ThirdParty/SEGGER/SEGGER/Syscalls/SEGGER_RTT_Syscalls_GCC.o
  .debug_macro   0x00028cc8       0x10 ./ThirdParty/SEGGER/SEGGER/Syscalls/SEGGER_RTT_Syscalls_GCC.o
 
-.debug_line     0x00000000    0x297ac
- .debug_line    0x00000000     0x157d ./Core/Src/DeviceManager.o
- .debug_line    0x0000157d     0x10d2 ./Core/Src/ProtocolTask.o
- .debug_line    0x0000264f      0xf85 ./Core/Src/SlaveRegistry.o
- .debug_line    0x000035d4      0xc05 ./Core/Src/alarm.o
- .debug_line    0x000041d9      0xd6e ./Core/Src/button.o
- .debug_line    0x00004f47      0xf44 ./Core/Src/lcd_driver.o
- .debug_line    0x00005e8b     0x1369 ./Core/Src/lcd_ui.o
- .debug_line    0x000071f4     0x1224 ./Core/Src/main.o
- .debug_line    0x00008418     0x1157 ./Core/Src/rs485_driver.o
- .debug_line    0x0000956f      0xe13 ./Core/Src/stm32f4xx_hal_msp.o
- .debug_line    0x0000a382      0x7f5 ./Core/Src/stm32f4xx_hal_timebase_tim.o
- .debug_line    0x0000ab77      0x8aa ./Core/Src/stm32f4xx_it.o
- .debug_line    0x0000b421      0x8eb ./Core/Src/syscalls.o
- .debug_line    0x0000bd0c      0x989 ./Core/Src/system_state.o
- .debug_line    0x0000c695      0x7ed ./Core/Src/system_stm32f4xx.o
- .debug_line    0x0000ce82     0x12e0 ./Core/Src/upstream.o
- .debug_line    0x0000e162      0xedf ./Core/Src/watchdog.o
- .debug_line    0x0000f041       0x7a ./Core/Startup/startup_stm32f407vgtx.o
- .debug_line    0x0000f0bb      0xa69 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
- .debug_line    0x0000fb24      0xd39 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
- .debug_line    0x0001085d      0xfd5 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o
- .debug_line    0x00011832      0xbc1 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
- .debug_line    0x000123f3     0x3b16 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.o
- .debug_line    0x00015f09      0xe78 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
- .debug_line    0x00016d81     0x37de ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o
- .debug_line    0x0001a55f     0x19c9 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
- .debug_line    0x0001bf28     0x25b1 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
- .debug_line    0x0001e4d9      0xb70 ./ThirdParty/FreeRTOS/list.o
- .debug_line    0x0001f049     0x19cb ./ThirdParty/FreeRTOS/queue.o
- .debug_line    0x00020a14     0x2397 ./ThirdParty/FreeRTOS/tasks.o
- .debug_line    0x00022dab      0xd08 ./ThirdParty/FreeRTOS/portable/GCC/ARM_CM4F/port.o
- .debug_line    0x00023ab3      0xef9 ./ThirdParty/FreeRTOS/portable/MemMang/heap_4.o
- .debug_line    0x000249ac      0x938 ./ThirdParty/SEGGER/Config/SEGGER_SYSVIEW_Config_FreeRTOS.o
- .debug_line    0x000252e4      0xc3c ./ThirdParty/SEGGER/OS/SEGGER_SYSVIEW_FreeRTOS.o
- .debug_line    0x00025f20      0xfbc ./ThirdParty/SEGGER/SEGGER/SEGGER_RTT.o
- .debug_line    0x00026edc       0x86 ./ThirdParty/SEGGER/SEGGER/SEGGER_RTT_ASM_ARMv7M.o
- .debug_line    0x00026f62     0x211f ./ThirdParty/SEGGER/SEGGER/SEGGER_SYSVIEW.o
- .debug_line    0x00029081      0x72b ./ThirdParty/SEGGER/SEGGER/Syscalls/SEGGER_RTT_Syscalls_GCC.o
+.debug_line     0x00000000    0x297a4
+ .debug_line    0x00000000     0x1579 ./Core/Src/DeviceManager.o
+ .debug_line    0x00001579     0x10d0 ./Core/Src/ProtocolTask.o
+ .debug_line    0x00002649      0xf85 ./Core/Src/SlaveRegistry.o
+ .debug_line    0x000035ce      0xc05 ./Core/Src/alarm.o
+ .debug_line    0x000041d3      0xd6e ./Core/Src/button.o
+ .debug_line    0x00004f41      0xf44 ./Core/Src/lcd_driver.o
+ .debug_line    0x00005e85     0x1369 ./Core/Src/lcd_ui.o
+ .debug_line    0x000071ee     0x1224 ./Core/Src/main.o
+ .debug_line    0x00008412     0x1157 ./Core/Src/rs485_driver.o
+ .debug_line    0x00009569      0xe13 ./Core/Src/stm32f4xx_hal_msp.o
+ .debug_line    0x0000a37c      0x7f5 ./Core/Src/stm32f4xx_hal_timebase_tim.o
+ .debug_line    0x0000ab71      0x8aa ./Core/Src/stm32f4xx_it.o
+ .debug_line    0x0000b41b      0x8eb ./Core/Src/syscalls.o
+ .debug_line    0x0000bd06      0x989 ./Core/Src/system_state.o
+ .debug_line    0x0000c68f      0x7ed ./Core/Src/system_stm32f4xx.o
+ .debug_line    0x0000ce7c     0x12de ./Core/Src/upstream.o
+ .debug_line    0x0000e15a      0xedf ./Core/Src/watchdog.o
+ .debug_line    0x0000f039       0x7a ./Core/Startup/startup_stm32f407vgtx.o
+ .debug_line    0x0000f0b3      0xa69 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
+ .debug_line    0x0000fb1c      0xd39 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
+ .debug_line    0x00010855      0xfd5 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o
+ .debug_line    0x0001182a      0xbc1 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
+ .debug_line    0x000123eb     0x3b16 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.o
+ .debug_line    0x00015f01      0xe78 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
+ .debug_line    0x00016d79     0x37de ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o
+ .debug_line    0x0001a557     0x19c9 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
+ .debug_line    0x0001bf20     0x25b1 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
+ .debug_line    0x0001e4d1      0xb70 ./ThirdParty/FreeRTOS/list.o
+ .debug_line    0x0001f041     0x19cb ./ThirdParty/FreeRTOS/queue.o
+ .debug_line    0x00020a0c     0x2397 ./ThirdParty/FreeRTOS/tasks.o
+ .debug_line    0x00022da3      0xd08 ./ThirdParty/FreeRTOS/portable/GCC/ARM_CM4F/port.o
+ .debug_line    0x00023aab      0xef9 ./ThirdParty/FreeRTOS/portable/MemMang/heap_4.o
+ .debug_line    0x000249a4      0x938 ./ThirdParty/SEGGER/Config/SEGGER_SYSVIEW_Config_FreeRTOS.o
+ .debug_line    0x000252dc      0xc3c ./ThirdParty/SEGGER/OS/SEGGER_SYSVIEW_FreeRTOS.o
+ .debug_line    0x00025f18      0xfbc ./ThirdParty/SEGGER/SEGGER/SEGGER_RTT.o
+ .debug_line    0x00026ed4       0x86 ./ThirdParty/SEGGER/SEGGER/SEGGER_RTT_ASM_ARMv7M.o
+ .debug_line    0x00026f5a     0x211f ./ThirdParty/SEGGER/SEGGER/SEGGER_SYSVIEW.o
+ .debug_line    0x00029079      0x72b ./ThirdParty/SEGGER/SEGGER/Syscalls/SEGGER_RTT_Syscalls_GCC.o
 
 .debug_str      0x00000000    0xf19f6
  .debug_str     0x00000000    0xf19f6 ./Core/Src/DeviceManager.o

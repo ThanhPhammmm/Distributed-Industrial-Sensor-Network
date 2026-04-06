@@ -26,7 +26,7 @@ static void _TimerStart(void){
     HAL_TIM_Base_Start_IT(&htim7);
 }
 
-static void _TimerStop(void) {
+static void _TimerStop(void){
     HAL_TIM_Base_Stop_IT(&htim7);
     __HAL_TIM_CLEAR_IT(&htim7, TIM_IT_UPDATE);
     NVIC_ClearPendingIRQ(TIM7_IRQn);
@@ -37,7 +37,7 @@ void Protocol_AbortAndReset(void){
     __HAL_TIM_CLEAR_IT(&htim7, TIM_IT_UPDATE);
     NVIC_ClearPendingIRQ(TIM7_IRQn);
 
-    for (int i = 0; i < MAX_SLAVE_SLOTS; i++){
+    for(int i = 0; i < MAX_SLAVE_SLOTS; i++){
         g_state[i].waiting  = false;
         g_state[i].retryCnt = 0;
         g_state[i].pending = (TxCmd_t){0};
@@ -45,7 +45,7 @@ void Protocol_AbortAndReset(void){
     }
 
     Frame_t f;
-    while (xQueueReceive(xQueue_RS485_RxFrame, &f, 0) == pdTRUE) {}
+    while(xQueueReceive(xQueue_RS485_RxFrame, &f, 0) == pdTRUE) {}
 }
 
 
@@ -56,16 +56,16 @@ void Protocol_Init(void){
     memset(g_state, 0, sizeof(g_state));
 }
 
-static int _GetSlaveIdxByAddr(uint8_t addr) {
-    for (int i = 0; i < MAX_SLAVE_SLOTS; i++) {
-        if (Registry_GetAddr(i) == addr) return i;
+static int _GetSlaveIdxByAddr(uint8_t addr){
+    for(int i = 0; i < MAX_SLAVE_SLOTS; i++){
+        if(Registry_GetAddr(i) == addr) return i;
     }
     return -1;
 }
 
-static SlaveProtoState_t* _FindSlaveState(uint8_t addr) {
+static SlaveProtoState_t* _FindSlaveState(uint8_t addr){
     int idx = _GetSlaveIdxByAddr(addr);
-    if (idx == -1) return NULL;
+    if(idx == -1) return NULL;
     return &g_state[idx];
 }
 
@@ -93,15 +93,15 @@ void Protocol_Task(void *pvParams){
 		Watchdog_Kick(WDG_TASK_PROTOCOL);
 
 		if(xQueueReceive(xQueue_RS485_RxFrame, &frame, 0) == pdTRUE){
-            if (frame.addr == 0U && frame.cmd == 0U) {
-                for (int i = 0; i < MAX_SLAVE_SLOTS; i++) {
+            if(frame.addr == 0U && frame.cmd == 0U){
+                for (int i = 0; i < MAX_SLAVE_SLOTS; i++){
                 	SlaveProtoState_t *s = &g_state[i];
-                    if (!s->waiting) continue;
+                    if(!s->waiting) continue;
                     s->retryCnt++;
-                    if (s->retryCnt <= PROTO_RETRY_MAX) {
+                    if(s->retryCnt <= PROTO_RETRY_MAX){
                         _DoSend(s);
                     }
-                    else {
+                    else{
                         s->waiting = false;
                         s->retryCnt = 0;
                         Frame_t ol = { .addr = s->pending.addr,
@@ -113,7 +113,7 @@ void Protocol_Task(void *pvParams){
             }
             else{
             	SlaveProtoState_t *s = _FindSlaveState(frame.addr);
-            	if (s && s->waiting && frame.seq == s->txSeq) {
+            	if(s && s->waiting && frame.seq == s->txSeq){
 					_TimerStop();
 					s->retryCnt = 0;
 					s->waiting = false;
@@ -123,7 +123,7 @@ void Protocol_Task(void *pvParams){
             }
 		}
 
-		if (xQueueReceive(xQueue_TxCmd, &c, 0) == pdTRUE) {
+		if(xQueueReceive(xQueue_TxCmd, &c, 0) == pdTRUE){
 			SlaveProtoState_t *s = _FindSlaveState(c.addr);
 			if(s && !s->waiting){
 				s->pending = c;

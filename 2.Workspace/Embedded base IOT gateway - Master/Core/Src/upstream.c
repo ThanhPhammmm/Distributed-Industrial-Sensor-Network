@@ -25,14 +25,14 @@ static bool g_firstPush = true;
 extern volatile uint8_t uart_ready;
 
 static bool _SlotChanged(const SlaveSlot_t *cur, const SlaveSlot_t *prev){
-    if (cur->state != prev->state) return true;
-    if (cur->sensorCount != prev->sensorCount) return true;
+    if(cur->state != prev->state) return true;
+    if(cur->sensorCount != prev->sensorCount) return true;
 
-    for (uint8_t i = 0; i < cur->sensorCount; i++) {
+    for(uint8_t i = 0; i < cur->sensorCount; i++){
         uint8_t id = cur->sensors[i].sensorId;
-        if (id == 0 || id > MAX_SENSORS_PER_SLAVE) continue;
+        if(id == 0 || id > MAX_SENSORS_PER_SLAVE) continue;
         uint8_t sz = DataType_Size((eDataType)cur->sensors[i].dataType);
-        if (memcmp(cur->lastReading[id - 1U].bytes, prev->lastReading[id - 1U].bytes, sz) != 0)
+        if(memcmp(cur->lastReading[id - 1U].bytes, prev->lastReading[id - 1U].bytes, sz) != 0)
             return true;
     }
     return false;
@@ -40,26 +40,26 @@ static bool _SlotChanged(const SlaveSlot_t *cur, const SlaveSlot_t *prev){
 
 static void _PushDataIfChanged(void){
     SlaveSlot_t cur[MAX_SLAVE_SLOTS];
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++)
     	cur[i] = Registry_GetSlot(i);
 
     bool changed = g_firstPush;
-    if (!changed) {
-        for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
-            if (!cur[i].registered || !(cur[i].state == SREG_ONLINE)) continue;
-            if (_SlotChanged(&cur[i], &g_lastPushed[i])) {
+    if(!changed){
+        for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
+            if(!cur[i].registered || !(cur[i].state == SREG_ONLINE)) continue;
+            if(_SlotChanged(&cur[i], &g_lastPushed[i])){
                 changed = true;
                 break;
             }
         }
     }
 
-    if (!changed){
+    if(!changed){
     	return;
     }
 
-    for (uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++) {
-        if (cur[i].registered && cur[i].state == SREG_ONLINE) {
+    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
+        if(cur[i].registered && cur[i].state == SREG_ONLINE){
             xQueueSend(xQueue_UpstreamSnapshot, &cur[i], 0);
         }
     }
@@ -87,7 +87,7 @@ static void _SendAlarm(const AlarmEvent_t *ev){
                                CMD_UPSTREAM_ALARM, STATUS_OK, 0x01,
                                payload, pos);
     HAL_StatusTypeDef ret = HAL_UART_Transmit_DMA(&huart3, g_txBuf, flen);
-    if (ret != HAL_OK) {
+    if(ret != HAL_OK){
     	//
     }}
 
@@ -107,44 +107,44 @@ void Upstream_Task(void *pvParams){
     static eSysState prevUpstreamSys = SYS_IDLE;
 
 
-    while(1) {
+    while(1){
     	eSysState curSys = SysState_Get();
-        if (prevUpstreamSys == SYS_RUN && curSys != SYS_RUN) {
+        if(prevUpstreamSys == SYS_RUN && curSys != SYS_RUN){
             hasPendingAlarm    = false;
             hasPendingSnapshot = false;
             g_firstPush        = true;
 
             SlaveSlot_t s_drain;
-            while (xQueueReceive(xQueue_UpstreamSnapshot, &s_drain, 0) == pdTRUE) {}
+            while(xQueueReceive(xQueue_UpstreamSnapshot, &s_drain, 0) == pdTRUE) {}
         }
 
         prevUpstreamSys = curSys;
 
-        if (curSys == SYS_RUN) {
+        if(curSys == SYS_RUN){
             Watchdog_Kick(WDG_TASK_UPSTREAM);
             _PushDataIfChanged();
 
-            if (!hasPendingAlarm) {
-                if (xQueueReceive(xQueue_AlarmEvent, &pendingAlarm, 0) == pdTRUE) {
+            if(!hasPendingAlarm){
+                if(xQueueReceive(xQueue_AlarmEvent, &pendingAlarm, 0) == pdTRUE){
                     hasPendingAlarm = true;
                 }
             }
-            if (!hasPendingSnapshot) {
-                if (xQueueReceive(xQueue_UpstreamSnapshot, &pendingSnapshot, 0) == pdTRUE) {
+            if(!hasPendingSnapshot){
+                if(xQueueReceive(xQueue_UpstreamSnapshot, &pendingSnapshot, 0) == pdTRUE){
                     hasPendingSnapshot = true;
                 }
             }
 
-            if (uart_ready) {
-                if (hasPendingAlarm) {
+            if(uart_ready){
+                if(hasPendingAlarm){
                     uart_ready = 0;
                     _SendAlarm(&pendingAlarm);
                     hasPendingAlarm = false;
                 }
-                else if (hasPendingSnapshot) {
+                else if(hasPendingSnapshot){
                     uint8_t payload[PROTO_MAX_PAYLOAD];
                     uint8_t plen = Payload_PackUpstream(payload, sizeof(payload), &pendingSnapshot);
-                    if (plen > 0) {
+                    if(plen > 0){
                         uint8_t flen = Frame_Build(g_txBuf, UPSTREAM_ESP32_ADDR, g_seq++, CMD_UPSTREAM_PUSH, STATUS_OK, 0x01, payload, plen);
                         uart_ready = 0;
                         HAL_StatusTypeDef ret = HAL_UART_Transmit_DMA(&huart3, g_txBuf, flen);
@@ -155,7 +155,7 @@ void Upstream_Task(void *pvParams){
             }
             vTaskDelay(pdMS_TO_TICKS(5));
         }
-        else {
+        else{
             vTaskDelay(pdMS_TO_TICKS(10));
         }
     }
