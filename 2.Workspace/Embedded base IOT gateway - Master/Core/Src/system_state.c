@@ -4,7 +4,7 @@
 
 static volatile eSysState g_state = SYS_IDLE;
 
-void SysState_Init(void) {
+void SysState_Init(void){
 	g_state = SYS_IDLE;
 }
 
@@ -23,7 +23,7 @@ void SysState_Set(eSysState s){
 }
 
 const char *SysState_Name(eSysState s){
-    switch (s) {
+    switch(s){
     case SYS_IDLE: return "IDLE";
     case SYS_STOP: return "STOP";
     case SYS_RUN: return "RUN ";

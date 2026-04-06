@@ -42,9 +42,9 @@
 #define MQTT_BUF_SIZE  (JSON_BUF_SIZE + 128)
 #define TOPIC_PREFIX   "gateway"
 
-#define WIFI_SSID      "Thu Trang 2007"
-#define WIFI_PASSWORD  "trangbong"
-#define MQTT_HOST      "192.168.0.103"
+#define WIFI_SSID      "xxx"
+#define WIFI_PASSWORD  "xxx"
+#define MQTT_HOST      xxx
 #define MQTT_PORT      1883
 #define MQTT_CLIENT_ID "esp32-gateway"
 

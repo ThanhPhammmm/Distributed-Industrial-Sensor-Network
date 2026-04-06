@@ -8,7 +8,7 @@
 ../Core/Src/lcd_ui.c:82:13:_DrawRun	12
 ../Core/Src/lcd_ui.c:138:13:_Btn_Idle	3
 ../Core/Src/lcd_ui.c:147:13:_Btn_StopMenu	7
-../Core/Src/lcd_ui.c:174:13:_Btn_SlaveList	7
-../Core/Src/lcd_ui.c:202:13:_Btn_Run	7
-../Core/Src/lcd_ui.c:231:6:LCD_UI_Init	1
-../Core/Src/lcd_ui.c:235:6:LCD_Task	12
+../Core/Src/lcd_ui.c:175:13:_Btn_SlaveList	7
+../Core/Src/lcd_ui.c:203:13:_Btn_Run	7
+../Core/Src/lcd_ui.c:232:6:LCD_UI_Init	1
+../Core/Src/lcd_ui.c:236:6:LCD_Task	12

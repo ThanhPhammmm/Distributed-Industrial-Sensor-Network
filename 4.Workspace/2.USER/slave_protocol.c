@@ -59,8 +59,8 @@ static void _StartTxDma(const uint8_t *buf, uint8_t n){
     DMA1_Channel7->CMAR = (uint32_t)buf;
     DMA1_Channel7->CNDTR = n;
     USART_ClearFlag(USART2, USART_FLAG_TC);
+		DMA_Cmd(DMA1_Channel7, ENABLE);
     USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
-    DMA_Cmd(DMA1_Channel7, ENABLE);
 }
 
 static void _Send(uint8_t seq, uint8_t cmd, uint8_t status, uint8_t ver,
@@ -73,8 +73,7 @@ static void _Send(uint8_t seq, uint8_t cmd, uint8_t status, uint8_t ver,
 }
 
 
-static void _ProcessFrame(const Frame_t *f)
-{
+static void _ProcessFrame(const Frame_t *f){
     switch (f->cmd) {
 
     case CMD_PING: {
@@ -159,24 +158,50 @@ void Protocol_Init(uint8_t myAddr){
     _ArmPrefix();
 }
 
-void Task_Protocol(void *pvParams)
-{
+static void _FlushAndRearm(void){
+    DMA_ITConfig(DMA1_Channel6, DMA_IT_TC, DISABLE);
+
+    _AbortRxDma();
+
+    while (USART_GetFlagStatus(USART2, USART_FLAG_RXNE)){
+        (void)USART_ReceiveData(USART2);
+    }
+    if (USART_GetFlagStatus(USART2, USART_FLAG_ORE)){
+        (void)USART_ReceiveData(USART2);
+    }
+
+    Frame_t f;
+    while (xQueueReceive(xQueue_RxFrame, &f, 0) == pdTRUE) {}
+
+    DMA_ITConfig(DMA1_Channel6, DMA_IT_TC, ENABLE);
+    _ArmPrefix();
+}
+
+void Task_Protocol(void *pvParams){
     (void)pvParams;
 
     Frame_t frame;
+	  TickType_t lastFrameMs   = xTaskGetTickCount();
     TickType_t lastSensorTick = xTaskGetTickCount();
 
     while (1) {
-        if (xQueueReceive(xQueue_RxFrame, &frame, pdMS_TO_TICKS(10U)) == pdTRUE) {
-            if (frame.cmd == CMD_ACK || frame.cmd == CMD_NACK) {
-                _ArmPrefix();
-            } 
-			else {
-                _ProcessFrame(&frame);
-            }
+				if (xQueueReceive(xQueue_RxFrame, &frame, pdMS_TO_TICKS(10U)) == pdTRUE){
+						lastFrameMs = xTaskGetTickCount();
+						if (frame.cmd == CMD_ACK || frame.cmd == CMD_NACK){
+								_ArmPrefix();
+						}
+						else{
+								_ProcessFrame(&frame);
+								}
         }
 
-        TickType_t now = xTaskGetTickCount();
+				TickType_t now = xTaskGetTickCount();
+				
+        if ((now - lastFrameMs) >= pdMS_TO_TICKS(RX_IDLE_TIMEOUT_MS)) {
+            _FlushAndRearm();
+            lastFrameMs = now;
+        }
+				
         if ((now - lastSensorTick) >= pdMS_TO_TICKS(SLAVE_SENSOR_READ_MS)) {
             Slave_Sensors_Read();
             lastSensorTick = now;
@@ -228,15 +253,13 @@ void Slave_Protocol_OnRxDmaComplete(void){
     portYIELD_FROM_ISR(woken);
 }
                            
-void Slave_Protocol_OnTxDmaComplete(void)
-{
+void Slave_Protocol_OnTxDmaComplete(void){
     DMA_ClearFlag(DMA1_FLAG_TC7);
     USART_DMACmd(USART2, USART_DMAReq_Tx, DISABLE);
     USART_ITConfig(USART2, USART_IT_TC, ENABLE);
 }
 
-void Slave_Protocol_OnTxComplete(void)
-{
+void Slave_Protocol_OnTxComplete(void){
     USART_ITConfig(USART2, USART_IT_TC, DISABLE);
     USART_ClearFlag(USART2, USART_FLAG_TC);
     GPIO_WriteBit(RS485_DE_PORT, RS485_DE_PIN, Bit_RESET);

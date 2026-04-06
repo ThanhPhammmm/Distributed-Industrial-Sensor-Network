@@ -22,17 +22,16 @@ static WdgSlot_t g_slots[WDG_TASK_COUNT] = {
 
 void Watchdog_Init(void){
     uint32_t now = xTaskGetTickCount();
-    for (uint8_t i = 0; i < WDG_TASK_COUNT; i++) {
+    for(uint8_t i = 0; i < WDG_TASK_COUNT; i++){
         g_slots[i].lastKickMs = now;
         g_slots[i].enabled = true;
     }
 }
 
-void Watchdog_Kick(eWdgTask task)
-{
-    if (task >= WDG_TASK_COUNT) return;
+void Watchdog_Kick(eWdgTask task){
+    if(task >= WDG_TASK_COUNT) return;
     g_slots[task].lastKickMs = xTaskGetTickCount();
-	}
+}
 
 
 void Watchdog_Task(void *pvParams){
@@ -40,16 +39,16 @@ void Watchdog_Task(void *pvParams){
 
     vTaskDelay(pdMS_TO_TICKS(WDG_CHECK_INTERVAL_MS));
 
-    while(1) {
+    while(1){
         uint32_t now = xTaskGetTickCount();
 
-        for (uint8_t i = 0; i < WDG_TASK_COUNT; i++) {
+        for(uint8_t i = 0; i < WDG_TASK_COUNT; i++){
             WdgSlot_t *s = &g_slots[i];
-            if (!s->enabled) continue;
+            if(!s->enabled) continue;
 
             uint32_t elapsed = now - s->lastKickMs;
 
-            if (elapsed > pdMS_TO_TICKS(s->deadlineMs)) {
+            if(elapsed > pdMS_TO_TICKS(s->deadlineMs)){
                 __disable_irq();
                 NVIC_SystemReset();
             }

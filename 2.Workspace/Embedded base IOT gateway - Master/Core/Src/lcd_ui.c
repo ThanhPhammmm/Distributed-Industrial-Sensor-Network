@@ -26,7 +26,7 @@ static bool g_redraw = true;
 static inline void _Dirty(void) { g_redraw = true; }
 
 static char _TypeChar(uint8_t t){
-    switch ((eSensorType)t) {
+    switch((eSensorType)t){
     case SENSOR_TEMPERATURE:return 'T';
     case SENSOR_HUMIDITY: 	return 'H';
     case SENSOR_PRESSURE: 	return 'P';
@@ -37,7 +37,7 @@ static char _TypeChar(uint8_t t){
 }
 
 static void _FmtVal(char *buf, uint8_t sz, const SensorReading_t *r, uint8_t dt){
-    switch ((eDataType)dt) {
+    switch((eDataType)dt){
     case DTYPE_FLOAT: 	snprintf(buf, sz, "%.2f", r->f);break;
     case DTYPE_DOUBLE: 	snprintf(buf, sz, "%.4f", r->d);break;
     case DTYPE_INT32: 	snprintf(buf, sz, "%ld", r->i);	break;
@@ -48,7 +48,7 @@ static void _FmtVal(char *buf, uint8_t sz, const SensorReading_t *r, uint8_t dt)
 }
 
 static const char *_StateStr(eSlaveRegState s){
-    switch (s) {
+    switch(s){
     case SREG_UNREGISTERED: return "UNREG";
     case SREG_DECLARED: 	return "DECLARED";
     case SREG_FETCHING: 	return "FETCHING";
@@ -82,7 +82,7 @@ static void _DrawSlaveList(void){
 static void _DrawRun(void){
     char l1[17], l2[17];
 
-    if (DeviceManager_GetState() == DM_FETCHING) {
+    if(DeviceManager_GetState() == DM_FETCHING){
         uint8_t rdy = (uint8_t)(Registry_CountByState(SREG_READY));
         snprintf(l1, sizeof(l1), "RUN [FETCHING]");
         snprintf(l2, sizeof(l2), "Ready:%u/%u", rdy, Registry_GetRegisteredCount() - Registry_GetOnlineCount());
@@ -92,25 +92,25 @@ static void _DrawRun(void){
 
     {
         uint8_t orig = g_slotView;
-        while (!Registry_IsRegistered(g_slotView)) {
+        while(!Registry_IsRegistered(g_slotView)){
             g_slotView = (uint8_t)((g_slotView + 1U) % MAX_SLAVE_SLOTS);
-            if (g_slotView == orig) break;
+            if(g_slotView == orig) break;
         }
     }
 
     SlaveSlot_t s = Registry_GetSlot(g_slotView);
-    if (s.sensorCount > 0U && g_senView >= s.sensorCount) g_senView = 0;
+    if(s.sensorCount > 0U && g_senView >= s.sensorCount) g_senView = 0;
 
     snprintf(l1, sizeof(l1), "0x%02X %-10s", s.addr, _StateStr(s.state));
 
-    if (s.sensorCount == 0U) {
+    if(s.sensorCount == 0U){
         snprintf(l2, sizeof(l2), "(no sensors)");
     }
-    else {
+    else{
         char tmp[17] = {0};
         uint8_t pos = 0;
 
-        for (uint8_t i = 0; i < s.sensorCount && pos < LCD_COLS; i++) {
+        for(uint8_t i = 0; i < s.sensorCount && pos < LCD_COLS; i++) {
             uint8_t si = (uint8_t)((g_senView + i) % s.sensorCount);
             uint8_t id = s.sensors[si].sensorId;
 
@@ -121,11 +121,11 @@ static void _DrawRun(void){
 
             char piece[14];
             int n = snprintf(piece, sizeof(piece), "%c:%s ", _TypeChar(s.sensors[si].sensorType), val);
-            if (n > 0 && (uint8_t)(pos + (uint8_t)n) <= LCD_COLS) {
+            if(n > 0 && (uint8_t)(pos + (uint8_t)n) <= LCD_COLS){
                 memcpy(tmp + pos, piece, (size_t)n);
                 pos = (uint8_t)(pos + (uint8_t)n);
             }
-            else {
+            else{
                 break;
             }
         }
@@ -136,7 +136,7 @@ static void _DrawRun(void){
 }
 
 static void _Btn_Idle(BtnEvent_t ev){
-    if (ev.btn == BTN_OK && ev.type == BTN_SHORT) {
+    if(ev.btn == BTN_OK && ev.type == BTN_SHORT){
         SysState_Set(SYS_STOP);
         g_screen = SCREEN_STOP_MENU;
         g_menuRow = 0;
@@ -145,18 +145,19 @@ static void _Btn_Idle(BtnEvent_t ev){
 }
 
 static void _Btn_StopMenu(BtnEvent_t ev){
-    if (ev.btn == BTN_UP || ev.btn == BTN_DOWN) {
+    if(ev.btn == BTN_UP || ev.btn == BTN_DOWN){
         g_menuRow ^= 1U;
         _Dirty();
         return;
     }
-    if (ev.btn == BTN_OK && ev.type == BTN_SHORT) {
-        if (g_menuRow == 0U) {
+    if(ev.btn == BTN_OK && ev.type == BTN_SHORT){
+        if(g_menuRow == 0U){
             g_slotView = 0;
             g_screen = SCREEN_SLAVE_LIST;
             _Dirty();
-        } else {
-            if (Registry_GetRegisteredCount() == 0U) {
+        } 
+        else{
+            if(Registry_GetRegisteredCount() == 0U){
                 LCD_Write2Lines("!! No slaves !!", "Register first");
                 vTaskDelay(pdMS_TO_TICKS(1000));
                 _Dirty();
@@ -172,18 +173,18 @@ static void _Btn_StopMenu(BtnEvent_t ev){
 }
 
 static void _Btn_SlaveList(BtnEvent_t ev){
-    if (ev.btn == BTN_UP) {
+    if(ev.btn == BTN_UP){
         g_slotView = (g_slotView > 0U)
                    ? (uint8_t)(g_slotView - 1U)
                    : (uint8_t)(MAX_SLAVE_SLOTS - 1U);
         _Dirty(); return;
     }
-    if (ev.btn == BTN_DOWN) {
+    if(ev.btn == BTN_DOWN){
         g_slotView = (uint8_t)((g_slotView + 1U) % MAX_SLAVE_SLOTS);
         _Dirty(); return;
     }
-    if (ev.btn == BTN_OK) {
-        if (ev.type == BTN_SHORT) {
+    if(ev.btn == BTN_OK){
+        if(ev.type == BTN_SHORT){
             bool reg = Registry_Toggle(g_slotView);
             char msg[17];
             snprintf(msg, sizeof(msg), "Slot%u: %s", g_slotView + 1U, reg ? "REGISTERED" : "REMOVED");
@@ -191,7 +192,7 @@ static void _Btn_SlaveList(BtnEvent_t ev){
             vTaskDelay(pdMS_TO_TICKS(600));
             _Dirty();
         }
-        else {
+        else{
             g_screen = SCREEN_STOP_MENU;
             g_menuRow = 0;
             _Dirty();
@@ -200,26 +201,26 @@ static void _Btn_SlaveList(BtnEvent_t ev){
 }
 
 static void _Btn_Run(BtnEvent_t ev){
-    if (ev.btn == BTN_UP) {
+    if(ev.btn == BTN_UP){
         g_slotView = (g_slotView > 0U)
                    ? (uint8_t)(g_slotView - 1U)
                    : (uint8_t)(MAX_SLAVE_SLOTS - 1U);
         g_senView = 0;
         _Dirty(); return;
     }
-    if (ev.btn == BTN_DOWN) {
+    if(ev.btn == BTN_DOWN){
         g_slotView = (uint8_t)((g_slotView + 1U) % MAX_SLAVE_SLOTS);
         g_senView = 0;
         _Dirty(); return;
     }
-    if (ev.btn == BTN_OK) {
-        if (ev.type == BTN_SHORT) {
+    if(ev.btn == BTN_OK){
+        if(ev.type == BTN_SHORT){
             SlaveSlot_t s = Registry_GetSlot(g_slotView);
-            if (s.sensorCount > 1U)
+            if(s.sensorCount > 1U)
                 g_senView = (uint8_t)((g_senView + 1U) % s.sensorCount);
             _Dirty();
         }
-        else {
+        else{
             SysState_Set(SYS_STOP);
             g_screen = SCREEN_STOP_MENU;
             g_menuRow = 0;
@@ -228,7 +229,7 @@ static void _Btn_Run(BtnEvent_t ev){
     }
 }
 
-void LCD_UI_Init(void) {
+void LCD_UI_Init(void){
 	g_screen = SCREEN_IDLE;
 }
 
@@ -237,13 +238,13 @@ void LCD_Task(void *pvParams){
     LCD_Init();
     _Dirty();
 
-    while(1) {
+    while(1){
         BtnEvent_t ev;
         bool gotBtn = (xQueueReceive(xQueue_BtnEvent, &ev, pdMS_TO_TICKS(LCD_REFRESH_MS)) == pdTRUE);
         Watchdog_Kick(WDG_TASK_LCD);
 
-        if (gotBtn) {
-            switch (g_screen) {
+        if(gotBtn){
+            switch(g_screen){
             case SCREEN_IDLE: _Btn_Idle(ev); break;
             case SCREEN_STOP_MENU: _Btn_StopMenu(ev); break;
             case SCREEN_SLAVE_LIST: _Btn_SlaveList(ev);break;
@@ -251,8 +252,8 @@ void LCD_Task(void *pvParams){
             }
         }
 
-        if (g_redraw || g_screen == SCREEN_RUN) {
-            switch (g_screen) {
+        if(g_redraw || g_screen == SCREEN_RUN){
+            switch(g_screen){
             case SCREEN_IDLE: _DrawIdle(); break;
             case SCREEN_STOP_MENU: _DrawStopMenu(); break;
             case SCREEN_SLAVE_LIST: _DrawSlaveList(); break;

@@ -100,32 +100,32 @@ bool RS485_Send(uint8_t addr, uint8_t seq,
     HAL_UART_AbortReceive(&huart2);
     HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_SET);
     HAL_StatusTypeDef ret = HAL_UART_Transmit_DMA(&huart2, req.buf, req.len);
-    if (ret != HAL_OK) {
+    if(ret != HAL_OK){
     	//
     }
-    return (ret == HAL_OK);
+    return(ret == HAL_OK);
 }
 
 volatile uint8_t uart_ready = 1;
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
-    if (huart->Instance == USART2){
+    if(huart->Instance == USART2){
 		HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
 		_RxStartPrefix();
 		return;
     }
-    if (huart->Instance == USART3){
+    if(huart->Instance == USART3){
     	uart_ready = 1;
     }
 
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
-    if (huart->Instance == USART2){
+    if(huart->Instance == USART2){
     	RS485_OnRxDmaComplete();
     	return;
     }
-    if (huart->Instance == USART3){
+    if(huart->Instance == USART3){
     	//
     }
 }

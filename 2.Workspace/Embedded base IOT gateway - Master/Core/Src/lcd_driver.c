@@ -81,8 +81,7 @@ void LCD_SetBacklight(bool on){
     _I2C(g_bl);
 }
 
-void LCD_Write2Lines(const char *line1, const char *line2)
-{
+void LCD_Write2Lines(const char *line1, const char *line2){
     char buf[LCD_COLS + 1U];
     size_t n;
 

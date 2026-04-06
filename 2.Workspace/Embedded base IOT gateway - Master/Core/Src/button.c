@@ -41,30 +41,30 @@ void Button_Init(void){
 void Button_Task(void *pvParams){
     (void)pvParams;
 
-    while(1) {
+    while(1){
         vTaskDelay(pdMS_TO_TICKS(BTN_POLL_MS));
         Watchdog_Kick(WDG_TASK_BUTTON);
 
-        for (uint8_t i = 0; i < 3U; i++) {
+        for(uint8_t i = 0; i < 3U; i++){
             bool pressed = (HAL_GPIO_ReadPin(k_pins[i].port, k_pins[i].pin) == GPIO_PIN_RESET);
             BtnState_t *s = &g_st[i];
 
-            if (pressed) {
-                if (s->debounce < DEBOUNCE_CNT) {
+            if(pressed){
+                if(s->debounce < DEBOUNCE_CNT){
                     s->debounce++;
                 }
-                else {
+                else{
                     s->active = true;
                     s->held++;
-                    if (!s->longFired && s->held >= LONG_CNT) {
+                    if(!s->longFired && s->held >= LONG_CNT){
                         BtnEvent_t ev = { .btn = (eBtn)i, .type = BTN_LONG };
                         xQueueSend(xQueue_BtnEvent, &ev, 0);
                         s->longFired = true;
                     }
                 }
             }
-            else {
-                if (s->active && !s->longFired) {
+            else{
+                if(s->active && !s->longFired){
                     BtnEvent_t ev = { .btn = (eBtn)i, .type = BTN_SHORT };
                     xQueueSend(xQueue_BtnEvent, &ev, 0);
                 }
