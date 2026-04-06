@@ -31,6 +31,11 @@ static void _RxStartRest(uint8_t len){
     HAL_UART_Receive_DMA(&huart2, g_restBuf, (uint16_t)len + PROTO_CRC_SIZE);
 }
 
+void RS485_AbortTransfer(void){
+    HAL_UART_Abort(&huart2);
+    HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
+}
+
 void RS485_Driver_Init(void){
     xQueue_RS485_RxFrame = xQueueCreate(RS485_RX_FRAME_QUEUE_SIZE, sizeof(Frame_t));
     configASSERT(xQueue_RS485_RxFrame);
