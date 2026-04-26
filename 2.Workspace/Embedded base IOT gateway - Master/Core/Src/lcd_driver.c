@@ -71,7 +71,7 @@ void LCD_SetCursor(uint8_t col, uint8_t row){
 }
 
 void LCD_Print(const char *str){
-    while (*str) {
+    while(*str){
         _Byte((uint8_t)*str++, true);
     }
 }
@@ -87,7 +87,7 @@ void LCD_Write2Lines(const char *line1, const char *line2){
 
     LCD_SetCursor(0, 0);
     n = strlen(line1);
-    if (n > LCD_COLS) n = LCD_COLS;
+    if(n > LCD_COLS) n = LCD_COLS;
     memcpy(buf, line1, n);
     memset(buf + n, ' ', LCD_COLS - n);
     buf[LCD_COLS] = '\0';
@@ -95,7 +95,7 @@ void LCD_Write2Lines(const char *line1, const char *line2){
 
     LCD_SetCursor(0, 1);
     n = strlen(line2);
-    if (n > LCD_COLS) n = LCD_COLS;
+    if(n > LCD_COLS) n = LCD_COLS;
     memcpy(buf, line2, n);
     memset(buf + n, ' ', LCD_COLS - n);
     buf[LCD_COLS] = '\0';

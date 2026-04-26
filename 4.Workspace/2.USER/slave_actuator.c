@@ -5,54 +5,125 @@
 #include "queue.h"
 #include "slave_config.h"
 
-#define LED_ON()     GPIO_ResetBits(ACT_LED_PORT, ACT_LED_PIN)
-#define LED_OFF()    GPIO_SetBits(ACT_LED_PORT, ACT_LED_PIN)
-#define LED_TOGGLE() (ACT_LED_PORT->ODR ^= ACT_LED_PIN)
+#if SLAVE_ADDRESS == 0x01
+void Buzzer_On(void){
+    GPIO_SetBits(BUZZER_PORT, BUZZER_PIN);
+}
 
-#define BLINK_CRITICAL_HALF_MS  150U
+void Buzzer_Off(void){
+    GPIO_ResetBits(BUZZER_PORT, BUZZER_PIN);
+}
+#endif
+
+void Relay_On(void){
+    GPIO_SetBits(RELAY_PORT, RELAY_PIN);
+	  //GPIO_ResetBits(RELAY_PORT, RELAY_PIN);
+}
+
+void Relay_Off(void){
+		GPIO_ResetBits(RELAY_PORT, RELAY_PIN);
+	  //GPIO_SetBits(RELAY_PORT, RELAY_PIN);
+}
+
+#if SLAVE_ADDRESS == 0x02
+void Led_On_Red(void){
+		GPIO_SetBits(LED_PORT, LED_RED_PIN);
+}
+
+void Led_On_Green(void){
+		GPIO_SetBits(LED_PORT, LED_GREEN_PIN);
+		//GPIO_ResetBits(LED_PORT, LED_GREEN_PIN);
+}
+
+void Led_On_Blue(void){
+		GPIO_SetBits(LED_PORT, LED_BLUE_PIN);
+		//GPIO_ResetBits(LED_PORT, LED_BLUE_PIN);	
+}
+
+void Led_Off_All(void){
+		GPIO_ResetBits(LED_PORT, LED_RED_PIN);
+		GPIO_ResetBits(LED_PORT, LED_GREEN_PIN);
+		GPIO_ResetBits(LED_PORT, LED_BLUE_PIN);
+}
+
+#endif
 
 QueueHandle_t xQueue_ActuatorCmd = NULL;
 
 void Actuator_Init(void){
     xQueue_ActuatorCmd = xQueueCreate(ACTUATOR_CMD_QUEUE_SIZE, sizeof(ActuatorCmd_t));
     configASSERT(xQueue_ActuatorCmd != NULL);
-
-    LED_OFF();
 }
 
 void Task_Actuator(void *pvParams){
     (void)pvParams;
 
     ActuatorCmd_t cmd;
-    eActMode mode = ACT_MODE_NORMAL;
-    TickType_t blinkDelay = portMAX_DELAY;
+    TickType_t actuatorDelay = portMAX_DELAY;
 
-    LED_ON();
+    while(1){
+      if(xQueueReceive(xQueue_ActuatorCmd, &cmd, actuatorDelay) == pdTRUE){
 
-    while (1) {
-        if (xQueueReceive(xQueue_ActuatorCmd, &cmd, blinkDelay) == pdTRUE) {
-
-            if (cmd.level == ACT_MODE_CRITICAL) {
-                mode = ACT_MODE_CRITICAL;
-                blinkDelay = pdMS_TO_TICKS(BLINK_CRITICAL_HALF_MS);
-                LED_ON();
+            if(cmd.level == ACT_MODE_CRITICAL){
+				#if SLAVE_ADDRESS == 0x01
+					Buzzer_On();
+					Relay_On();
+				#elif SLAVE_ADDRESS == 0x02
+					Led_Off_All();
+					Led_On_Red();
+					vTaskDelay(100);
+					Relay_On();
+				#endif
             } 
 			else if(cmd.level == ACT_MODE_NORMAL){
-                mode = ACT_MODE_NORMAL;
-                blinkDelay = portMAX_DELAY;
-                LED_ON();
-            }
+				#if SLAVE_ADDRESS == 0x01
+					Buzzer_Off();
+				#elif SLAVE_ADDRESS == 0x02
+					Led_Off_All();
+				#endif
+				Relay_Off ();
+			}
 			else if(cmd.level == ACT_MODE_WARNING){
-				mode = ACT_MODE_WARNING;
-                blinkDelay = portMAX_DELAY;
-                LED_ON();
+					#if SLAVE_ADDRESS == 0x01
+							Buzzer_Off();
+							Relay_On();
+					#elif SLAVE_ADDRESS == 0x02
+					if(cmd.sensorType == SENSOR_DIGITAL_IN){
+							Led_Off_All();
+							Led_On_Blue();	
+							vTaskDelay(100);
+							Led_Off_All();
+							Led_On_Green();
+							vTaskDelay(100);
+							Led_Off_All();
+					}
+					if(cmd.sensorType == SENSOR_TEMPERATURE){
+							Relay_On();
+					}
+					#endif
 			}
 
-        }
-		else {
-            if (mode == ACT_MODE_CRITICAL) {
-                LED_TOGGLE();
-            }
-        }
+       }
+			else{
+					if (cmd.level == ACT_MODE_CRITICAL){
+					#if SLAVE_ADDRESS == 0x01
+						Buzzer_On();
+					#endif
+							
+					Relay_On();
+            } 
+			else if(cmd.level == ACT_MODE_NORMAL){
+					#if SLAVE_ADDRESS == 0x01
+					Buzzer_Off();
+					Relay_Off ();
+					#endif
+			}
+			else if(cmd.level == ACT_MODE_WARNING){
+					Relay_On();
+					#if SLAVE_ADDRESS == 0x01
+					Buzzer_Off();
+					#endif
+			}
+			}
     }
 }

@@ -1,21 +1,228 @@
 #include "slave_sensor.h"
 #include "slave_config.h"
 #include "protocol_definition.h"
+#include "slave_actuator.h"
 #include <string.h>
 #include <stdlib.h>
 
-double Read_Temp_Float(void)   { return ((double)rand() / RAND_MAX) * 1000; }
+#if SLAVE_ADDRESS == 0x02
+void delay_us(uint32_t us){
+    uint32_t cycles = (SystemCoreClock / 1000000L) * us;
+    uint32_t start = DWT->CYCCNT;
+
+    while ((DWT->CYCCNT - start) < cycles);
+}
+
+/* Edge detection */
+static uint8_t DHT11_Wait_Pin(uint8_t state, uint32_t timeout_us){
+    uint32_t start = DWT->CYCCNT;
+    uint32_t cycles = (SystemCoreClock / 1000000) * timeout_us;
+
+    while(GPIO_ReadInputDataBit(DHT11_PORT, DHT11_PIN) == state)
+    {
+        if((DWT->CYCCNT - start) > cycles) return 0;
+    }
+    return 1;
+}
+
+void delay_ms(uint32_t ms){
+    while(ms--)
+        delay_us(1000);
+}
+
+uint16_t BH1750_Read(void){
+    uint8_t msb, lsb;
+
+    while(I2C_GetFlagStatus(I2C2, I2C_FLAG_BUSY));
+
+    I2C_GenerateSTART(I2C2, ENABLE);
+    while(!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_MODE_SELECT));
+
+    I2C_Send7bitAddress(I2C2, BH1750_I2C_ADDR, I2C_Direction_Receiver);
+    while(!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED));
+
+    while(!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_BYTE_RECEIVED));
+    msb = I2C_ReceiveData(I2C2);
+
+    I2C_AcknowledgeConfig(I2C2, DISABLE); // last byte
+
+    while(!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_BYTE_RECEIVED));
+    lsb = I2C_ReceiveData(I2C2);
+
+    I2C_GenerateSTOP(I2C2, ENABLE);
+
+    I2C_AcknowledgeConfig(I2C2, ENABLE);
+
+    return (msb << 8) | lsb;
+}
+
+void DHT11_Set_Input(void){
+    GPIO_InitTypeDef g;
+
+    g.GPIO_Pin = DHT11_PIN;
+    g.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    g.GPIO_Speed = GPIO_Speed_2MHz;
+
+    GPIO_Init(DHT11_PORT, &g);
+}
+
+void DHT11_Set_Output(void){
+    GPIO_InitTypeDef g;
+
+    g.GPIO_Pin = DHT11_PIN;
+    g.GPIO_Mode = GPIO_Mode_Out_PP;
+    g.GPIO_Speed = GPIO_Speed_2MHz;
+
+    GPIO_Init(DHT11_PORT, &g);
+}
+
+static void DHT11_Bus_Reset(void){
+    DHT11_Set_Output();
+    GPIO_SetBits(DHT11_PORT, DHT11_PIN);
+    delay_ms(2);
+}
+
+void DHT11_Start(void){
+		GPIO_ResetBits(DHT11_PORT, DHT11_PIN);
+		delay_ms(18); // Delay 18ms
+		GPIO_SetBits(DHT11_PORT, DHT11_PIN);
+		delay_us(40); // Delay 20-40us
+		DHT11_Set_Input();
+}
+
+static uint8_t DHT11_Check_Response(void){
+    if(!DHT11_Wait_Pin(1, 100)) return 0;
+
+    if(!DHT11_Wait_Pin(0, 100)) return 0;
+
+    if(!DHT11_Wait_Pin(1, 100)) return 0;
+
+    return 1;
+}
+
+static uint8_t DHT11_Read_Byte(void){
+		uint8_t data = 0;
+
+    for(uint8_t i = 0; i < 8; i++){
+        if(!DHT11_Wait_Pin(0, 100)) return 0xFF;
+        delay_us(40);
+        if(GPIO_ReadInputDataBit(DHT11_PORT, DHT11_PIN)) data = (data << 1) | 1;
+        else data = (data << 1);
+        if(!DHT11_Wait_Pin(1, 100)) return 0xFF;
+    }
+    return data;
+}
+
+uint16_t dht11_temp = 0;
+uint16_t dht11_humid = 0;
+
+static void DHT11_Read_Data(){
+		uint8_t Rh_byte1, Rh_byte2;
+    uint8_t Temp_byte1, Temp_byte2;
+    uint8_t checksum;
+
+    Rh_byte1   = DHT11_Read_Byte();
+    Rh_byte2   = DHT11_Read_Byte();
+    Temp_byte1 = DHT11_Read_Byte();
+    Temp_byte2 = DHT11_Read_Byte();
+    checksum   = DHT11_Read_Byte();
+
+    if(checksum == ((Rh_byte1 + Rh_byte2 + Temp_byte1 + Temp_byte2) & 0xFF)){
+        dht11_humid = Rh_byte1;
+        dht11_temp  = Temp_byte1;
+    }
+		DHT11_Set_Output();
+}
+#elif SLAVE_ADDRESS == 0x01
+uint16_t ADC_Read(uint8_t channel){
+    ADC_RegularChannelConfig(ADC1, channel, 1, ADC_SampleTime_55Cycles5);
+
+    ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+
+    while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
+
+    return ADC_GetConversionValue(ADC1);
+}
+#endif
+
+#if SLAVE_ADDRESS == 0x02
+uint16_t returnDht11HumidData(){
+	return dht11_humid;
+}
+
+uint16_t returnDht11TempData(){
+	return dht11_temp;
+}
+#endif
+
+double Read_Temp_Float(void){
+		#if SLAVE_ADDRESS == 0x02
+				__disable_irq();
+				taskENTER_CRITICAL();
+			
+				DHT11_Bus_Reset();
+				DHT11_Start();
+				if(DHT11_Check_Response()){
+					DHT11_Read_Data();
+				}
+				else{
+					dht11_humid = 0xFF;
+					dht11_temp = 0xFF;
+				}
+				__enable_irq();
+				taskEXIT_CRITICAL();
+				return (uint16_t)returnDht11TempData();
+		#elif SLAVE_ADDRESS == 0x01
+				return ((double)rand() / RAND_MAX) * 1000;
+		#endif
+
+}
 double Read_Temp_Char(void)    { return ((double)rand() / RAND_MAX) * 100; }
 
-double Read_Humid_Int(void)    { return ((double)rand() / RAND_MAX) * 1000; }
+double Read_Humid_Int(void){
+		/*
+		__disable_irq();
+		taskENTER_CRITICAL();
+		DHT11_Start();
+		if(DHT11_Check_Response()){
+			DHT11_Read_Data();
+		}
+		__enable_irq();
+		taskEXIT_CRITICAL();
+		*/
+		#if SLAVE_ADDRESS == 0x02
+				return (uint16_t)returnDht11HumidData();
+		#elif SLAVE_ADDRESS == 0x01
+				return ((double)rand() / RAND_MAX) * 1000;
+		#endif
+}
 double Read_Humid_Int32(void)  { return ((double)rand() / RAND_MAX) * 1000; }
 
 double Read_Press_Double(void) { return ((double)rand() / RAND_MAX) * 1000; }
 
-double Read_ADC_Int32(void)    { return ((double)rand() / RAND_MAX) * 1000; }
-double Read_ADC_Int(void)      { return ((double)rand() / RAND_MAX) * 1000; }
+double Read_ADC_Int32(void){
+		#if SLAVE_ADDRESS == 0x01
+				return ADC_Read(ADC_Channel_7);
+		#elif SLAVE_ADDRESS == 0x02
+				return ((double)rand() / RAND_MAX) * 1000;
+		#endif
+}
+double Read_ADC_Int(void){
+		#if SLAVE_ADDRESS == 0x01
+				return ADC_Read(ADC_Channel_6);
+		#elif SLAVE_ADDRESS == 0x02
+				return ((double)rand() / RAND_MAX) * 1000;
+		#endif
+}
 
-double Read_DI_Float(void)     { return ((double)rand() / RAND_MAX) * 1000; }
+double Read_DI_Float(void) {
+		#if SLAVE_ADDRESS == 0x02
+	  uint16_t raw = BH1750_Read();
+		#elif SLAVE_ADDRESS == 0x01
+		uint16_t raw = ((double)rand() / RAND_MAX) * 1000;;
+		#endif
+    return raw / 1.2f;
+}
 double Read_DI_Char(void)      { return ((double)rand() / RAND_MAX) * 100; }
 
 typedef double (*SensorReadFn)(void);
@@ -25,6 +232,49 @@ typedef struct {
     eDataType dataType;
     SensorReadFn read_ptr;
 } SensorDriverMap_t;
+
+typedef struct {
+    eSensorType sensorType;
+    eDataType dataType;
+    double warnLow;
+    double warnHigh;
+    double critLow;
+    double critHigh;
+} SensorRuleMap_t;
+
+static const SensorRuleMap_t g_rules_map[] = {
+		#if SLAVE_ADDRESS == 0x01
+		{	
+				SENSOR_ADC_RAW, 
+				DTYPE_INT,
+				MQ2_THRESHOLD_WARNINGLOW, 
+				MQ2_THRESHOLD_WARNINGHIGH, 
+				MQ2_THRESHOLD_CRITICALLOW,
+				MQ2_THRESHOLD_CRITICALHIGH
+		}
+		#elif SLAVE_ADDRESS == 0x02
+		{
+				SENSOR_DIGITAL_IN,
+				DTYPE_FLOAT,
+				BH1750_THRESHOLD_WARNINGLOW, 
+				BH1750_THRESHOLD_WARNINGHIGH, 
+				BH1750_THRESHOLD_CRITICALLOW,
+				BH1750_THRESHOLD_CRITICALHIGH
+		},
+		
+		{
+				SENSOR_TEMPERATURE,
+				DTYPE_FLOAT,
+				DHT11_TEMP_THRESHOLD_WARNINGLOW,
+				DHT11_TEMP_THRESHOLD_WARNINGHIGH,
+				DHT11_TEMP_THRESHOLD_CRITICALLOW,
+				DHT11_TEMP_THRESHOLD_CRITICALHIGH,
+		},
+		#endif
+};
+
+const uint8_t rule_cnt = (uint8_t)(sizeof(g_rules_map) / sizeof(g_rules_map[0]));
+static eActMode currentLevel[rule_cnt];
 
 static const SensorDriverMap_t g_driver_map[] = {
     // TEMPERATURE
@@ -39,8 +289,8 @@ static const SensorDriverMap_t g_driver_map[] = {
     { SENSOR_PRESSURE,    DTYPE_DOUBLE, Read_Press_Double },
 
     // ADC
-    { SENSOR_ADC_RAW,     DTYPE_INT32,  Read_ADC_Int32 },
-    { SENSOR_ADC_RAW,     DTYPE_INT,    Read_ADC_Int },
+    { SENSOR_ADC_RAW,     DTYPE_INT32,  Read_ADC_Int32 }, // Potentiometer
+    { SENSOR_ADC_RAW,     DTYPE_INT,    Read_ADC_Int },		// MQ2
 
     // DIGITAL IN
     { SENSOR_DIGITAL_IN,  DTYPE_FLOAT,  Read_DI_Float },
@@ -66,11 +316,10 @@ SensorEntry_t g_sensors[] = {
     { 1, SENSOR_TEMPERATURE, DTYPE_FLOAT},
     { 2, SENSOR_HUMIDITY, DTYPE_INT32},
     { 3, SENSOR_PRESSURE, DTYPE_DOUBLE },
-    { 4, SENSOR_ADC_RAW, DTYPE_INT},
-		{ 5, SENSOR_DIGITAL_IN, DTYPE_FLOAT},
-		{ 6, SENSOR_DIGITAL_IN, DTYPE_CHAR },
-		{ 7, SENSOR_TEMPERATURE, DTYPE_CHAR},
-		{ 8, SENSOR_HUMIDITY, DTYPE_INT},
+		{ 4, SENSOR_DIGITAL_IN, DTYPE_FLOAT},
+		{ 5, SENSOR_DIGITAL_IN, DTYPE_CHAR },
+		{ 6, SENSOR_TEMPERATURE, DTYPE_CHAR},
+		{ 7, SENSOR_HUMIDITY, DTYPE_INT},
 };
 
 #elif SLAVE_ADDRESS == 0x03
@@ -89,6 +338,39 @@ SensorEntry_t g_sensors[] = {
 const uint8_t k_cnt = (uint8_t)(sizeof(g_sensors) / sizeof(g_sensors[0]));
 static uint8_t g_tableVersion = 0U;
 
+static eActMode _Evaluate(const SensorRuleMap_t *r, double v){
+		#if SLAVE_ADDRESS == 0x01
+    if(v <= r->critLow || v >= r->critHigh) return ACT_MODE_CRITICAL;
+    if(v <= r->warnLow || v >= r->warnHigh) return ACT_MODE_WARNING;
+    return ACT_MODE_NORMAL;
+		#elif SLAVE_ADDRESS == 0x02
+    if(v >= r->critHigh) return ACT_MODE_CRITICAL;
+    if(v <= r->warnLow) return ACT_MODE_WARNING;
+    return ACT_MODE_NORMAL;
+		#endif
+}
+
+eActMode oldLevel = ACT_MODE_NORMAL;
+
+static void _ActorLevelCheck(eDataType dataType, eSensorType sensorType, double rawValue){
+	for (uint8_t i = 0; i < rule_cnt; i++) {
+		const SensorRuleMap_t* r = &g_rules_map[i];
+		if(r->sensorType != sensorType) continue;
+		if(r->dataType != dataType) continue;
+		
+		eActMode newLevel = _Evaluate(r, rawValue);
+		eActMode oldLevel = currentLevel[i];
+		if(oldLevel == newLevel) continue;
+		else if(oldLevel != newLevel){
+			currentLevel[i] = newLevel;
+			ActuatorCmd_t act = {
+				.sensorType = r->sensorType,
+				.level = newLevel
+			};
+			xQueueSend(xQueue_ActuatorCmd, &act, 0);
+		}
+	}
+}
 
 static uint8_t _CRC8_Update(uint8_t crc, uint8_t byte){
     crc ^= byte;
@@ -119,7 +401,7 @@ void Slave_Sensors_Init(void){
     for (i = 0; i < k_cnt; i++)
         memset(g_sensors[i].reading.bytes, 0, 8);
 	
-	  g_tableVersion = _ComputeTableHash();
+		g_tableVersion = _ComputeTableHash();
 }
 
 uint8_t Slave_Sensors_GetTableVersion(void){
@@ -151,10 +433,12 @@ void Slave_Sensors_Read(void) {
                 case DTYPE_CHAR: s->reading.c = (char)raw_value;   break;
                 default: break;
             }
+						_ActorLevelCheck((eDataType)s->dataType, (eSensorType)s->sensorType, raw_value);
+						
         } 
 				else {
-            memset(&s->reading, 0, sizeof(SensorReading_t));
-        }
+						memset(&s->reading, 0, sizeof(SensorReading_t));
+				}
     }
 }
 
@@ -165,9 +449,9 @@ uint8_t Slave_Sensors_PackTable(uint8_t *buf, uint8_t bufMax){
     if ((uint8_t)(1U + k_cnt * 3U) > bufMax) return 0U;
     buf[0] = k_cnt;
     for (i = 0; i < k_cnt; i++) {
-        buf[1U + i * 3U] = g_sensors[i].id;
-        buf[1U + i * 3U + 1U] = g_sensors[i].sensorType;
-        buf[1U + i * 3U + 2U] = g_sensors[i].dataType;
+        buf[1U + i * 3U] 				= g_sensors[i].id;
+        buf[1U + i * 3U + 1U] 	= g_sensors[i].sensorType;
+        buf[1U + i * 3U + 2U] 	= g_sensors[i].dataType;
     }
     return (uint8_t)(1U + k_cnt * 3U);
 }
@@ -180,7 +464,6 @@ uint8_t Slave_Sensors_PackAllData(uint8_t *buf, uint8_t bufMax){
         uint8_t sz = DataType_Size((eDataType)s->dataType);
         if ((uint8_t)(pos + 2U + sz) > bufMax) break;
         buf[pos++] = s->id;
-        buf[pos++] = s->dataType;
         memcpy(&buf[pos], s->reading.bytes, sz);
         pos = (uint8_t)(pos + sz);
     }

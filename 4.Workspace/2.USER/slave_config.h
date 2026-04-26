@@ -10,9 +10,6 @@
 #define RS485_DE_PORT    GPIOA
 #define RS485_DE_PIN     GPIO_Pin_8
 
-#define ACT_LED_PORT     GPIOC
-#define ACT_LED_PIN      GPIO_Pin_14
-
 #define INTER_FRAME_GAP_MS  2U
 
 #define TASK_PROTO_PRIO   2U
@@ -25,4 +22,61 @@
 #define ACTUATOR_CMD_QUEUE_SIZE 8U
 
 #define RX_IDLE_TIMEOUT_MS   1500U
+
+#if SLAVE_ADDRESS == 0x01
+#define MQ2_ADC_PORT         GPIOA
+#define MQ2_ADC_PIN          GPIO_Pin_7    /* PA7 = ADC12_IN7 */
+#define MQ2_ADC_CHANNEL      ADC_Channel_7
+
+#define POTENTIONMETER_ADC_PORT					GPIOA
+#define POTENTIONMETER_ADC_PIN					GPIO_Pin_6 	/* PA6 = ADC12_IN6 */
+#define POTENTIONMETER_ADC_CHANNEL			ADC_Channel_6
+
+/* Buzzer */
+#define BUZZER_PORT          GPIOB
+#define BUZZER_PIN           GPIO_Pin_14    /* PB14 */
+
+/* MQ2 Thresholds */
+#define MQ2_THRESHOLD_WARNINGHIGH			1500U
+#define MQ2_THRESHOLD_WARNINGLOW			100U
+
+#define MQ2_THRESHOLD_CRITICALHIGH  	2000U
+#define MQ2_THRESHOLD_CRITICALLOW  		50U
+
+#elif SLAVE_ADDRESS == 0x02
+#define BH1750_I2C_PORT					GPIOB
+#define BH1750_I2C_SCL_PIN			GPIO_Pin_10
+#define BH1750_I2C_SDA_PIN			GPIO_Pin_11
+#define BH1750_I2C_ADDR					(0x23 << 1)
+#define BH1750_I2C_CMD					0x10
+
+/* BH1750 Threasholds */
+#define BH1750_THRESHOLD_WARNINGHIGH		1500U
+#define BH1750_THRESHOLD_WARNINGLOW			100U
+
+#define BH1750_THRESHOLD_CRITICALHIGH  	2000U
+#define BH1750_THRESHOLD_CRITICALLOW  	5U
+
+#define DHT11_TEMP_THRESHOLD_WARNINGHIGH		30U
+#define DHT11_TEMP_THRESHOLD_WARNINGLOW			10U
+
+#define DHT11_TEMP_THRESHOLD_CRITICALHIGH  	2000U
+#define DHT11_TEMP_THRESHOLD_CRITICALLOW  		50U
+
+#define LED_PORT          	GPIOB
+#define LED_RED_PIN       	GPIO_Pin_5
+#define LED_GREEN_PIN       GPIO_Pin_0
+#define LED_BLUE_PIN       	GPIO_Pin_1
+
+#define DHT11_PORT					GPIOA
+#define DHT11_PIN						GPIO_Pin_12
+
+#else
+#error "SLAVE_ADDRESS khong hop le"
+#endif
+
+/* Relay */
+#define RELAY_PORT           GPIOB
+#define RELAY_PIN            GPIO_Pin_13    /* PB13 */
+
 #endif /* SLAVE_CONFIG_H */

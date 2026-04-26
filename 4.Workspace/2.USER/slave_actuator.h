@@ -4,16 +4,16 @@
 #include <stdint.h>
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "slave_sensor.h"
 
 typedef enum {
     ACT_MODE_NORMAL   = 0,
     ACT_MODE_CRITICAL = 1,
-	ACT_MODE_WARNING  = 2,
+		ACT_MODE_WARNING  = 2,
 } eActMode;
 
 typedef struct {
-    uint8_t actuatorId;
-    uint8_t valueType;
+    eSensorType sensorType;
     uint8_t level;
 } ActuatorCmd_t;
 

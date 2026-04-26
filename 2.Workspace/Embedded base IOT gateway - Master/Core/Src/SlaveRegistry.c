@@ -56,14 +56,31 @@ void Registry_SetSensorTable(uint8_t idx, uint8_t count, const SensorDesc_t *d){
     xSemaphoreGive(g_mtx);
 }
 
-void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, eDataType dt, SensorReading_t reading){
+//void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, eDataType dt, SensorReading_t reading){
+//    if(idx >= MAX_SLAVE_SLOTS) return;
+//    if(sensorId < 1U || sensorId > MAX_SENSORS_PER_SLAVE) return;
+//    xSemaphoreTake(g_mtx, portMAX_DELAY);
+//    //g_slots[idx].lastReading[sensorId - 1U] = reading;
+//    /* Keep cached dataType in sync */
+//    for(uint8_t i = 0; i < g_slots[idx].sensorCount; i++){
+//        if(g_slots[idx].sensors[i].sensorId == sensorId && g_slots[idx].sensors[i].dataType == dt){
+//            //g_slots[idx].sensors[i].dataType = (uint8_t)dt;
+//            g_slots[idx].lastReading[sensorId - 1U] = reading;
+//            g_slots[idx].lastSeenMs = xTaskGetTickCount();
+//            break;
+//        }
+//    }
+//    xSemaphoreGive(g_mtx);
+//}
+
+void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, SensorReading_t reading){
     if(idx >= MAX_SLAVE_SLOTS) return;
     if(sensorId < 1U || sensorId > MAX_SENSORS_PER_SLAVE) return;
     xSemaphoreTake(g_mtx, portMAX_DELAY);
     //g_slots[idx].lastReading[sensorId - 1U] = reading;
     /* Keep cached dataType in sync */
     for(uint8_t i = 0; i < g_slots[idx].sensorCount; i++){
-        if(g_slots[idx].sensors[i].sensorId == sensorId && g_slots[idx].sensors[i].dataType == dt){
+        if(g_slots[idx].sensors[i].sensorId == sensorId){
             //g_slots[idx].sensors[i].dataType = (uint8_t)dt;
             g_slots[idx].lastReading[sensorId - 1U] = reading;
             g_slots[idx].lastSeenMs = xTaskGetTickCount();

@@ -40,7 +40,7 @@ SlaveSlot_t Registry_GetSlot(uint8_t slotIdx);
 void Registry_SetState(uint8_t idx, eSlaveRegState s);
 void Registry_SetSensorTable(uint8_t idx, uint8_t count, const SensorDesc_t *d);
 void Registry_SetConfigVersion(uint8_t idx, uint8_t ver);
-void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, eDataType dt, SensorReading_t reading);
+//void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, eDataType dt, SensorReading_t reading);
 void Registry_SetLastSeen(uint8_t idx, uint32_t ms);
 void Registry_SetMissedPolls(uint8_t idx, uint8_t n);
 void Registry_IncrementPoll(uint8_t idx);
@@ -56,5 +56,6 @@ uint8_t Registry_GetAddr(uint8_t idx);
 void Registry_SetSensorCount(uint8_t idx, uint8_t count);
 uint8_t Registry_GetSensorCount(uint8_t idx);
 uint8_t Registry_GetOnlineCount(void);
+void Registry_UpdateReading(uint8_t idx, uint8_t sensorId, SensorReading_t reading);
 
 #endif /* INC_SLAVEREGISTRY_H_ */
