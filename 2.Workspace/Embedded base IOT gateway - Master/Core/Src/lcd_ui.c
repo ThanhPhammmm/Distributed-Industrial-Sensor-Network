@@ -110,7 +110,7 @@ static void _DrawRun(void){
         char tmp[17] = {0};
         uint8_t pos = 0;
 
-        for(uint8_t i = 0; i < s.sensorCount && pos < LCD_COLS; i++) {
+        for(uint8_t i = 0; i < s.sensorCount && pos < LCD_COLS; i++){
             uint8_t si = (uint8_t)((g_senView + i) % s.sensorCount);
             uint8_t id = s.sensors[si].sensorId;
 

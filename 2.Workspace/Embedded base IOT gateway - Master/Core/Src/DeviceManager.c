@@ -49,7 +49,6 @@ static void _SetPend(ePendingOp op, uint8_t addr){
 	g_pending.op = op;
 	g_pending.slotIdx = addr;
     g_pending.sentAtMs = xTaskGetTickCount();
-
 }
 
 static void _GoOffline(uint8_t slotIdx){
@@ -100,19 +99,19 @@ static void _Poll(void){
 
 static uint32_t g_pollTimestamps[MAX_SLAVE_SLOTS];
 
-static void _PollNext(void){
-    uint32_t now = xTaskGetTickCount();
-    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
-        uint8_t idx = (g_pollIdx + i) % MAX_SLAVE_SLOTS;
-        if(!Registry_IsRegistered(idx)) continue;
-        if((now - g_pollTimestamps[idx]) < DEVMGR_POLL_INTERVAL_MS) continue;
-        g_pollTimestamps[idx] = now;
-        g_pollIdx = (idx + 1) % MAX_SLAVE_SLOTS;
-        _SetPend(OP_GET_ALL_DATA, idx);
-        _Send(Registry_GetAddr(idx), CMD_GET_ALL_DATA);
-        return;
-    }
-}
+//static void _PollNext(void){
+//    uint32_t now = xTaskGetTickCount();
+//    for(uint8_t i = 0; i < MAX_SLAVE_SLOTS; i++){
+//        uint8_t idx = (g_pollIdx + i) % MAX_SLAVE_SLOTS;
+//        if(!Registry_IsRegistered(idx)) continue;
+//        if((now - g_pollTimestamps[idx]) < DEVMGR_POLL_INTERVAL_MS) continue;
+//        g_pollTimestamps[idx] = now;
+//        g_pollIdx = (idx + 1) % MAX_SLAVE_SLOTS;
+//        _SetPend(OP_GET_ALL_DATA, idx);
+//        _Send(Registry_GetAddr(idx), CMD_GET_ALL_DATA);
+//        return;
+//    }
+//}
 
 static void _TryRecovery(void){
     uint32_t now = xTaskGetTickCount();
@@ -214,20 +213,22 @@ static void _HandleResponse(const Frame_t *f){
 	             */
 	            uint8_t pos = 0;
 	            uint8_t sid;
-	            eDataType dt;
+	            //eDataType dt;
 	            SensorReading_t val;
 
-	            while(Payload_UnpackReading(f->payload, f->payloadLen, &pos, &sid, &dt, &val)){
-	                Registry_UpdateReading(g_pending.slotIdx, sid, dt, val);
+	            while(Payload_UnpackReading(f->payload, f->payloadLen, g_pending.slotIdx, &pos, &sid, &val)){
+	                Registry_UpdateReading(g_pending.slotIdx, sid, val);
 	                SlaveSlot_t snap = Registry_GetSlot(g_pending.slotIdx);
 	                uint8_t stype = 0;
+	                uint8_t dtype = 0;
 	                for(uint8_t k = 0; k < snap.sensorCount; k++){
 	                    if(snap.sensors[k].sensorId == sid){
 	                        stype = snap.sensors[k].sensorType;
+	                        dtype = snap.sensors[k].dataType;
 	                        break;
 	                    }
 	                }
-	                Alarm_Check(f->addr, sid, stype, dt, val);
+	                Alarm_Check(f->addr, sid, stype, dtype, val);
 	            }
 
 	            Registry_SetLastSeen(g_pending.slotIdx, xTaskGetTickCount());

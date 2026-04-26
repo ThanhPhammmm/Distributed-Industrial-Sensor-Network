@@ -42,9 +42,9 @@
 #define MQTT_BUF_SIZE  (JSON_BUF_SIZE + 128)
 #define TOPIC_PREFIX   "gateway"
 
-#define WIFI_SSID      "xxx"
-#define WIFI_PASSWORD  "xxx"
-#define MQTT_HOST      xxx
+#define WIFI_SSID      "Thành's Galaxy A33 5G"
+#define WIFI_PASSWORD  "tthanhphamm"
+#define MQTT_HOST      "172.18.88.46"
 #define MQTT_PORT      1883
 #define MQTT_CLIENT_ID "esp32-gateway"
 
@@ -62,29 +62,26 @@ static WiFiClient   g_wifi;
 static PubSubClient g_mqtt(g_wifi);
 static bool         g_ledState = false;
 
-static uint16_t crc16(const uint8_t *buf, uint16_t len)
-{
+static uint16_t crc16(const uint8_t *buf, uint16_t len){
     uint16_t crc = 0xFFFF;
-    for (uint16_t i = 0; i < len; i++) {
+    for(uint16_t i = 0; i < len; i++) {
         crc ^= (uint16_t)buf[i] << 8;
-        for (uint8_t j = 0; j < 8; j++)
+        for(uint8_t j = 0; j < 8; j++)
             crc = (crc & 0x8000) ? (uint16_t)((crc << 1) ^ 0x1021)
                                  : (uint16_t)(crc << 1);
     }
     return crc;
 }
 
-static bool validateCRC(const uint8_t *raw, uint16_t total)
-{
+static bool validateCRC(const uint8_t *raw, uint16_t total){
     uint16_t calc = crc16(&raw[PREFIX_SIZE],
                           (uint16_t)(total - PREFIX_SIZE - CRC_SIZE));
     uint16_t recv = ((uint16_t)raw[total - 2] << 8) | raw[total - 1];
     return (calc == recv);
 }
 
-static uint8_t dataTypeSize(uint8_t dt)
-{
-    switch (dt) {
+static uint8_t dataTypeSize(uint8_t dt){
+    switch(dt){
     case DTYPE_FLOAT:  return 4U;
     case DTYPE_INT32:  return 4U;
     case DTYPE_DOUBLE: return 8U;
@@ -94,9 +91,8 @@ static uint8_t dataTypeSize(uint8_t dt)
     }
 }
 
-static const char *dataTypeName(uint8_t dt)
-{
-    switch (dt) {
+static const char *dataTypeName(uint8_t dt){
+    switch(dt){
     case DTYPE_FLOAT:  return "float";
     case DTYPE_INT32:  return "int32";
     case DTYPE_DOUBLE: return "double";
@@ -106,9 +102,8 @@ static const char *dataTypeName(uint8_t dt)
     }
 }
 
-static const char *sensorTypeName(uint8_t st)
-{
-    switch (st) {
+static const char *sensorTypeName(uint8_t st){
+    switch(st){
     case 0x01: return "temperature";
     case 0x02: return "humidity";
     case 0x03: return "pressure";
@@ -118,18 +113,16 @@ static const char *sensorTypeName(uint8_t st)
     }
 }
 
-static const char *alarmLevelName(uint8_t level)
-{
-    switch (level) {
+static const char *alarmLevelName(uint8_t level){
+    switch(level){
     case ALARM_WARN:     return "WARN";
     case ALARM_CRITICAL: return "CRITICAL";
     default:             return "NONE";
     }
 }
 
-static void rawToValueStr(char *buf, size_t sz, uint8_t dt, const uint8_t *data)
-{
-    switch (dt) {
+static void rawToValueStr(char *buf, size_t sz, uint8_t dt, const uint8_t *data){
+    switch(dt){
     case DTYPE_FLOAT:  { float   f; memcpy(&f, data, 4); snprintf(buf, sz, "%.2f",  f);       break; }
     case DTYPE_INT32:  { int32_t i; memcpy(&i, data, 4); snprintf(buf, sz, "%ld",   (long)i); break; }
     case DTYPE_DOUBLE: { double  d; memcpy(&d, data, 8); snprintf(buf, sz, "%.4f",  d);       break; }
@@ -139,8 +132,7 @@ static void rawToValueStr(char *buf, size_t sz, uint8_t dt, const uint8_t *data)
     }
 }
 
-static void processDataFrame(const sFrame_t *frame)
-{
+static void processDataFrame(const sFrame_t *frame){
     const uint8_t *raw   = frame->data;
     uint16_t       total = frame->len;
 
@@ -148,11 +140,11 @@ static void processDataFrame(const sFrame_t *frame)
     const uint8_t *p          = &raw[PREFIX_SIZE + HEADER_SIZE];
     uint8_t        pos        = 0;
 
-    while (pos + 2 <= payloadLen) {
+    while(pos + 2 <= payloadLen){
         uint8_t slaveAddr   = p[pos++];
         uint8_t sensorCount = p[pos++];
 
-        if (sensorCount == 0 || sensorCount > 8) {
+        if(sensorCount == 0 || sensorCount > 8){
             Serial.printf("[DATA] bad sensorCount=%u, abort\n", sensorCount);
             return;
         }
@@ -166,8 +158,8 @@ static void processDataFrame(const sFrame_t *frame)
                          "\"sensors\":[",
                          slaveAddr, (unsigned long)millis());
 
-        for (uint8_t s = 0; s < sensorCount; s++) {
-            if (pos + 3 > payloadLen) {
+        for(uint8_t s = 0; s < sensorCount; s++){
+            if(pos + 3 > payloadLen){
                 Serial.printf("[DATA] truncated at sensor %u\n", s);
                 return;
             }
@@ -176,7 +168,7 @@ static void processDataFrame(const sFrame_t *frame)
             uint8_t dataType   = p[pos++];
             uint8_t sz         = dataTypeSize(dataType);
 
-            if (sz == 0 || pos + sz > payloadLen) {
+            if(sz == 0 || pos + sz > payloadLen){
                 Serial.printf("[DATA] bad dataType=0x%02X sensor %u\n", dataType, s);
                 return;
             }
@@ -224,7 +216,7 @@ static void processAlarmFrame(const sFrame_t *frame)
     uint8_t        payloadLen = (uint8_t)(total - PREFIX_SIZE - HEADER_SIZE - CRC_SIZE);
     const uint8_t *p          = &raw[PREFIX_SIZE + HEADER_SIZE];
 
-    if (payloadLen < 6) {
+    if(payloadLen < 6){
         Serial.printf("[ALARM] payload too short (%u)\n", payloadLen);
         return;
     }
@@ -236,7 +228,7 @@ static void processAlarmFrame(const sFrame_t *frame)
     uint8_t dataType   = p[4];
     uint8_t sz         = dataTypeSize(dataType);
 
-    if (sz == 0 || (uint8_t)(5 + sz) > payloadLen) {
+    if(sz == 0 || (uint8_t)(5 + sz) > payloadLen){
         Serial.printf("[ALARM] bad dataType=0x%02X\n", dataType);
         return;
     }
@@ -278,7 +270,7 @@ static void frameTask(void *pvParams)
 {
     sFrame_t frame;
 
-    while (1) {
+    while(1){
         if (xQueueReceive(g_frameQueue, &frame, portMAX_DELAY) != pdTRUE)
             continue;
 
@@ -286,7 +278,7 @@ static void frameTask(void *pvParams)
         digitalWrite(LED_PIN, g_ledState);
 
         uint8_t cmd = frame.data[5];
-        switch (cmd) {
+        switch(cmd){
         case CMD_UPSTREAM_PUSH:  processDataFrame(&frame);  break;
         case CMD_UPSTREAM_ALARM: processAlarmFrame(&frame); break;
         default:
@@ -308,18 +300,16 @@ static uint8_t  g_rxFrame[FRAME_MAX];
 static uint16_t g_rxPos      = 0;
 static uint16_t g_rxExpected = 0;
 
-static void smReset(void)
-{
+static void smReset(void){
     g_rxState = RX_WAIT_SOF0;
     g_rxPos   = 0;
 }
 
-static void rxByte(uint8_t b)
-{
-    switch (g_rxState) {
+static void rxByte(uint8_t b){
+    switch(g_rxState){
 
     case RX_WAIT_SOF0:
-        if (b == SOF_0) {
+        if(b == SOF_0){
             g_rxFrame[0] = b;
             g_rxPos      = 1;
             g_rxState    = RX_WAIT_SOF1;
@@ -327,11 +317,12 @@ static void rxByte(uint8_t b)
         break;
 
     case RX_WAIT_SOF1:
-        if (b == SOF_1) {
+        if(b == SOF_1){
             g_rxFrame[1] = b;
             g_rxPos      = 2;
             g_rxState    = RX_WAIT_LEN;
-        } else {
+        } 
+        else{
             smReset();
             if (b == SOF_0) { g_rxFrame[0] = b; g_rxPos = 1; g_rxState = RX_WAIT_SOF1; }
         }
@@ -339,7 +330,7 @@ static void rxByte(uint8_t b)
 
     case RX_WAIT_LEN: {
         uint8_t len = b;
-        if (len < PROTO_LEN_MIN || len > PROTO_LEN_MAX) {
+        if(len < PROTO_LEN_MIN || len > PROTO_LEN_MAX){
             Serial.printf("[SM] BAD LEN=%u, reset\n", len);
             smReset();
             break;
@@ -352,12 +343,12 @@ static void rxByte(uint8_t b)
     }
 
     case RX_PAYLOAD:
-        if (g_rxPos < FRAME_MAX)
+        if(g_rxPos < FRAME_MAX)
             g_rxFrame[g_rxPos++] = b;
 
-        if (g_rxPos >= g_rxExpected) {
+        if(g_rxPos >= g_rxExpected){
 
-            if (!validateCRC(g_rxFrame, g_rxPos)) {
+            if(!validateCRC(g_rxFrame, g_rxPos)){
                 Serial.println("[SM] CRC FAIL, discard");
                 smReset();
                 break;
@@ -368,7 +359,7 @@ static void rxByte(uint8_t b)
             frame.len = g_rxPos;
 
             BaseType_t sent = xQueueSend(g_frameQueue, &frame, 0);
-            if (sent != pdTRUE)
+            if(sent != pdTRUE)
                 Serial.println("[SM] frame queue FULL, dropped!");
             else
                 Serial.printf("[SM] frame queued (len=%u, cmd=0x%02X)\n",
@@ -380,27 +371,26 @@ static void rxByte(uint8_t b)
     }
 }
 
-static void uartTask(void *pvParams)
-{
+static void uartTask(void *pvParams){
     uart_event_t event;
     uint8_t      rxBuf[FRAME_MAX];
 
-    while (1) {
+    while(1){
         if (xQueueReceive(g_uartEventQueue, &event, portMAX_DELAY) != pdTRUE)
             continue;
 
-        switch (event.type) {
+        switch(event.type){
 
         case UART_DATA:
-            while (true) {
+            while (true){
                 int len = uart_read_bytes(STM32_UART_PORT, rxBuf, sizeof(rxBuf), pdMS_TO_TICKS(5));
                 if (len <= 0) break;
 
                 Serial.printf("RAW (%d): ", len);
-                for (int i = 0; i < len; i++) Serial.printf("%02X ", rxBuf[i]);
+                for(int i = 0; i < len; i++) Serial.printf("%02X ", rxBuf[i]);
                 Serial.println();
 
-                for (int i = 0; i < len; i++)
+                for(int i = 0; i < len; i++)
                     rxByte(rxBuf[i]);
             }
             break;
@@ -426,15 +416,14 @@ static void uartTask(void *pvParams)
     }
 }
 
-static void wifiEnsureConnected(void)
-{
+static void wifiEnsureConnected(void){
     if (WiFi.status() == WL_CONNECTED) return;
 
     Serial.printf("[WiFi] connecting to %s", WIFI_SSID);
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-    for (int i = 0; i < 40 && WiFi.status() != WL_CONNECTED; i++) {
+    for(int i = 0; i < 40 && WiFi.status() != WL_CONNECTED; i++){
         delay(500);
         Serial.print('.');
     }
@@ -446,8 +435,7 @@ static void wifiEnsureConnected(void)
         Serial.println("[WiFi] FAIL – will retry");
 }
 
-static void mqttEnsureConnected(void)
-{
+static void mqttEnsureConnected(void){
     if (g_mqtt.connected()) return;
     if (WiFi.status() != WL_CONNECTED) return;
 
@@ -463,8 +451,7 @@ static void mqttEnsureConnected(void)
     else    Serial.printf("[MQTT] fail rc=%d\n", g_mqtt.state());
 }
 
-void setup()
-{
+void setup(){
     Serial.begin(115200);
     pinMode(LED_PIN, OUTPUT);
 
@@ -501,8 +488,7 @@ void setup()
     Serial.println("[SYS] ready");
 }
 
-void loop()
-{
+void loop(){
     wifiEnsureConnected();
     mqttEnsureConnected();
     g_mqtt.loop();

@@ -8,10 +8,12 @@
 .\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include\cmsis_armcc.h
 .\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include\system_stm32f10x.h
 .\objects\system_stm32f10x.o: .\RTE\Device\STM32F103C8\stm32f10x_conf.h
-.\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_dma.h
+.\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_adc.h
 .\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include\stm32f10x.h
+.\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_dma.h
 .\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_flash.h
 .\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_gpio.h
+.\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_i2c.h
 .\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_rcc.h
 .\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 .\objects\system_stm32f10x.o: C:\Users\LENOVO\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\StdPeriph_Driver\inc\misc.h
