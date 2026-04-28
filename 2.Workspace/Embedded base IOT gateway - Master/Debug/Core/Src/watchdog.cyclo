@@ -1,4 +1,0 @@
-../Drivers/CMSIS/Include/core_cm4.h:1938:34:__NVIC_SystemReset	1
-../Core/Src/watchdog.c:23:6:Watchdog_Init	2
-../Core/Src/watchdog.c:31:6:Watchdog_Kick	2
-../Core/Src/watchdog.c:37:6:Watchdog_Task	3

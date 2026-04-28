@@ -203,7 +203,7 @@ void Task_Protocol(void *pvParams){
     TickType_t lastSensorTick = xTaskGetTickCount();
 
 		#if SLAVE_ADDRESS == 0x02
-		BH1750_Start();
+		//BH1750_Start();
 		#endif
 		vTaskDelay(120);
     while(1){

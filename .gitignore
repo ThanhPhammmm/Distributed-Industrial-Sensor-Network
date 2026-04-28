@@ -1,62 +1,97 @@
-build/
-bin/
-obj/
-out/
-*.o
-*.a
-*.so
-*.elf
-*.map
-*.d
-
-*.log
-*.tmp
-*.swp
-
+# ========================
+# IDE (USER SETTINGS)
+# ========================
 .vscode/
 .idea/
 *.code-workspace
 
+# ========================
+# RECORD / DATA
+# ========================
+3.Records/
+
+# ========================
+# STM32CubeIDE (2.Workspace)
+# ========================
+**/Debug/
+**/Release/
+**/.settings/
+
+# 👉 GIỮ config quan trọng
+!**/.project
+!**/.cproject
+!**/*.ioc
+
+# ========================
+# KEIL MDK (4.Workspace)
+# ========================
+**/Objects/
+**/Listings/
+
+**/*.axf
+**/*.crf
+**/*.dep
+**/*.lst
+**/*.map
+
+# 👉 GIỮ project
+!**/*.uvprojx
+
+# 👉 bỏ user config
+**/*.uvoptx
+**/*.uvgui.*
+
+# ========================
+# BUILD CHUNG
+# ========================
+**/build/
+**/bin/
+**/obj/
+**/out/
+
+**/*.o
+**/*.a
+**/*.so
+**/*.elf
+**/*.d
+
+# ========================
+# HTML / LOG
+# ========================
+**/*.htm
+**/*.html
+**/*.log
+
+# ========================
+# FIRMWARE OUTPUT
+# ========================
+**/*.hex
+**/*.bin
+
+# ========================
+# ESP32 / ARDUINO
+# ========================
+5.ESP32/build/
+**/*.ino.cpp
+**/*.ino.elf
+
+# ========================
+# OS
+# ========================
 .DS_Store
 Thumbs.db
 
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-
-autom4te.cache/
-aclocal.m4
-configure
-config.log
-config.status
-
-*.hex
-*.bin
-*.img
-*.dfu
-
-dl/
-build_dir/
-staging_dir/
-tmp/
-logs/
-
-*.asv
-*.mex*
-*.fig~
-slprj/
-
+# ========================
+# OPTIONAL
+# ========================
 __pycache__/
 *.pyc
-*.pyo
-.venv/
-env/
-
 node_modules/
 dist/
-npm-debug.log*
 
+# ========================
+# SECRETS
+# ========================
 .env
 *.key
 *.pem

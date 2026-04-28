@@ -115,7 +115,7 @@ static uint32_t g_pollTimestamps[MAX_SLAVE_SLOTS];
 
 static void _TryRecovery(void){
     uint32_t now = xTaskGetTickCount();
-    if((now - g_lastRecoveryMs) < DEVMGR_RECOVERY_INTERVAL_MS)return;
+    if((now - g_lastRecoveryMs) < DEVMGR_RECOVERY_INTERVAL_MS) return;
     g_lastRecoveryMs = now;
 
     bool hasOffline = false;
@@ -355,8 +355,6 @@ void DeviceManager_Task(void *pvParams){
 				}
         	}
         }
-
-
     }
 }
 

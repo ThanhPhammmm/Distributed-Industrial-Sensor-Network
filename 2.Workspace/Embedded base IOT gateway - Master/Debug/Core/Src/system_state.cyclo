@@ -1,4 +1,0 @@
-../Core/Src/system_state.c:7:6:SysState_Init	1
-../Core/Src/system_state.c:11:11:SysState_Get	1
-../Core/Src/system_state.c:19:6:SysState_Set	1
-../Core/Src/system_state.c:25:13:SysState_Name	5

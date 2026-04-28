@@ -1,9 +1,0 @@
-../Drivers/CMSIS/Include/core_cm4.h:1775:22:__NVIC_ClearPendingIRQ	2
-../Core/Src/ProtocolTask.c:21:13:_TimerStart	1
-../Core/Src/ProtocolTask.c:29:13:_TimerStop	1
-../Core/Src/ProtocolTask.c:35:6:Protocol_AbortAndReset	3
-../Core/Src/ProtocolTask.c:52:6:Protocol_Init	4
-../Core/Src/ProtocolTask.c:59:12:_GetSlaveIdxByAddr	3
-../Core/Src/ProtocolTask.c:66:27:_FindSlaveState	2
-../Core/Src/ProtocolTask.c:72:13:_DoSend	2
-../Core/Src/ProtocolTask.c:81:6:Protocol_Task	13
