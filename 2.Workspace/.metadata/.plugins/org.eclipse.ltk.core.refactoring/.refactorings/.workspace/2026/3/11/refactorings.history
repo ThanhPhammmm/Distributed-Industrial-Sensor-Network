@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Delete resource &apos;Embedded base IOT gateway - Master/Core/Src/lcd_driver.c&apos;" deleteContents="false" description="Delete resource &apos;Embedded base IOT gateway - Master/Core/Src/lcd_driver.c&apos;" element1="/Embedded base IOT gateway - Master/Core/Src/lcd_driver.c" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1773068590673"/>
-</session>
