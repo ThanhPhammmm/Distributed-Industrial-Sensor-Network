@@ -1,9 +1,0 @@
-../Drivers/CMSIS/Include/core_cm4.h:1775:22:__NVIC_ClearPendingIRQ	16	static
-../Core/Src/ProtocolTask.c:21:13:_TimerStart	8	static
-../Core/Src/ProtocolTask.c:29:13:_TimerStop	8	static
-../Core/Src/ProtocolTask.c:35:6:Protocol_AbortAndReset	216	static
-../Core/Src/ProtocolTask.c:52:6:Protocol_Init	16	static,ignoring_inline_asm
-../Core/Src/ProtocolTask.c:59:12:_GetSlaveIdxByAddr	24	static
-../Core/Src/ProtocolTask.c:66:27:_FindSlaveState	24	static
-../Core/Src/ProtocolTask.c:72:13:_DoSend	40	static
-../Core/Src/ProtocolTask.c:81:6:Protocol_Task	344	static

@@ -1,2 +1,0 @@
-../Core/Src/button.c:29:6:Button_Init	40	static,ignoring_inline_asm
-../Core/Src/button.c:41:6:Button_Task	32	static

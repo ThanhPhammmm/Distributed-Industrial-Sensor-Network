@@ -139,7 +139,7 @@ uint16_t ADC_Read(uint8_t channel){
 
     ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 
-    while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
+    while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)); // Possible hanging
 
     return ADC_GetConversionValue(ADC1);
 }
@@ -217,9 +217,10 @@ double Read_ADC_Int(void){
 
 double Read_DI_Float(void) {
 		#if SLAVE_ADDRESS == 0x02
-	  uint16_t raw = BH1750_Read();
+	  //uint16_t raw = BH1750_Read();
+		uint16_t raw = ((double)rand() / RAND_MAX) * 1000;
 		#elif SLAVE_ADDRESS == 0x01
-		uint16_t raw = ((double)rand() / RAND_MAX) * 1000;;
+		uint16_t raw = ((double)rand() / RAND_MAX) * 1000;
 		#endif
     return raw / 1.2f;
 }
@@ -362,12 +363,12 @@ static void _ActorLevelCheck(eDataType dataType, eSensorType sensorType, double 
 		eActMode oldLevel = currentLevel[i];
 		if(oldLevel == newLevel) continue;
 		else if(oldLevel != newLevel){
-			currentLevel[i] = newLevel;
-			ActuatorCmd_t act = {
-				.sensorType = r->sensorType,
-				.level = newLevel
-			};
-			xQueueSend(xQueue_ActuatorCmd, &act, 0);
+				currentLevel[i] = newLevel;
+				ActuatorCmd_t act = {
+					.sensorType = r->sensorType,
+					.level = newLevel
+				};
+				xQueueSend(xQueue_ActuatorCmd, &act, 0);
 		}
 	}
 }
