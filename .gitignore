@@ -16,8 +16,8 @@
 **/Debug/
 **/Release/
 **/.settings/
+**/.metadata/
 
-# 👉 GIỮ config quan trọng
 !**/.project
 !**/.cproject
 !**/*.ioc
@@ -34,10 +34,8 @@
 **/*.lst
 **/*.map
 
-# 👉 GIỮ project
 !**/*.uvprojx
 
-# 👉 bỏ user config
 **/*.uvoptx
 **/*.uvgui.*
 
