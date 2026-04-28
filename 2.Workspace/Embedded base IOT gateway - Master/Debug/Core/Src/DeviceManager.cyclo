@@ -13,4 +13,4 @@
 ../Core/Src/DeviceManager.c:263:10:DeviceManager_GetState	1
 ../Core/Src/DeviceManager.c:265:13:_HandleTimeout	6
 ../Core/Src/DeviceManager.c:286:6:DeviceManager_Task	15
-../Core/Src/DeviceManager.c:363:6:DeviceManager_Init	1
+../Core/Src/DeviceManager.c:361:6:DeviceManager_Init	1
