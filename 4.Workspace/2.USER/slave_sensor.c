@@ -217,8 +217,13 @@ double Read_ADC_Int(void){
 
 double Read_DI_Float(void) {
 		#if SLAVE_ADDRESS == 0x02
+		__disable_irq();
+		taskENTER_CRITICAL();
+		uint16_t raw = BH1750_Read();
+		__enable_irq();
+		taskEXIT_CRITICAL();
 	  //uint16_t raw = BH1750_Read();
-		uint16_t raw = ((double)rand() / RAND_MAX) * 1000;
+		//uint16_t raw = ((double)rand() / RAND_MAX) * 1000;
 		#elif SLAVE_ADDRESS == 0x01
 		uint16_t raw = ((double)rand() / RAND_MAX) * 1000;
 		#endif

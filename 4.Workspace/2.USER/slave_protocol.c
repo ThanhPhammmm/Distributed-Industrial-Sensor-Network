@@ -203,7 +203,11 @@ void Task_Protocol(void *pvParams){
     TickType_t lastSensorTick = xTaskGetTickCount();
 
 		#if SLAVE_ADDRESS == 0x02
-		//BH1750_Start();
+		__disable_irq();
+		taskENTER_CRITICAL();
+		BH1750_Start();
+		__enable_irq();
+		taskEXIT_CRITICAL();
 		#endif
 		vTaskDelay(120);
     while(1){
