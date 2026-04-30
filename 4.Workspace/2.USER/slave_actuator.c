@@ -110,8 +110,8 @@ void Task_Actuator(void *pvParams){
 								}
 								#endif
 						}
-					}
-					else{
+				}
+				else{
 					if (cmd.level == ACT_MODE_CRITICAL){
 							#if SLAVE_ADDRESS == 0x01
 									Buzzer_On();
@@ -130,6 +130,6 @@ void Task_Actuator(void *pvParams){
 									Buzzer_Off();
 							#endif
 					}
-			}
+				}
     }
 }

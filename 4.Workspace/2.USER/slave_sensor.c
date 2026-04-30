@@ -13,47 +13,167 @@ void delay_us(uint32_t us){
     while ((DWT->CYCCNT - start) < cycles);
 }
 
-/* Edge detection */
-static uint8_t DHT11_Wait_Pin(uint8_t state, uint32_t timeout_us){
-    uint32_t start = DWT->CYCCNT;
-    uint32_t cycles = (SystemCoreClock / 1000000) * timeout_us;
-
-    while(GPIO_ReadInputDataBit(DHT11_PORT, DHT11_PIN) == state)
-    {
-        if((DWT->CYCCNT - start) > cycles) return 0;
-    }
-    return 1;
-}
-
 void delay_ms(uint32_t ms){
     while(ms--)
         delay_us(1000);
 }
 
-uint16_t BH1750_Read(void){
-    uint8_t msb, lsb;
+#define I2C_TIMEOUT_US   2000U
+#define I2C_MAX_RETRIES  3U
 
-    while(I2C_GetFlagStatus(I2C2, I2C_FLAG_BUSY));
+static uint8_t _I2C_WaitFlag(I2C_TypeDef *I2Cx,
+                              uint32_t    flag,
+                              FlagStatus  expected,
+                              uint32_t    timeout_us)
+{
+    uint32_t cycles = (SystemCoreClock / 1000000UL) * timeout_us;
+    uint32_t start  = DWT->CYCCNT;
+
+    while(I2C_GetFlagStatus(I2Cx, flag) != expected){
+        if((DWT->CYCCNT - start) >= cycles) return 0U;
+    }
+    return 1U;
+}
+
+static uint8_t _I2C_WaitEvent(I2C_TypeDef *I2Cx,
+                               uint32_t    event,
+                               uint32_t    timeout_us)
+{
+    uint32_t cycles = (SystemCoreClock / 1000000UL) * timeout_us;
+    uint32_t start  = DWT->CYCCNT;
+
+    while(!I2C_CheckEvent(I2Cx, event)){
+        if((DWT->CYCCNT - start) >= cycles) return 0U;
+    }
+    return 1U;
+}
+
+static uint16_t s_bh1750_last_valid = 0U;
+
+static uint8_t _BH1750_Start_Safe(void){
+    if(!_I2C_WaitFlag(I2C2, I2C_FLAG_BUSY, RESET, I2C_TIMEOUT_US)) return 0U;
 
     I2C_GenerateSTART(I2C2, ENABLE);
-    while(!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_MODE_SELECT));
+    if(!_I2C_WaitEvent(I2C2, I2C_EVENT_MASTER_MODE_SELECT, I2C_TIMEOUT_US)){
+        I2C_GenerateSTOP(I2C2, ENABLE);
+        return 0U;
+    }
 
-    I2C_Send7bitAddress(I2C2, BH1750_I2C_ADDR, I2C_Direction_Receiver);
-    while(!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED));
+    I2C_Send7bitAddress(I2C2, BH1750_I2C_ADDR, I2C_Direction_Transmitter);
+    if(!_I2C_WaitEvent(I2C2, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED, I2C_TIMEOUT_US)){
+        I2C_GenerateSTOP(I2C2, ENABLE);
+        return 0U;
+    }
 
-    while(!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_BYTE_RECEIVED));
-    msb = I2C_ReceiveData(I2C2);
-
-    I2C_AcknowledgeConfig(I2C2, DISABLE); // last byte
-
-    while(!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_BYTE_RECEIVED));
-    lsb = I2C_ReceiveData(I2C2);
+    I2C_SendData(I2C2, BH1750_I2C_CMD);
+    if(!_I2C_WaitEvent(I2C2, I2C_EVENT_MASTER_BYTE_TRANSMITTED, I2C_TIMEOUT_US)){
+        I2C_GenerateSTOP(I2C2, ENABLE);
+        return 0U;
+    }
 
     I2C_GenerateSTOP(I2C2, ENABLE);
+    return 1U;
+}
 
+void BH1750_Start(void){
+    for(uint8_t attempt = 0U; attempt < I2C_MAX_RETRIES; attempt++){
+        if(_BH1750_Start_Safe()) return;
+    }
+}
+
+static uint8_t _BH1750_Read_Once(uint16_t *out){
+    uint8_t msb, lsb;
+
+    if(!_I2C_WaitFlag(I2C2, I2C_FLAG_BUSY, RESET, I2C_TIMEOUT_US)) return 0U;
+
+    I2C_GenerateSTART(I2C2, ENABLE);
+    if(!_I2C_WaitEvent(I2C2, I2C_EVENT_MASTER_MODE_SELECT, I2C_TIMEOUT_US)){
+        I2C_GenerateSTOP(I2C2, ENABLE);
+        return 0U;
+    }
+
+    I2C_Send7bitAddress(I2C2, BH1750_I2C_ADDR, I2C_Direction_Receiver);
+    if(!_I2C_WaitEvent(I2C2, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED, I2C_TIMEOUT_US)){
+        I2C_GenerateSTOP(I2C2, ENABLE);
+        return 0U;
+    }
+
+    if(!_I2C_WaitEvent(I2C2, I2C_EVENT_MASTER_BYTE_RECEIVED, I2C_TIMEOUT_US)){
+        I2C_GenerateSTOP(I2C2, ENABLE);
+        return 0U;
+    }
+    msb = I2C_ReceiveData(I2C2);
+		
+		I2C_AcknowledgeConfig(I2C2, DISABLE);
+
+    if(!_I2C_WaitEvent(I2C2, I2C_EVENT_MASTER_BYTE_RECEIVED, I2C_TIMEOUT_US)){
+        I2C_AcknowledgeConfig(I2C2, ENABLE);
+        return 0U;
+    }
+    lsb = I2C_ReceiveData(I2C2);
+		
     I2C_AcknowledgeConfig(I2C2, ENABLE);
+    I2C_GenerateSTOP(I2C2, ENABLE);
 
-    return (msb << 8) | lsb;
+    *out = (uint16_t)((msb << 8) | lsb);
+    return 1U;
+}
+
+static void _I2C2_BusRecovery(void){
+    I2C_DeInit(I2C2);
+    RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C2, ENABLE);
+    RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C2, DISABLE);
+
+    GPIO_InitTypeDef g;
+    g.GPIO_Pin   = GPIO_Pin_10 | GPIO_Pin_11;
+    g.GPIO_Mode  = GPIO_Mode_Out_OD;
+    g.GPIO_Speed = GPIO_Speed_2MHz;
+    GPIO_Init(GPIOB, &g);
+
+    GPIO_SetBits(GPIOB, GPIO_Pin_11);   /* SDA HIGH */
+
+    for(uint8_t i = 0; i < 9U; i++){
+        GPIO_ResetBits(GPIOB, GPIO_Pin_10);
+        delay_us(10);
+        GPIO_SetBits(GPIOB, GPIO_Pin_10);
+        delay_us(10);
+    }
+
+    GPIO_ResetBits(GPIOB, GPIO_Pin_11);
+    delay_us(10);
+    GPIO_SetBits(GPIOB, GPIO_Pin_10);
+    delay_us(10);
+    GPIO_SetBits(GPIOB, GPIO_Pin_11);
+    delay_us(10);
+
+    g.GPIO_Mode = GPIO_Mode_AF_OD;
+    GPIO_Init(GPIOB, &g);
+
+    I2C_InitTypeDef i2c;
+    i2c.I2C_ClockSpeed          = 400000;
+    i2c.I2C_Mode                = I2C_Mode_I2C;
+    i2c.I2C_DutyCycle           = I2C_DutyCycle_2;
+    i2c.I2C_Ack                 = I2C_Ack_Enable;
+    i2c.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+    i2c.I2C_OwnAddress1         = 0x00;
+    I2C_Init(I2C2, &i2c);
+    I2C_Cmd(I2C2, ENABLE);
+}
+
+uint16_t BH1750_Read(void){
+    uint16_t result = 0U;
+
+    for(uint8_t attempt = 0U; attempt < I2C_MAX_RETRIES; attempt++){
+        if(_BH1750_Read_Once(&result)){
+            s_bh1750_last_valid = result;
+						delay_us(180000U); // Measurement Time is typically 120ms.
+            return result;
+        }
+				_I2C2_BusRecovery();
+				_BH1750_Start_Safe();
+        delay_us(180000U); // Measurement Time is typically 120ms.
+    }
+    return s_bh1750_last_valid;
 }
 
 void DHT11_Set_Input(void){
@@ -90,6 +210,18 @@ void DHT11_Start(void){
 		DHT11_Set_Input();
 }
 
+/* Edge detection */
+static uint8_t DHT11_Wait_Pin(uint8_t state, uint32_t timeout_us){
+    uint32_t start = DWT->CYCCNT;
+    uint32_t cycles = (SystemCoreClock / 1000000) * timeout_us;
+
+    while(GPIO_ReadInputDataBit(DHT11_PORT, DHT11_PIN) == state)
+    {
+        if((DWT->CYCCNT - start) > cycles) return 0;
+    }
+    return 1;
+}
+
 static uint8_t DHT11_Check_Response(void){
     if(!DHT11_Wait_Pin(1, 100)) return 0;
 
@@ -115,6 +247,7 @@ static uint8_t DHT11_Read_Byte(void){
 
 uint16_t dht11_temp = 0;
 uint16_t dht11_humid = 0;
+static bool is_dht11_valid = false;
 
 static void DHT11_Read_Data(){
 		uint8_t Rh_byte1, Rh_byte2;
@@ -130,6 +263,7 @@ static void DHT11_Read_Data(){
     if(checksum == ((Rh_byte1 + Rh_byte2 + Temp_byte1 + Temp_byte2) & 0xFF)){
         dht11_humid = Rh_byte1;
         dht11_temp  = Temp_byte1;
+				is_dht11_valid = true;
     }
 		DHT11_Set_Output();
 }
@@ -157,20 +291,14 @@ uint16_t returnDht11TempData(){
 
 double Read_Temp_Float(void){
 		#if SLAVE_ADDRESS == 0x02
-				__disable_irq();
-				taskENTER_CRITICAL();
+				vTaskSuspendAll();
 			
 				DHT11_Bus_Reset();
 				DHT11_Start();
 				if(DHT11_Check_Response()){
-					DHT11_Read_Data();
+						DHT11_Read_Data();
 				}
-				else{
-					dht11_humid = 0xFF;
-					dht11_temp = 0xFF;
-				}
-				__enable_irq();
-				taskEXIT_CRITICAL();
+				xTaskResumeAll();
 				return (uint16_t)returnDht11TempData();
 		#elif SLAVE_ADDRESS == 0x01
 				return ((double)rand() / RAND_MAX) * 1000;
@@ -217,17 +345,11 @@ double Read_ADC_Int(void){
 
 double Read_DI_Float(void) {
 		#if SLAVE_ADDRESS == 0x02
-		__disable_irq();
-		taskENTER_CRITICAL();
-		uint16_t raw = BH1750_Read();
-		__enable_irq();
-		taskEXIT_CRITICAL();
-	  //uint16_t raw = BH1750_Read();
-		//uint16_t raw = ((double)rand() / RAND_MAX) * 1000;
+				uint16_t raw = BH1750_Read();
+				return raw / 1.2f;
 		#elif SLAVE_ADDRESS == 0x01
-		uint16_t raw = ((double)rand() / RAND_MAX) * 1000;
+				return ((double)rand() / RAND_MAX) * 1000;
 		#endif
-    return raw / 1.2f;
 }
 double Read_DI_Char(void)      { return ((double)rand() / RAND_MAX) * 100; }
 
@@ -406,7 +528,6 @@ void Slave_Sensors_Init(void){
     uint8_t i;
     for (i = 0; i < k_cnt; i++)
         memset(g_sensors[i].reading.bytes, 0, 8);
-	
 		g_tableVersion = _ComputeTableHash();
 }
 
@@ -414,13 +535,13 @@ uint8_t Slave_Sensors_GetTableVersion(void){
     return g_tableVersion;
 }
 
-void Slave_Sensors_Read(void) {
-    for (uint8_t i = 0; i < k_cnt; i++) {
+void Slave_Sensors_Read(void){
+    for(uint8_t i = 0; i < k_cnt; i++){
         SensorEntry_t *s = &g_sensors[i];
         double raw_value = 0.0;
         uint8_t found = 0;
 
-        for (uint8_t j = 0; j < k_driver_cnt; j++) {
+        for(uint8_t j = 0; j < k_driver_cnt; j++){
             if (g_driver_map[j].sensorType == (eSensorType)s->sensorType && 
                 g_driver_map[j].dataType == (eDataType)s->dataType) {
                 
@@ -430,7 +551,7 @@ void Slave_Sensors_Read(void) {
             }
         }
 
-        if (found) {
+        if(found){
             switch ((eDataType)s->dataType) {
                 case DTYPE_FLOAT: s->reading.f = (float)raw_value;  break;
                 case DTYPE_DOUBLE: s->reading.d = (double)raw_value; break;
@@ -439,10 +560,12 @@ void Slave_Sensors_Read(void) {
                 case DTYPE_CHAR: s->reading.c = (char)raw_value;   break;
                 default: break;
             }
+						#if SLAVE_ADDRESS == 0x02
+						if(!is_dht11_valid) continue;
+						#endif
 						_ActorLevelCheck((eDataType)s->dataType, (eSensorType)s->sensorType, raw_value);
-						
         } 
-				else {
+				else{
 						memset(&s->reading, 0, sizeof(SensorReading_t));
 				}
     }
@@ -452,9 +575,9 @@ uint8_t Slave_Sensors_GetCount(void) { return k_cnt; }
 
 uint8_t Slave_Sensors_PackTable(uint8_t *buf, uint8_t bufMax){
     uint8_t i;
-    if ((uint8_t)(1U + k_cnt * 3U) > bufMax) return 0U;
+    if((uint8_t)(1U + k_cnt * 3U) > bufMax) return 0U;
     buf[0] = k_cnt;
-    for (i = 0; i < k_cnt; i++) {
+    for(i = 0; i < k_cnt; i++){
         buf[1U + i * 3U] 				= g_sensors[i].id;
         buf[1U + i * 3U + 1U] 	= g_sensors[i].sensorType;
         buf[1U + i * 3U + 2U] 	= g_sensors[i].dataType;
@@ -464,8 +587,7 @@ uint8_t Slave_Sensors_PackTable(uint8_t *buf, uint8_t bufMax){
 
 uint8_t Slave_Sensors_PackAllData(uint8_t *buf, uint8_t bufMax){
     uint8_t pos = 0;
-    uint8_t i;
-    for (i = 0; i < k_cnt; i++) {
+    for(uint8_t i = 0; i < k_cnt; i++){
         SensorEntry_t *s = &g_sensors[i];
         uint8_t sz = DataType_Size((eDataType)s->dataType);
         if ((uint8_t)(pos + 2U + sz) > bufMax) break;
