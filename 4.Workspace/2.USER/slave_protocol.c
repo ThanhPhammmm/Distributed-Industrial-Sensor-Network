@@ -59,7 +59,7 @@ static void _StartTxDma(const uint8_t *buf, uint8_t n){
     DMA1_Channel7->CMAR = (uint32_t)buf;
     DMA1_Channel7->CNDTR = n;
     USART_ClearFlag(USART2, USART_FLAG_TC);
-		DMA_Cmd(DMA1_Channel7, ENABLE);
+	DMA_Cmd(DMA1_Channel7, ENABLE);
     USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
 }
 
