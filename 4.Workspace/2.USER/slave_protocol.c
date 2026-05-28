@@ -59,7 +59,7 @@ static void _StartTxDma(const uint8_t *buf, uint8_t n){
     DMA1_Channel7->CMAR = (uint32_t)buf;
     DMA1_Channel7->CNDTR = n;
     USART_ClearFlag(USART2, USART_FLAG_TC);
-		DMA_Cmd(DMA1_Channel7, ENABLE);
+	DMA_Cmd(DMA1_Channel7, ENABLE);
     USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
 }
 
@@ -178,6 +178,7 @@ static void _FlushAndRearm(void){
     _ArmPrefix();
 }
 
+/*
 #if SLAVE_ADDRESS == 0x02
 static void BH1750_Start(void){
     while(I2C_GetFlagStatus(I2C2, I2C_FLAG_BUSY));
@@ -194,7 +195,9 @@ static void BH1750_Start(void){
     I2C_GenerateSTOP(I2C2, ENABLE);
 }
 #endif
+*/
 
+extern void BH1750_Start(void);
 void Task_Protocol(void *pvParams){
     (void)pvParams;
 
@@ -203,9 +206,8 @@ void Task_Protocol(void *pvParams){
     TickType_t lastSensorTick = xTaskGetTickCount();
 
 		#if SLAVE_ADDRESS == 0x02
-		//BH1750_Start();
+		BH1750_Start();
 		#endif
-		vTaskDelay(120);
     while(1){
 		if(xQueueReceive(xQueue_RxFrame, &frame, pdMS_TO_TICKS(10U)) == pdTRUE){
             lastFrameMs = xTaskGetTickCount();

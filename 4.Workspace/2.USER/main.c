@@ -98,8 +98,7 @@ int main(void){
     __disable_irq();
 }
 
-static void DMA_Config(void)
-{
+static void DMA_Config(void){
     DMA_InitTypeDef d;
 
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
@@ -205,8 +204,7 @@ static void I2C_Config(void){
 	I2C_Cmd(I2C2, ENABLE);
 }
 
-static void GPIO_Config(void)
-{
+static void GPIO_Config(void){
     GPIO_InitTypeDef g;
 
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC, ENABLE);
@@ -293,8 +291,7 @@ static void GPIO_Config(void)
 		GPIO_ResetBits(RELAY_PORT, RELAY_PIN);
 }
 
-static void NVIC_Config(void)
-{
+static void NVIC_Config(void){
     NVIC_InitTypeDef n;
 
     n.NVIC_IRQChannel                   = DMA1_Channel6_IRQn;

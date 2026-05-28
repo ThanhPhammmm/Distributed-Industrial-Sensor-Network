@@ -219,3 +219,10 @@ uint8_t Registry_GetSensorCount(uint8_t idx){
     xSemaphoreGive(g_mtx);
     return n;
 }
+
+void Registry_SetTimeout(uint8_t idx, uint32_t value){
+    if(idx >= MAX_SLAVE_SLOTS) return;
+    xSemaphoreTake(g_mtx, portMAX_DELAY);
+    g_slots[idx].stats.timeouts = 0;
+    xSemaphoreGive(g_mtx);
+}

@@ -62,74 +62,74 @@ void Task_Actuator(void *pvParams){
     TickType_t actuatorDelay = portMAX_DELAY;
 
     while(1){
-				if(xQueueReceive(xQueue_ActuatorCmd, &cmd, actuatorDelay) == pdTRUE){
-						if(cmd.level == ACT_MODE_CRITICAL){
-								#if SLAVE_ADDRESS == 0x01
-								Buzzer_On();
-								Relay_On();
-								#elif SLAVE_ADDRESS == 0x02
-								if(cmd.sensorType == SENSOR_DIGITAL_IN){
-										Led_Off_All();
-										Led_On_Red();
-										vTaskDelay(100);
-								}
-								if(cmd.sensorType == SENSOR_TEMPERATURE){
-										Relay_On();
-								}
-								#endif
-						} 
-						else if(cmd.level == ACT_MODE_NORMAL){
-								#if SLAVE_ADDRESS == 0x01
-										Buzzer_Off();
-										Relay_Off ();
-								#elif SLAVE_ADDRESS == 0x02
-								if(cmd.sensorType == SENSOR_DIGITAL_IN){
-										Led_Off_All();
-								}
-								if(cmd.sensorType == SENSOR_TEMPERATURE){
-										Relay_Off ();
-								}
-								#endif
-						}
-						else if(cmd.level == ACT_MODE_WARNING){
-								#if SLAVE_ADDRESS == 0x01
-										Buzzer_Off();
-										Relay_On();
-								#elif SLAVE_ADDRESS == 0x02
-								if(cmd.sensorType == SENSOR_DIGITAL_IN){
-										Led_Off_All();
-										Led_On_Blue();	
-										vTaskDelay(100);
-										//Led_Off_All();
-										Led_On_Green();
-										vTaskDelay(100);
-										//Led_Off_All();
-								}
-								if(cmd.sensorType == SENSOR_TEMPERATURE){
-										Relay_On();
-								}
-								#endif
-						}
+		if(xQueueReceive(xQueue_ActuatorCmd, &cmd, actuatorDelay) == pdTRUE){
+			if(cmd.level == ACT_MODE_CRITICAL){
+				#if SLAVE_ADDRESS == 0x01
+					Buzzer_On();
+					Relay_On();
+					#elif SLAVE_ADDRESS == 0x02
+					if(cmd.sensorType == SENSOR_DIGITAL_IN){
+						Led_Off_All();
+						Led_On_Red();
+						vTaskDelay(100);
 					}
-					else{
-					if (cmd.level == ACT_MODE_CRITICAL){
-							#if SLAVE_ADDRESS == 0x01
-									Buzzer_On();
-							#endif		
-									Relay_On();
+					if(cmd.sensorType == SENSOR_TEMPERATURE){
+						Relay_On();
 					}
-					else if(cmd.level == ACT_MODE_NORMAL){
-							#if SLAVE_ADDRESS == 0x01
-									Buzzer_Off();
-									Relay_Off ();
-							#endif
-					}
-					else if(cmd.level == ACT_MODE_WARNING){
-							Relay_On();
-							#if SLAVE_ADDRESS == 0x01
-									Buzzer_Off();
-							#endif
-					}
+					#endif
+			} 
+			else if(cmd.level == ACT_MODE_NORMAL){
+				#if SLAVE_ADDRESS == 0x01
+					Buzzer_Off();
+					Relay_Off ();
+				#elif SLAVE_ADDRESS == 0x02
+				if(cmd.sensorType == SENSOR_DIGITAL_IN){
+					Led_Off_All();
+				}
+				if(cmd.sensorType == SENSOR_TEMPERATURE){
+					Relay_Off ();
+				}
+				#endif
 			}
-    }
+			else if(cmd.level == ACT_MODE_WARNING){
+				#if SLAVE_ADDRESS == 0x01
+					Buzzer_Off();
+					Relay_On();
+				#elif SLAVE_ADDRESS == 0x02
+				if(cmd.sensorType == SENSOR_DIGITAL_IN){
+					Led_Off_All();
+					Led_On_Blue();	
+					vTaskDelay(100);
+					//Led_Off_All();
+					Led_On_Green();
+					vTaskDelay(100);
+					//Led_Off_All();
+				}
+				if(cmd.sensorType == SENSOR_TEMPERATURE){
+					Relay_On();
+				}
+				#endif
+			}
+		}
+		else{
+			if (cmd.level == ACT_MODE_CRITICAL){
+				#if SLAVE_ADDRESS == 0x01
+					Buzzer_On();
+				#endif		
+					Relay_On();
+			}
+			else if(cmd.level == ACT_MODE_NORMAL){
+				#if SLAVE_ADDRESS == 0x01
+					Buzzer_Off();
+					Relay_Off ();
+				#endif
+			}
+			else if(cmd.level == ACT_MODE_WARNING){
+				Relay_On();
+				#if SLAVE_ADDRESS == 0x01
+					Buzzer_Off();
+				#endif
+			}
+		}
+	}
 }

@@ -235,6 +235,7 @@ static void _HandleResponse(const Frame_t *f){
 	            Registry_SetMissedPolls(g_pending.slotIdx, 0U);
 	            Registry_SetState(g_pending.slotIdx, SREG_ONLINE);
 	            Registry_IncrementPoll(g_pending.slotIdx);
+	            Registry_SetTimeout(g_pending.slotIdx, 0);
 	            g_pending.op = OP_NONE;
 
 	    	    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
@@ -274,8 +275,9 @@ static void _HandleTimeout(void){
 			Registry_IncrementTimeout(g_pending.slotIdx);
 			{
 				SlaveSlot_t s = Registry_GetSlot(g_pending.slotIdx);
-				if(s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD)
+				if(s.missedPolls >= DEVMGR_OFFLINE_THRESHOLD){
 					_GoOffline(g_pending.slotIdx);
+				}
 			}
 			break;
 		default: break;
