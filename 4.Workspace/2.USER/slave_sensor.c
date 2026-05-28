@@ -471,7 +471,7 @@ static eActMode _Evaluate(const SensorRuleMap_t *r, double v){
         return ACT_MODE_NORMAL;
 	#elif SLAVE_ADDRESS == 0x02
         if(v >= r->critHigh) return ACT_MODE_CRITICAL;
-        if(v <= r->warnLow) return ACT_MODE_WARNING;
+        if(v <= r->warnLow || v >= r->warnHigh) return ACT_MODE_WARNING;
         return ACT_MODE_NORMAL;
 	#endif
 }
