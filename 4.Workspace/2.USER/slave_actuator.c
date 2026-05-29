@@ -17,33 +17,33 @@ void Buzzer_Off(void){
 
 void Relay_On(void){
     GPIO_SetBits(RELAY_PORT, RELAY_PIN);
-	  //GPIO_ResetBits(RELAY_PORT, RELAY_PIN);
+	//GPIO_ResetBits(RELAY_PORT, RELAY_PIN);
 }
 
 void Relay_Off(void){
-		GPIO_ResetBits(RELAY_PORT, RELAY_PIN);
-	  //GPIO_SetBits(RELAY_PORT, RELAY_PIN);
+	GPIO_ResetBits(RELAY_PORT, RELAY_PIN);
+	//GPIO_SetBits(RELAY_PORT, RELAY_PIN);
 }
 
 #if SLAVE_ADDRESS == 0x02
 void Led_On_Red(void){
-		GPIO_SetBits(LED_PORT, LED_RED_PIN);
+	GPIO_SetBits(LED_PORT, LED_RED_PIN);
 }
 
 void Led_On_Green(void){
-		GPIO_SetBits(LED_PORT, LED_GREEN_PIN);
-		//GPIO_ResetBits(LED_PORT, LED_GREEN_PIN);
+	GPIO_SetBits(LED_PORT, LED_GREEN_PIN);
+	//GPIO_ResetBits(LED_PORT, LED_GREEN_PIN);
 }
 
 void Led_On_Blue(void){
-		GPIO_SetBits(LED_PORT, LED_BLUE_PIN);
-		//GPIO_ResetBits(LED_PORT, LED_BLUE_PIN);	
+	GPIO_SetBits(LED_PORT, LED_BLUE_PIN);
+	//GPIO_ResetBits(LED_PORT, LED_BLUE_PIN);	
 }
 
 void Led_Off_All(void){
-		GPIO_ResetBits(LED_PORT, LED_RED_PIN);
-		GPIO_ResetBits(LED_PORT, LED_GREEN_PIN);
-		GPIO_ResetBits(LED_PORT, LED_BLUE_PIN);
+	GPIO_ResetBits(LED_PORT, LED_RED_PIN);
+	GPIO_ResetBits(LED_PORT, LED_GREEN_PIN);
+	GPIO_ResetBits(LED_PORT, LED_BLUE_PIN);
 }
 
 #endif
@@ -67,23 +67,23 @@ void Task_Actuator(void *pvParams){
 				#if SLAVE_ADDRESS == 0x01
 					Buzzer_On();
 					Relay_On();
-					#elif SLAVE_ADDRESS == 0x02
-					if(cmd.sensorType == SENSOR_DIGITAL_IN){
-						Led_Off_All();
-						Led_On_Red();
-						vTaskDelay(100);
-					}
-					if(cmd.sensorType == SENSOR_TEMPERATURE){
-						Relay_On();
-					}
-					#endif
+				#elif SLAVE_ADDRESS == 0x02
+				if(cmd.sensorType == SENSOR_LIGHT){
+					Led_Off_All();
+					Led_On_Red();
+					vTaskDelay(100);
+				}
+				if(cmd.sensorType == SENSOR_TEMPERATURE){
+					Relay_On();
+				}
+				#endif
 			} 
 			else if(cmd.level == ACT_MODE_NORMAL){
 				#if SLAVE_ADDRESS == 0x01
 					Buzzer_Off();
 					Relay_Off ();
 				#elif SLAVE_ADDRESS == 0x02
-				if(cmd.sensorType == SENSOR_DIGITAL_IN){
+				if(cmd.sensorType == SENSOR_LIGHT){
 					Led_Off_All();
 				}
 				if(cmd.sensorType == SENSOR_TEMPERATURE){
@@ -96,7 +96,7 @@ void Task_Actuator(void *pvParams){
 					Buzzer_Off();
 					Relay_On();
 				#elif SLAVE_ADDRESS == 0x02
-				if(cmd.sensorType == SENSOR_DIGITAL_IN){
+				if(cmd.sensorType == SENSOR_LIGHT){
 					Led_Off_All();
 					Led_On_Blue();	
 					vTaskDelay(100);

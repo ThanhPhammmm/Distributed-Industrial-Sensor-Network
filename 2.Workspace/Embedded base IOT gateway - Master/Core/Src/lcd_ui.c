@@ -32,6 +32,9 @@ static char _TypeChar(uint8_t t){
     case SENSOR_PRESSURE: 	return 'P';
     case SENSOR_ADC_RAW: 	return 'A';
     case SENSOR_DIGITAL_IN: return 'D';
+    case SENSOR_LIGHT:		return 'L';
+    case SENSOR_RESISTOR:	return 'R';
+    case SENSOR_GAS:		return 'G';
     default: return '?';
     }
 }

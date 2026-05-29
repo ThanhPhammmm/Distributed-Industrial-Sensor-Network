@@ -77,7 +77,6 @@ static inline uint8_t DataType_Size(eDataType dt){
 			return 4U;
 		case DTYPE_CHAR:
 			return 1U;
-
         default:
             return 0U;
 	}

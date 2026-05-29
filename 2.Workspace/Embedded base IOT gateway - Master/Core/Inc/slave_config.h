@@ -7,6 +7,9 @@ typedef enum {
     SENSOR_PRESSURE 	= 0x03,
     SENSOR_ADC_RAW 		= 0x04,
     SENSOR_DIGITAL_IN 	= 0x05,
+	SENSOR_LIGHT		= 0x06,
+	SENSOR_RESISTOR		= 0x07,
+	SENSOR_GAS			= 0x08,
 } eSensorType;
 
 typedef enum {

@@ -42,9 +42,9 @@
 #define MQTT_BUF_SIZE  (JSON_BUF_SIZE + 128)
 #define TOPIC_PREFIX   "gateway"
 
-#define WIFI_SSID      "Thành's Galaxy A33 5G"
-#define WIFI_PASSWORD  "tthanhphamm"
-#define MQTT_HOST      "172.18.88.46"
+#define WIFI_SSID      "XXX"
+#define WIFI_PASSWORD  "XXX"
+#define MQTT_HOST      "XXX"
 #define MQTT_PORT      1883
 #define MQTT_CLIENT_ID "esp32-gateway"
 
@@ -109,6 +109,9 @@ static const char *sensorTypeName(uint8_t st){
     case 0x03: return "pressure";
     case 0x04: return "adc_raw";
     case 0x05: return "digital_in";
+    case 0x06: return "light";
+    case 0x07: return "resistor";
+    case 0x08: return "gas";
     default:   return "unknown";
     }
 }
