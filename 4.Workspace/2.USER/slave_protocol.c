@@ -75,80 +75,68 @@ static void _Send(uint8_t seq, uint8_t cmd, uint8_t status, uint8_t ver,
 
 static void _ProcessFrame(const Frame_t *f){
     switch (f->cmd) {
-
-    case CMD_PING: {
-        uint8_t cnt = Slave_Sensors_GetCount();
-        _Send(f->seq, CMD_ACK, STATUS_OK, SlaveConfig_GetVersion(), &cnt, 1U);
-			
+        case CMD_PING: {
+            uint8_t cnt = Slave_Sensors_GetCount();
+            _Send(f->seq, CMD_ACK, STATUS_OK, SlaveConfig_GetVersion(), &cnt, 1U);
             GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
             vTaskDelay(1);
             GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
             vTaskDelay(1);
-			
-        break;
-    }
-
-    case CMD_GET_SENSOR_TABLE: {
-        uint8_t buf[PROTO_MAX_PAYLOAD];
-        uint8_t len = Slave_Sensors_PackTable(buf, PROTO_MAX_PAYLOAD);
-        if(len == 0U){
-            _Send(f->seq, CMD_NACK, STATUS_ERROR, SlaveConfig_GetVersion(), NULL, 0U);
-        } 
-		else {
-            _Send(f->seq, CMD_SENSOR_TABLE, STATUS_OK, SlaveConfig_GetVersion(), buf, len);
+            break;
         }
-				
+		case CMD_GET_SENSOR_TABLE: {
+            uint8_t buf[PROTO_MAX_PAYLOAD];
+            uint8_t len = Slave_Sensors_PackTable(buf, PROTO_MAX_PAYLOAD);
+            if(len == 0U){
+                _Send(f->seq, CMD_NACK, STATUS_ERROR, SlaveConfig_GetVersion(), NULL, 0U);
+            } 
+            else{
+                _Send(f->seq, CMD_SENSOR_TABLE, STATUS_OK, SlaveConfig_GetVersion(), buf, len);
+            }
             GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
             vTaskDelay(1);
             GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
-            vTaskDelay(1);
-				
-        break;
-    }
-
-    case CMD_GET_ALL_DATA: {
-        uint8_t buf[PROTO_MAX_PAYLOAD];
-        uint8_t len = Slave_Sensors_PackAllData(buf, PROTO_MAX_PAYLOAD);
-        if(len == 0U){
-            _Send(f->seq, CMD_NACK, STATUS_ERROR, SlaveConfig_GetVersion(), NULL, 0U);
-        } 
-				else {
-            _Send(f->seq, CMD_ALL_DATA, STATUS_OK, SlaveConfig_GetVersion(), buf, len);
+            vTaskDelay(1);	
+            break;
         }
-				
+        case CMD_GET_ALL_DATA: {
+            uint8_t buf[PROTO_MAX_PAYLOAD];
+            uint8_t len = Slave_Sensors_PackAllData(buf, PROTO_MAX_PAYLOAD);
+            if(len == 0U){
+                _Send(f->seq, CMD_NACK, STATUS_ERROR, SlaveConfig_GetVersion(), NULL, 0U);
+            } 
+            else{
+                _Send(f->seq, CMD_ALL_DATA, STATUS_OK, SlaveConfig_GetVersion(), buf, len);
+            } 
             GPIO_ResetBits(GPIOC, GPIO_Pin_13); // LED ON
             vTaskDelay(1);
             GPIO_SetBits(GPIOC, GPIO_Pin_13); // LED OFF
-            vTaskDelay(1);
-				
-        break;
-    }
-
+            vTaskDelay(1);     
+            break;
+        }
 		/**
-    case CMD_SET_ACTUATOR: {
-        if (f->payloadLen >= 3U) {
-            ActuatorCmd_t act;
-            act.actuatorId = f->payload[0];
-            act.valueType = f->payload[1];
-            act.level = f->payload[2];
-            xQueueSend(xQueue_ActuatorCmd, &act, 0U);
+        case CMD_SET_ACTUATOR: {
+            if (f->payloadLen >= 3U) {
+                ActuatorCmd_t act;
+                act.actuatorId = f->payload[0];
+                act.valueType = f->payload[1];
+                act.level = f->payload[2];
+                xQueueSend(xQueue_ActuatorCmd, &act, 0U);
+            }
+            //_Send(f->seq, CMD_ACK, STATUS_OK, 0U, NULL, 0U);
+            break;
         }
-        //_Send(f->seq, CMD_ACK, STATUS_OK, 0U, NULL, 0U);
-        break;
-    }
 		**/
-
-    case CMD_RESET: {
-        _Send(f->seq, CMD_ACK, STATUS_OK, 0U, NULL, 0U);
-        vTaskDelay(pdMS_TO_TICKS(10U));
-        NVIC_SystemReset();
-        break;
-    }
-
-    default: {
-        _Send(f->seq, CMD_NACK, STATUS_INVALID_CMD, 0U, NULL, 0U);
-        break;
-    }
+        case CMD_RESET: {
+            _Send(f->seq, CMD_ACK, STATUS_OK, 0U, NULL, 0U);
+            vTaskDelay(pdMS_TO_TICKS(10U));
+            NVIC_SystemReset();
+            break;
+        }
+        default: {
+            _Send(f->seq, CMD_NACK, STATUS_INVALID_CMD, 0U, NULL, 0U);
+            break;
+        }
     }
 }
 
@@ -202,12 +190,12 @@ void Task_Protocol(void *pvParams){
     (void)pvParams;
 
     Frame_t frame;
-	  TickType_t lastFrameMs   = xTaskGetTickCount();
+	TickType_t lastFrameMs   = xTaskGetTickCount();
     TickType_t lastSensorTick = xTaskGetTickCount();
 
-		#if SLAVE_ADDRESS == 0x02
-		BH1750_Start();
-		#endif
+    #if SLAVE_ADDRESS == 0x02
+    BH1750_Start();
+    #endif
     while(1){
 		if(xQueueReceive(xQueue_RxFrame, &frame, pdMS_TO_TICKS(10U)) == pdTRUE){
             lastFrameMs = xTaskGetTickCount();

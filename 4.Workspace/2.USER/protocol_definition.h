@@ -5,19 +5,19 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define PROTO_SOF_0           0xAAU
-#define PROTO_SOF_1           0x55U
-#define PROTO_PREFIX_SIZE     3U 
-#define PROTO_HEADER_SIZE     5U 
-#define PROTO_CRC_SIZE        2U
-#define PROTO_LEN_MIN         5U
-#define PROTO_MAX_PAYLOAD     96U
-#define PROTO_LEN_MAX         (PROTO_LEN_MIN + PROTO_MAX_PAYLOAD)
-#define PROTO_FRAME_MIN       (PROTO_PREFIX_SIZE + PROTO_LEN_MIN + PROTO_CRC_SIZE)
-#define PROTO_FRAME_MAX       (PROTO_PREFIX_SIZE + PROTO_LEN_MAX + PROTO_CRC_SIZE)
-#define PROTO_ADDR_MIN        1U
-#define PROTO_ADDR_MAX        254U
-#define PROTO_ADDR_BROADCAST  0xFFU
+#define PROTO_SOF_0             0xAAU
+#define PROTO_SOF_1             0x55U
+#define PROTO_PREFIX_SIZE       3U 
+#define PROTO_HEADER_SIZE       5U 
+#define PROTO_CRC_SIZE          2U
+#define PROTO_LEN_MIN           5U
+#define PROTO_MAX_PAYLOAD       96U
+#define PROTO_LEN_MAX           (PROTO_LEN_MIN + PROTO_MAX_PAYLOAD)
+#define PROTO_FRAME_MIN         (PROTO_PREFIX_SIZE + PROTO_LEN_MIN + PROTO_CRC_SIZE)
+#define PROTO_FRAME_MAX         (PROTO_PREFIX_SIZE + PROTO_LEN_MAX + PROTO_CRC_SIZE)
+#define PROTO_ADDR_MIN          1U
+#define PROTO_ADDR_MAX          254U
+#define PROTO_ADDR_BROADCAST    0xFFU
 
 typedef enum {
     CMD_PING             = 0x01,
@@ -28,7 +28,7 @@ typedef enum {
     CMD_ACK              = 0x06,
     CMD_NACK             = 0x07,
     CMD_RESET            = 0x08,
-	  CMD_UPSTREAM_PUSH    = 0x09,   /* STM32 Master -> ESP32 */
+	CMD_UPSTREAM_PUSH    = 0x09,   /* STM32 Master -> ESP32 */
     CMD_UPSTREAM_ALARM   = 0x0A,   /* STM32 Master -> ESP32 */
     CMD_SET_ACTUATOR     = 0x0B,   /* Master -> Slave       */
 } eCmd;
@@ -42,40 +42,43 @@ typedef enum {
  */
 
 typedef enum {
-    STATUS_OK          = 0x00,
-    STATUS_ERROR       = 0x01,
-    STATUS_INVALID_CMD = 0x02,
+    STATUS_OK           = 0x00,
+    STATUS_ERROR        = 0x01,
+    STATUS_INVALID_CMD  = 0x02,
 } eStatus;
 
 typedef enum {
-    SENSOR_TEMPERATURE = 0x01,
-    SENSOR_HUMIDITY    = 0x02,
-    SENSOR_PRESSURE    = 0x03,
-    SENSOR_ADC_RAW     = 0x04,
-    SENSOR_DIGITAL_IN  = 0x05,
+    SENSOR_TEMPERATURE  = 0x01,
+    SENSOR_HUMIDITY     = 0x02,
+    SENSOR_PRESSURE     = 0x03,
+    SENSOR_ADC_RAW      = 0x04,
+    SENSOR_DIGITAL_IN   = 0x05,
+	SENSOR_LIGHT        = 0x06,
+	SENSOR_RESISTOR     = 0x07,
+	SENSOR_GAS          = 0x08,
 } eSensorType;
 
 typedef enum {
-    DTYPE_FLOAT  	= 0x01,
-    DTYPE_INT32  	= 0x02,
-    DTYPE_DOUBLE 	= 0x03,
-    DTYPE_INT			= 0x04,
-    DTYPE_CHAR		= 0x05,
+    DTYPE_FLOAT     = 0x01,
+    DTYPE_INT32     = 0x02,
+    DTYPE_DOUBLE    = 0x03,
+    DTYPE_INT       = 0x04,
+    DTYPE_CHAR      = 0x05,
 } eDataType;
 
 static inline uint8_t DataType_Size(eDataType dt){
     switch(dt){
-      case DTYPE_FLOAT:
-        return 4U;
-      case DTYPE_INT32:
-        return 4U;
-      case DTYPE_DOUBLE:
-        return 8U;
-      case DTYPE_INT:
-        return 4U;
-      case DTYPE_CHAR:
-        return 1U;
-      default:
+        case DTYPE_FLOAT:
+            return 4U;
+        case DTYPE_INT32:
+            return 4U;
+        case DTYPE_DOUBLE:
+            return 8U;
+        case DTYPE_INT:
+            return 4U;
+        case DTYPE_CHAR:
+            return 1U;
+        default:
         return 0U;
     }
 }
@@ -126,15 +129,15 @@ static inline uint8_t Frame_Build(uint8_t *out,
     out[1] = PROTO_SOF_1;
     out[2] = (uint8_t)(PROTO_LEN_MIN + payloadLen);
     out[3] = addr; 
-		out[4] = seq; 
-		out[5] = cmd;
+	out[4] = seq; 
+	out[5] = cmd;
     out[6] = status; 
-		out[7] = ver;
+	out[7] = ver;
     if(payloadLen && payload)
         memcpy(&out[8], payload, payloadLen);
-    uint8_t ce = (uint8_t)(PROTO_HEADER_SIZE + payloadLen);
-    uint16_t crc = CRC16_Calc(&out[3], ce);
-    out[ce + PROTO_PREFIX_SIZE] = (uint8_t)(crc >> 8);
+    uint8_t ce      = (uint8_t)(PROTO_HEADER_SIZE + payloadLen);
+    uint16_t crc    = CRC16_Calc(&out[3], ce);
+    out[ce + PROTO_PREFIX_SIZE]     = (uint8_t)(crc >> 8);
     out[ce + PROTO_PREFIX_SIZE + 1] = (uint8_t)(crc & 0xFFU);
     return (uint8_t)(ce + PROTO_PREFIX_SIZE + PROTO_CRC_SIZE);
 }
@@ -147,12 +150,12 @@ static inline bool Frame_ValidCRC(const uint8_t *raw, uint8_t total){
 }
 
 static inline void Frame_Parse(const uint8_t *raw, uint8_t total, Frame_t *f){
-    f->addr = raw[3]; 
-		f->seq = raw[4];
-    f->cmd = raw[5]; 
-		f->status = raw[6]; 
-		f->version = raw[7];
-    uint8_t pl = (uint8_t)(total - PROTO_PREFIX_SIZE - PROTO_LEN_MIN - PROTO_CRC_SIZE);
+    f->addr     = raw[3]; 
+	f->seq      = raw[4];
+    f->cmd      = raw[5]; 
+	f->status   = raw[6]; 
+	f->version  = raw[7];
+    uint8_t pl  = (uint8_t)(total - PROTO_PREFIX_SIZE - PROTO_LEN_MIN - PROTO_CRC_SIZE);
     f->payloadLen = (pl > PROTO_MAX_PAYLOAD) ? PROTO_MAX_PAYLOAD : pl;
     if(f->payloadLen){
 			memcpy(f->payload, &raw[8], f->payloadLen);
@@ -166,9 +169,9 @@ static inline uint8_t Payload_PackTable(uint8_t *buf, uint8_t bufMax,
     if((uint8_t)(1U + count * 3U) > bufMax) return 0U;
     buf[0] = count;
     for(uint8_t i = 0; i < count; i++){
-        buf[1U + i * 3U] = descs[i].sensorId;
-        buf[1U + i * 3U + 1U] = descs[i].sensorType;
-        buf[1U + i * 3U + 2U] = descs[i].dataType;
+        buf[1U + i * 3U]        = descs[i].sensorId;
+        buf[1U + i * 3U + 1U]   = descs[i].sensorType;
+        buf[1U + i * 3U + 2U]   = descs[i].dataType;
     }
     return (uint8_t)(1U + count * 3U);
 }
@@ -181,9 +184,9 @@ static inline uint8_t Payload_UnpackTable(const uint8_t *payload, uint8_t payloa
     if(count > descMax) count = descMax;
     for(uint8_t i = 0; i < count; i++){
         if((uint8_t)(1U + i * 3U + 2U) >= payloadLen) break;
-        descs[i].sensorId = payload[1U + i * 3U];
+        descs[i].sensorId   = payload[1U + i * 3U];
         descs[i].sensorType = payload[1U + i * 3U + 1U];
-        descs[i].dataType = payload[1U + i * 3U + 2U];
+        descs[i].dataType   = payload[1U + i * 3U + 2U];
     }
     return count;
 }

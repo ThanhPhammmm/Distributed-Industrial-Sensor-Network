@@ -9,13 +9,12 @@
 void delay_us(uint32_t us){
     uint32_t cycles = (SystemCoreClock / 1000000L) * us;
     uint32_t start = DWT->CYCCNT;
-
     while ((DWT->CYCCNT - start) < cycles);
 }
 
 void delay_ms(uint32_t ms){
     while(ms--)
-        delay_us(1000);
+    delay_us(1000);
 }
 
 #define I2C_TIMEOUT_US   10000U
@@ -371,30 +370,30 @@ typedef struct {
 static const SensorRuleMap_t g_rules_map[] = {
     #if SLAVE_ADDRESS == 0x01
     {	
-            SENSOR_ADC_RAW, 
-            DTYPE_INT,
-            MQ2_THRESHOLD_WARNINGLOW, 
-            MQ2_THRESHOLD_WARNINGHIGH, 
-            MQ2_THRESHOLD_CRITICALLOW,
-            MQ2_THRESHOLD_CRITICALHIGH
+        SENSOR_GAS, 
+        DTYPE_INT,
+        MQ2_THRESHOLD_WARNINGLOW, 
+        MQ2_THRESHOLD_WARNINGHIGH, 
+        MQ2_THRESHOLD_CRITICALLOW,
+        MQ2_THRESHOLD_CRITICALHIGH
     }
     #elif SLAVE_ADDRESS == 0x02
     {
-            SENSOR_DIGITAL_IN,
-            DTYPE_FLOAT,
-            BH1750_THRESHOLD_WARNINGLOW, 
-            BH1750_THRESHOLD_WARNINGHIGH, 
-            BH1750_THRESHOLD_CRITICALLOW,
-            BH1750_THRESHOLD_CRITICALHIGH
+        SENSOR_LIGHT,
+        DTYPE_FLOAT,
+        BH1750_THRESHOLD_WARNINGLOW, 
+        BH1750_THRESHOLD_WARNINGHIGH, 
+        BH1750_THRESHOLD_CRITICALLOW,
+        BH1750_THRESHOLD_CRITICALHIGH
     },
     
     {
-            SENSOR_TEMPERATURE,
-            DTYPE_FLOAT,
-            DHT11_TEMP_THRESHOLD_WARNINGLOW,
-            DHT11_TEMP_THRESHOLD_WARNINGHIGH,
-            DHT11_TEMP_THRESHOLD_CRITICALLOW,
-            DHT11_TEMP_THRESHOLD_CRITICALHIGH,
+        SENSOR_TEMPERATURE,
+        DTYPE_FLOAT,
+        DHT11_TEMP_THRESHOLD_WARNINGLOW,
+        DHT11_TEMP_THRESHOLD_WARNINGHIGH,
+        DHT11_TEMP_THRESHOLD_CRITICALLOW,
+        DHT11_TEMP_THRESHOLD_CRITICALHIGH,
     },
     #endif
 };
@@ -421,31 +420,30 @@ static const SensorDriverMap_t g_driver_map[] = {
     // DIGITAL IN
     { SENSOR_DIGITAL_IN,  DTYPE_FLOAT,  Read_DI_Float },
     { SENSOR_DIGITAL_IN,  DTYPE_CHAR,   Read_DI_Char },
+		
+	// Potentiometer
+    { SENSOR_RESISTOR,     DTYPE_INT32,  Read_ADC_Int32 },
+		
+	// GAS
+    { SENSOR_GAS,     DTYPE_INT,    Read_ADC_Int },
+		
+	// LIGHT
+	{ SENSOR_LIGHT,  DTYPE_FLOAT,  Read_DI_Float },
 };
 
 static const uint8_t k_driver_cnt = sizeof(g_driver_map) / sizeof(g_driver_map[0]);
 
 #if SLAVE_ADDRESS == 0x01
 SensorEntry_t g_sensors[] = {
-    { 1, SENSOR_DIGITAL_IN, DTYPE_FLOAT},
-    { 2, SENSOR_ADC_RAW, DTYPE_INT32},
-	{ 3, SENSOR_PRESSURE, DTYPE_DOUBLE},
-	{ 4, SENSOR_HUMIDITY, DTYPE_INT32},
-	{ 5, SENSOR_TEMPERATURE, DTYPE_FLOAT},
-	{ 6, SENSOR_TEMPERATURE, DTYPE_CHAR},
-	{ 7, SENSOR_ADC_RAW, DTYPE_INT},
-	{ 8, SENSOR_PRESSURE, DTYPE_DOUBLE},
+    { 1, SENSOR_GAS, DTYPE_INT},
+    { 2, SENSOR_RESISTOR, DTYPE_INT32},
 };
 
 #elif SLAVE_ADDRESS == 0x02
 SensorEntry_t g_sensors[] = {
-    { 1, SENSOR_TEMPERATURE, DTYPE_FLOAT},
-    { 2, SENSOR_HUMIDITY, DTYPE_INT32},
-    { 3, SENSOR_PRESSURE, DTYPE_DOUBLE },
-    { 4, SENSOR_DIGITAL_IN, DTYPE_FLOAT},
-    { 5, SENSOR_DIGITAL_IN, DTYPE_CHAR },
-    { 6, SENSOR_TEMPERATURE, DTYPE_CHAR},
-    { 7, SENSOR_HUMIDITY, DTYPE_INT},
+	{ 1, SENSOR_TEMPERATURE, DTYPE_FLOAT},
+    { 2, SENSOR_HUMIDITY, DTYPE_INT},
+    { 3, SENSOR_LIGHT, DTYPE_FLOAT },
 };
 
 #elif SLAVE_ADDRESS == 0x03
@@ -551,11 +549,11 @@ void Slave_Sensors_Read(void){
 
         if(found){
             switch((eDataType)s->dataType){
-                case DTYPE_FLOAT: s->reading.f = (float)raw_value;  break;
-                case DTYPE_DOUBLE: s->reading.d = (double)raw_value; break;
-                case DTYPE_INT32:s->reading.i = (int32_t)raw_value;break;
-                case DTYPE_INT: s->reading.i2 = (int)raw_value;    break;
-                case DTYPE_CHAR: s->reading.c = (char)raw_value;   break;
+                case DTYPE_FLOAT:   s->reading.f    = (float)raw_value;  break;
+                case DTYPE_DOUBLE:  s->reading.d    = (double)raw_value; break;
+                case DTYPE_INT32:   s->reading.i    = (int32_t)raw_value;break;
+                case DTYPE_INT:     s->reading.i2   = (int)raw_value;    break;
+                case DTYPE_CHAR:    s->reading.c    = (char)raw_value;   break;
                 default: break;
             }
             #if SLAVE_ADDRESS == 0x02
@@ -567,7 +565,7 @@ void Slave_Sensors_Read(void){
 		else{
 			memset(&s->reading, 0, sizeof(SensorReading_t));
 		}
-    }
+   }
 }
 
 uint8_t Slave_Sensors_GetCount(void) { return k_cnt; }
